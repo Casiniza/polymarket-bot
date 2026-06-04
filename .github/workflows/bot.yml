@@ -1,0 +1,50 @@
+name: Polymarket Bot
+
+on:
+  schedule:
+    # Corre cada hora (puedes ajustar el cron)
+    - cron: "0 * * * *"
+  workflow_dispatch:   # Permite ejecución manual desde GitHub
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create logs directory
+        run: mkdir -p logs
+
+      - name: Run bot
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          CLOB_API_KEY: ${{ secrets.CLOB_API_KEY }}
+          CLOB_API_SECRET: ${{ secrets.CLOB_API_SECRET }}
+          CLOB_API_PASSPHRASE: ${{ secrets.CLOB_API_PASSPHRASE }}
+          MAX_BET_USDC: ${{ vars.MAX_BET_USDC || '10.0' }}
+          MIN_CONFIDENCE: ${{ vars.MIN_CONFIDENCE || '0.65' }}
+          DRY_RUN: ${{ vars.DRY_RUN || 'true' }}
+          STRATEGY: ${{ vars.STRATEGY || 'THRESHOLD' }}
+          THRESHOLD_BUY_YES: ${{ vars.THRESHOLD_BUY_YES || '0.30' }}
+          THRESHOLD_BUY_NO: ${{ vars.THRESHOLD_BUY_NO || '0.30' }}
+        run: python bot.py
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-logs-${{ github.run_number }}
+          path: logs/
+          retention-days: 7
