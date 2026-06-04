@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Iraq win on 2026-06-04?",
     "opened_at": "2026-06-04T19:42:10.112431"
+  },
+  {
+    "token_id": "53466092689976264784023881054375150288401709866357442274301751953358680700111",
+    "action": "BUY_YES",
+    "entry_price": 0.8155,
+    "size": 6.13,
+    "usdc_spent": 5.0,
+    "market_question": "Will Spain win on 2026-06-04?",
+    "opened_at": "2026-06-04T20:02:18.291741"
   }
 ]
