@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "market_question": "Athletics vs. Chicago Cubs",
+    "action": "BUY_NO",
+    "entry_price": 0.865,
+    "exit_price": 0.66,
+    "size": 5.78,
+    "usdc_spent": 5.0,
+    "pnl": -1.1849,
+    "result": "SL",
+    "opened_at": "2026-06-04T01:54:53.423120",
+    "closed_at": "2026-06-04T02:14:15.762657"
+  }
+]
