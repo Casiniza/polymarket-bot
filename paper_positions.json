@@ -88,5 +88,14 @@
     "usdc_spent": 10.0,
     "market_question": "Will the price of Ethereum be above $1,500 on June 4?",
     "opened_at": "2026-06-04T17:25:49.688918"
+  },
+  {
+    "token_id": "84716246577646420693456172755308659881190666186891117791762839742130881998359",
+    "action": "BUY_YES",
+    "entry_price": 0.9995,
+    "size": 10.01,
+    "usdc_spent": 10.0,
+    "market_question": "Will the price of Bitcoin be above $58,000 on June 4?",
+    "opened_at": "2026-06-04T17:25:52.008062"
   }
 ]
