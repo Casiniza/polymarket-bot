@@ -1,7 +1,7 @@
 """Ejecuta órdenes en Polymarket via py-clob-client."""
 from loguru import logger
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import OrderArgs, OrderType, Side
+from py_clob_client.clob_types import OrderArgs, OrderType
 from py_clob_client.constants import POLYGON
 
 import config
@@ -30,7 +30,6 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> 
     if signal.action == "HOLD":
         return False
 
-    side = Side.BUY
     size = round(config.MAX_BET_USDC / signal.price, 2) if signal.price > 0 else 0
 
     logger.info(
@@ -48,7 +47,7 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> 
             token_id=signal.token_id,
             price=signal.price,
             size=size,
-            side=side,
+            side="BUY",
         )
         resp = client.create_and_post_order(order_args)
         logger.success(f"Orden ejecutada: {resp}")
