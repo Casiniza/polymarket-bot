@@ -43,5 +43,14 @@
     "usdc_spent": 10.0,
     "market_question": "Will the price of Bitcoin be above $68,000 on June 4?",
     "opened_at": "2026-06-04T17:25:37.946173"
+  },
+  {
+    "token_id": "61098084261262853543825083764977488222909596538329244572507410266916161981713",
+    "action": "BUY_NO",
+    "entry_price": 0.9995,
+    "size": 10.01,
+    "usdc_spent": 10.0,
+    "market_question": "Dota 2: LGD Gaming vs Team Yandex - Game 1 Winner",
+    "opened_at": "2026-06-04T17:25:40.175843"
   }
 ]
