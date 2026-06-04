@@ -97,10 +97,13 @@
   </div>
 </div>
 
-<!-- Scan countdown -->
+<!-- Scan countdown + bot status -->
 <div class="section">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <div class="scan-label">Próximo scan de mercados: <span id="scan-countdown">5:00</span></div>
+    <div id="bot-status" style="font-size:0.75rem;color:#8b949e;">⚫ Bot desconectado</div>
+  </div>
   <div class="scan-bar-wrap"><div class="scan-bar-fill" id="scan-bar" style="width:100%"></div></div>
-  <div class="scan-label">Próximo scan de mercados: <span id="scan-countdown">5:00</span></div>
 </div>
 
 <!-- Open positions -->
@@ -132,6 +135,7 @@
 <script>
   const POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/positions.json";
   const HISTORY_URL   = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/history.json";
+  const LOG_SERVER    = "http://localhost:7373";
 
   let logLines = [];
   let lastPositionIds = new Set();
@@ -355,8 +359,49 @@
       "Actualizado: " + new Date().toLocaleTimeString("es-ES");
   }
 
+  // --- Live logs desde servidor local del bot ---
+  let lastLogCount = 0;
+
+  async function loadLiveLogs() {
+    try {
+      const r = await fetch(LOG_SERVER + "?t=" + Date.now(), { signal: AbortSignal.timeout(1500) });
+      if (r.ok) {
+        const logs = await r.json();
+        document.getElementById("bot-status").innerHTML = "🟢 Bot activo (local)";
+        document.getElementById("bot-status").style.color = "#3fb950";
+
+        // Solo añade líneas nuevas
+        if (logs.length > lastLogCount) {
+          const newLines = logs.slice(lastLogCount);
+          newLines.forEach(l => {
+            const type = l.level === "SUCCESS" ? "buy"
+                       : l.level === "ERROR"   ? "sell"
+                       : l.level === "WARNING" ? "sell"
+                       : "info";
+            const color = type === "buy" ? "#3fb950" : type === "sell" ? "#f85149" : "#58a6ff";
+            logLines.unshift(
+              `<div class="log-line" style="color:${color}">[${l.time}] ${l.text}</div>`
+            );
+          });
+          if (logLines.length > 100) logLines.length = 100;
+          document.getElementById("log").innerHTML = logLines.join("");
+          lastLogCount = logs.length;
+        }
+      } else {
+        throw new Error("no response");
+      }
+    } catch {
+      document.getElementById("bot-status").innerHTML = "⚫ Bot desconectado";
+      document.getElementById("bot-status").style.color = "#8b949e";
+    }
+  }
+
   loadDashboard();
   setInterval(() => { loadDashboard(); resetScanTimer(); }, 30000);
+
+  // Logs en vivo cada 3 segundos
+  loadLiveLogs();
+  setInterval(loadLiveLogs, 3000);
 </script>
 </body>
 </html>

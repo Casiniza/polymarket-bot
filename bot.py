@@ -1,12 +1,17 @@
 """
 Polymarket Trading Bot — modo continuo
-- Cada 30s: revisa posiciones abiertas (Take Profit / Stop Loss)
+- TP/SL: revisión continua cada 3 segundos
 - Cada 5min: escanea nuevos mercados
-- Solo apuesta en mercados que terminan hoy o mañana
+- Solo apuesta en mercados que terminan en los próximos 7 días
 - Nunca apuesta dos veces en el mismo mercado
+- Servidor HTTP local en puerto 7373 para logs en vivo en el dashboard
 """
 import sys
 import time
+import threading
+import collections
+import json
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime, timezone, timedelta
 from loguru import logger
 from markets import get_active_markets, get_prices_from_market, get_midpoint
@@ -15,15 +20,52 @@ from trader import build_client, execute_signal, execute_sell
 from positions import load_positions, save_positions, load_history
 import config
 
+TAKE_PROFIT      = 0.10
+STOP_LOSS        = 0.10
+SCAN_POSITIONS_S = 3      # TP/SL cada 3 segundos — continuo
+SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
+MAX_RUNTIME_S    = 4 * 3600
+LOG_PORT         = 7373
+MAX_LOG_LINES    = 200
+
+# Buffer circular de logs para el dashboard
+_log_buffer: collections.deque = collections.deque(maxlen=MAX_LOG_LINES)
+
+def _sink(message):
+    """Captura cada línea de log y la guarda en el buffer."""
+    _log_buffer.append({
+        "time": datetime.now().strftime("%H:%M:%S"),
+        "level": message.record["level"].name,
+        "text": message.record["message"],
+    })
+
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | {message}")
 logger.add("logs/bot.log", rotation="10 MB", retention="7 days", level="DEBUG")
+logger.add(_sink, level="INFO", format="{message}")
 
-TAKE_PROFIT      = 0.10   # +10%
-STOP_LOSS        = 0.10   # -10%
-SCAN_POSITIONS_S = 30     # revisar posiciones cada 30 segundos
-SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
-MAX_RUNTIME_S    = 4 * 3600  # 4 horas — el cron lanza uno nuevo cada 4h para cobertura 24/7
+
+class LogHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps(list(_log_buffer)).encode())
+
+    def log_message(self, *args):
+        pass  # silencia los logs del servidor HTTP
+
+
+def start_log_server():
+    """Arranca el servidor de logs en un hilo separado."""
+    try:
+        server = HTTPServer(("localhost", LOG_PORT), LogHandler)
+        t = threading.Thread(target=server.serve_forever, daemon=True)
+        t.start()
+        logger.info(f"Servidor de logs activo en http://localhost:{LOG_PORT}")
+    except Exception as e:
+        logger.warning(f"No se pudo arrancar el servidor de logs: {e}")
 
 
 WINNER_KEYWORDS = [
@@ -245,16 +287,17 @@ def main():
         logger.error("PRIVATE_KEY no configurada y DRY_RUN=false. Abortando.")
         sys.exit(1)
 
+    start_log_server()
     client = build_client() if not config.DRY_RUN else None
 
     logger.info(f"Bot iniciado | TP: +{TAKE_PROFIT*100:.0f}% | SL: -{STOP_LOSS*100:.0f}% | "
-                f"Scan posiciones: {SCAN_POSITIONS_S}s | Scan mercados: {SCAN_MARKETS_S}s")
+                f"TP/SL continuo cada {SCAN_POSITIONS_S}s | Scan mercados cada {SCAN_MARKETS_S}s")
 
     existing_positions = load_positions()
     bet_market_ids: set = {p.token_id for p in existing_positions}
     bet_match_keys: set = {get_match_key({"question": p.market_question}) for p in existing_positions}
     start_time = time.time()
-    last_market_scan = 0  # fuerza scan inmediato al arrancar
+    last_market_scan = 0
 
     while time.time() - start_time < MAX_RUNTIME_S:
         now = time.time()
@@ -265,11 +308,8 @@ def main():
             bet_market_ids, bet_match_keys = scan_markets(client, bet_market_ids, bet_match_keys)
             last_market_scan = now
 
-        # Revisión de posiciones cada 30 segundos
+        # TP/SL continuo cada 3 segundos
         check_positions(client)
-
-        elapsed = int(time.time() - start_time)
-        logger.debug(f"Tiempo transcurrido: {elapsed//3600}h {(elapsed%3600)//60}m | Próximo scan mercados en {max(0, int(SCAN_MARKETS_S-(time.time()-last_market_scan)))}s")
         time.sleep(SCAN_POSITIONS_S)
 
     logger.info("Bot detenido — límite de tiempo alcanzado.")
