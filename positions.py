@@ -23,7 +23,7 @@ def load_positions() -> list[Position]:
     if not os.path.exists(POSITIONS_FILE):
         return []
     try:
-        with open(POSITIONS_FILE, "r") as f:
+        with open(POSITIONS_FILE, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
         return [Position(**p) for p in data]
     except Exception as e:
