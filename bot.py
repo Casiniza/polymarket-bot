@@ -1,36 +1,60 @@
 """
-Polymarket Trading Bot
-Ciclo principal: gestiona posiciones abiertas (TP/SL) y busca nuevas entradas.
+Polymarket Trading Bot — modo continuo
+- Cada 30s: revisa posiciones abiertas (Take Profit / Stop Loss)
+- Cada 5min: escanea nuevos mercados
+- Solo apuesta en mercados que terminan hoy o mañana
+- Nunca apuesta dos veces en el mismo mercado
 """
 import sys
+import time
+from datetime import datetime, timezone, timedelta
 from loguru import logger
 from markets import get_active_markets, get_prices_from_market, get_midpoint
 from strategy import evaluate
 from trader import build_client, execute_signal, execute_sell
-from positions import load_positions
+from positions import load_positions, save_positions
 import config
-
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | {message}")
 logger.add("logs/bot.log", rotation="10 MB", retention="7 days", level="DEBUG")
 
-TAKE_PROFIT = 0.10   # +10%
-STOP_LOSS   = 0.10   # -10%
+TAKE_PROFIT      = 0.10   # +10%
+STOP_LOSS        = 0.10   # -10%
+SCAN_POSITIONS_S = 30     # revisar posiciones cada 30 segundos
+SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
+MAX_RUNTIME_S    = 5 * 3600  # 5 horas (margen antes del límite de 6h de Actions)
+
+
+def market_ends_by_tomorrow(market: dict) -> bool:
+    """True si el mercado termina hoy o mañana."""
+    end_str = market.get("endDateIso") or market.get("endDate", "")
+    if not end_str:
+        return False
+    try:
+        end_date = datetime.fromisoformat(end_str[:10])
+        tomorrow = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=1)
+        return end_date.date() <= tomorrow.date()
+    except (ValueError, TypeError):
+        return False
+
+
+def get_market_id(market: dict) -> str:
+    """Identificador único del mercado (conditionId o id)."""
+    return market.get("conditionId") or market.get("id", "")
 
 
 def check_positions(client):
-    """Revisa posiciones abiertas y vende si se alcanza TP o SL."""
+    """Revisa posiciones abiertas y ejecuta TP/SL si corresponde."""
     positions = load_positions()
     if not positions:
-        logger.info("Sin posiciones abiertas.")
         return
 
-    logger.info(f"Revisando {len(positions)} posiciones abiertas...")
+    logger.info(f"Revisando {len(positions)} posiciones...")
     for pos in positions:
         current_price = get_midpoint(pos.token_id)
         if current_price is None:
-            logger.warning(f"No se pudo obtener precio para {pos.token_id[:12]}... — omitiendo")
+            logger.warning(f"Sin precio para {pos.token_id[:12]}...")
             continue
 
         change = (current_price - pos.entry_price) / pos.entry_price
@@ -41,33 +65,32 @@ def check_positions(client):
             execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}%")
         else:
             logger.info(
-                f"Manteniendo: {pos.market_question[:55]} | "
-                f"Entrada: {pos.entry_price:.3f} | Actual: {current_price:.3f} | "
-                f"Cambio: {change*100:+.1f}%"
+                f"Manteniendo | {pos.market_question[:50]} | "
+                f"{pos.entry_price:.3f} → {current_price:.3f} ({change*100:+.1f}%)"
             )
 
 
-def run_cycle(client, markets_limit: int = 30):
-    logger.info(f"=== CICLO | Estrategia: {config.STRATEGY} | DRY_RUN: {config.DRY_RUN} ===")
-
-    # 1. Primero gestiona posiciones existentes (TP/SL)
-    check_positions(client)
-
-    # 2. Busca nuevas oportunidades de entrada
-    markets = get_active_markets(limit=markets_limit)
-    logger.info(f"Mercados obtenidos: {len(markets)}")
-
+def scan_markets(client, bet_market_ids: set) -> set:
+    """
+    Busca nuevas oportunidades. Devuelve el set actualizado de market_ids apostados.
+    Solo apuesta en mercados que terminan hoy o mañana y no han sido apostados antes.
+    """
+    markets = get_active_markets(limit=50)
     open_token_ids = {p.token_id for p in load_positions()}
-    executed = 0
+    new_bets = 0
 
     for market in markets:
-        question = market.get("question", "Sin título")
-        tokens = market.get("tokens") or []
+        if not market_ends_by_tomorrow(market):
+            continue
 
-        # Usa outcomePrices directo (más rápido y fiable que llamar al CLOB)
+        market_id = get_market_id(market)
+        if market_id in bet_market_ids:
+            continue  # ya apostamos en este mercado
+
         yes_price, no_price = get_prices_from_market(market)
+        if yes_price is None:
+            continue
 
-        # Inyecta token_ids desde clobTokenIds para que la estrategia pueda usarlos
         clob_ids = market.get("clobTokenIds") or []
         if len(clob_ids) >= 2 and not market.get("tokens"):
             market["tokens"] = [
@@ -75,20 +98,19 @@ def run_cycle(client, markets_limit: int = 30):
                 {"outcome": "NO",  "token_id": clob_ids[1]},
             ]
 
-        if yes_price is None:
-            continue
-
         signal = evaluate(market, yes_price, no_price)
 
-        # No entrar en un mercado donde ya tenemos posición
         if signal.action != "HOLD" and signal.token_id not in open_token_ids:
+            question = market.get("question", "")
             ok = execute_signal(client, signal, question)
             if ok:
-                executed += 1
+                bet_market_ids.add(market_id)
                 open_token_ids.add(signal.token_id)
+                new_bets += 1
 
-    logger.info(f"=== FIN CICLO | Nuevas órdenes: {executed} | Mercados analizados: {len(markets)} ===")
-    return executed
+    eligible = sum(1 for m in markets if market_ends_by_tomorrow(m))
+    logger.info(f"Scan completado | {eligible} mercados elegibles (terminan hoy/mañana) | {new_bets} nuevas apuestas")
+    return bet_market_ids
 
 
 def main():
@@ -97,7 +119,31 @@ def main():
         sys.exit(1)
 
     client = build_client() if not config.DRY_RUN else None
-    run_cycle(client, markets_limit=30)
+
+    logger.info(f"Bot iniciado | TP: +{TAKE_PROFIT*100:.0f}% | SL: -{STOP_LOSS*100:.0f}% | "
+                f"Scan posiciones: {SCAN_POSITIONS_S}s | Scan mercados: {SCAN_MARKETS_S}s")
+
+    bet_market_ids: set = {p.token_id for p in load_positions()}  # carga historial de apuestas
+    start_time = time.time()
+    last_market_scan = 0  # fuerza scan inmediato al arrancar
+
+    while time.time() - start_time < MAX_RUNTIME_S:
+        now = time.time()
+
+        # Scan de mercados cada 5 minutos
+        if now - last_market_scan >= SCAN_MARKETS_S:
+            logger.info("=== SCAN MERCADOS ===")
+            bet_market_ids = scan_markets(client, bet_market_ids)
+            last_market_scan = now
+
+        # Revisión de posiciones cada 30 segundos
+        check_positions(client)
+
+        elapsed = int(time.time() - start_time)
+        logger.debug(f"Tiempo transcurrido: {elapsed//3600}h {(elapsed%3600)//60}m | Próximo scan mercados en {max(0, int(SCAN_MARKETS_S-(time.time()-last_market_scan)))}s")
+        time.sleep(SCAN_POSITIONS_S)
+
+    logger.info("Bot detenido — límite de tiempo alcanzado.")
 
 
 if __name__ == "__main__":

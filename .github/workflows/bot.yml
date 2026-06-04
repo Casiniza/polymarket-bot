@@ -2,7 +2,8 @@ name: Polymarket Bot
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    # Arranca cada día a las 00:00 UTC (corre 5 horas continuas)
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
@@ -11,7 +12,7 @@ permissions:
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 360   # 6 horas (el bot se detiene solo a las 5h)
 
     steps:
       - name: Checkout repo
@@ -29,7 +30,7 @@ jobs:
       - name: Create logs directory
         run: mkdir -p logs
 
-      - name: Run bot
+      - name: Run bot (proceso continuo ~5h)
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           CLOB_API_KEY: ${{ secrets.CLOB_API_KEY }}
@@ -46,6 +47,7 @@ jobs:
         run: python bot.py
 
       - name: Guardar posiciones en el repo
+        if: always()
         run: |
           git config user.name "polymarket-bot"
           git config user.email "bot@polymarket"
