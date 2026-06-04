@@ -136,19 +136,22 @@
   let logLines = [];
   let lastPositionIds = new Set();
   let pnlChart = null;
-  let scanSecondsLeft = 300;
   const SCAN_INTERVAL = 300;
 
-  // --- Scan countdown ---
-  setInterval(() => {
-    scanSecondsLeft = Math.max(0, scanSecondsLeft - 1);
-    const m = Math.floor(scanSecondsLeft / 60);
-    const s = scanSecondsLeft % 60;
+  // Countdown basado en tiempo real — persiste al recargar
+  function updateScanCountdown() {
+    const now = Math.floor(Date.now() / 1000);
+    const secondsLeft = SCAN_INTERVAL - (now % SCAN_INTERVAL);
+    const m = Math.floor(secondsLeft / 60);
+    const s = secondsLeft % 60;
     document.getElementById("scan-countdown").textContent = `${m}:${s.toString().padStart(2,"0")}`;
-    document.getElementById("scan-bar").style.width = (scanSecondsLeft / SCAN_INTERVAL * 100) + "%";
-  }, 1000);
+    document.getElementById("scan-bar").style.width = (secondsLeft / SCAN_INTERVAL * 100) + "%";
+  }
 
-  function resetScanTimer() { scanSecondsLeft = SCAN_INTERVAL; }
+  setInterval(updateScanCountdown, 1000);
+  updateScanCountdown();
+
+  function resetScanTimer() {} // ya no necesario, el timer es basado en reloj real
 
   function addLog(msg, type = "info") {
     const now = new Date().toLocaleTimeString("es-ES");
