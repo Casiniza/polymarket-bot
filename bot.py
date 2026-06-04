@@ -26,6 +26,51 @@ SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
 MAX_RUNTIME_S    = 4 * 3600  # 4 horas — el cron lanza uno nuevo cada 4h para cobertura 24/7
 
 
+SPORTS_KEYWORDS = [
+    "vs.", "vs ", " vs ", "game", "match", "series", "winner", "win the",
+    "nba", "nfl", "mlb", "nhl", "ufc", "fifa", "world cup", "champions league",
+    "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
+    "super bowl", "playoffs", "finals", "semifinal", "quarterfinal",
+    "basketball", "football", "soccer", "baseball", "hockey", "tennis",
+    "golf", "f1", "formula 1", "moto gp", "boxing", "wrestling",
+    "orioles", "yankees", "dodgers", "giants", "cubs", "braves", "padres",
+    "phillies", "guardians", "royals", "athletics", "pirates", "blue jays",
+    "knicks", "lakers", "celtics", "warriors", "heat", "spurs", "bulls",
+    "score", "total", "over/under", "o/u", "spread", "points",
+]
+
+POLITICS_KEYWORDS = [
+    "election", "elect", "president", "mayor", "senator", "governor",
+    "congress", "parliament", "vote", "ballot", "candidate", "political",
+    "minister", "chancellor", "prime minister", "approval rating",
+    "poll", "polling", "democrat", "republican", "party", "campaign",
+    "ceasefire", "peace deal", "treaty", "sanction", "tariff", "war",
+    "iran", "russia", "ukraine", "israel", "gaza", "nato", "g7", "g20",
+    "trump", "biden", "macron", "zelensky", "putin",
+]
+
+LIVE_KEYWORDS = ["live", "in-play", "in play", "currently", "right now"]
+
+
+def is_sports_market(market: dict) -> bool:
+    """True solo si el mercado es deportivo y no es político ni en vivo."""
+    question = market.get("question", "").lower()
+    tags = [t.get("label", "").lower() for t in (market.get("tags") or []) if isinstance(t, dict)]
+    category = (market.get("category") or "").lower()
+    text = question + " " + category + " " + " ".join(tags)
+
+    # Rechaza política
+    if any(kw in text for kw in POLITICS_KEYWORDS):
+        return False
+
+    # Rechaza en vivo
+    if any(kw in text for kw in LIVE_KEYWORDS):
+        return False
+
+    # Acepta si hay keyword deportivo
+    return any(kw in text for kw in SPORTS_KEYWORDS)
+
+
 def market_ends_by_tomorrow(market: dict) -> bool:
     """True si el mercado termina en los próximos 2 días."""
     end_str = market.get("endDateIso") or market.get("endDate", "")
@@ -83,6 +128,10 @@ def scan_markets(client, bet_market_ids: set) -> set:
         if not market_ends_by_tomorrow(market):
             continue
 
+        if not is_sports_market(market):
+            logger.debug(f"Descartado (no deportivo): {market.get('question','')[:60]}")
+            continue
+
         market_id = get_market_id(market)
         if market_id in bet_market_ids:
             continue  # ya apostamos en este mercado
@@ -109,7 +158,8 @@ def scan_markets(client, bet_market_ids: set) -> set:
                 new_bets += 1
 
     eligible = sum(1 for m in markets if market_ends_by_tomorrow(m))
-    logger.info(f"Scan completado | {eligible} mercados elegibles (terminan hoy/mañana) | {new_bets} nuevas apuestas")
+    sports = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_sports_market(m))
+    logger.info(f"Scan completado | {eligible} en plazo | {sports} deportivos | {new_bets} nuevas apuestas")
     return bet_market_ids
 
 
