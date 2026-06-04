@@ -167,5 +167,18 @@
     "paper": true,
     "opened_at": "2026-06-04T20:57:46.215104",
     "closed_at": "2026-06-04T20:57:50.246387"
+  },
+  {
+    "market_question": "Will C\u00f4te d'Ivoire win on 2026-06-04?",
+    "action": "BUY_YES",
+    "entry_price": 0.812,
+    "exit_price": 0.9595,
+    "size": 6.16,
+    "usdc_spent": 5.0,
+    "pnl": 0.9086,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-04T21:08:31.092044",
+    "closed_at": "2026-06-04T21:08:34.253601"
   }
 ]
