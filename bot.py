@@ -4,7 +4,7 @@ Ciclo principal: gestiona posiciones abiertas (TP/SL) y busca nuevas entradas.
 """
 import sys
 from loguru import logger
-from markets import get_active_markets, get_midpoint
+from markets import get_active_markets, get_prices_from_market, get_midpoint
 from strategy import evaluate
 from trader import build_client, execute_signal, execute_sell
 from positions import load_positions
@@ -64,11 +64,16 @@ def run_cycle(client, markets_limit: int = 30):
         question = market.get("question", "Sin título")
         tokens = market.get("tokens") or []
 
-        yes_token = next((t for t in tokens if isinstance(t, dict) and t.get("outcome", "").upper() == "YES"), None)
-        no_token = next((t for t in tokens if isinstance(t, dict) and t.get("outcome", "").upper() == "NO"), None)
+        # Usa outcomePrices directo (más rápido y fiable que llamar al CLOB)
+        yes_price, no_price = get_prices_from_market(market)
 
-        yes_price = get_midpoint(yes_token["token_id"]) if yes_token else None
-        no_price = get_midpoint(no_token["token_id"]) if no_token else None
+        # Inyecta token_ids desde clobTokenIds para que la estrategia pueda usarlos
+        clob_ids = market.get("clobTokenIds") or []
+        if len(clob_ids) >= 2 and not market.get("tokens"):
+            market["tokens"] = [
+                {"outcome": "YES", "token_id": clob_ids[0]},
+                {"outcome": "NO",  "token_id": clob_ids[1]},
+            ]
 
         if yes_price is None:
             continue
