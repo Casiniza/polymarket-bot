@@ -37,5 +37,18 @@
     "paper": true,
     "opened_at": "2026-06-04T17:27:04.106490",
     "closed_at": "2026-06-04T17:27:22.862534"
+  },
+  {
+    "market_question": "Will Sweden win on 2026-06-04?",
+    "action": "BUY_NO",
+    "entry_price": 0.685,
+    "exit_price": 0.755,
+    "size": 14.6,
+    "usdc_spent": 10.0,
+    "pnl": 1.022,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-04T17:27:06.477192",
+    "closed_at": "2026-06-04T17:28:41.723023"
   }
 ]
