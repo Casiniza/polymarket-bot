@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Counter-Strike: M80 vs NRG (BO3) - IEM Cologne Major Stage 1",
     "opened_at": "2026-06-04T17:51:38.390271"
+  },
+  {
+    "token_id": "54691292596525543147896619523563715443934246059449153456763663460171597928630",
+    "action": "BUY_NO",
+    "entry_price": 0.825,
+    "size": 6.06,
+    "usdc_spent": 5.0,
+    "market_question": "Will Sweden win on 2026-06-04?",
+    "opened_at": "2026-06-04T17:51:40.923607"
   }
 ]
