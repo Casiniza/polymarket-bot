@@ -1,7 +1,7 @@
 """Estrategias de trading. Cada una devuelve una señal: BUY_YES, BUY_NO o HOLD."""
 from dataclasses import dataclass
 from loguru import logger
-from config import STRATEGY, THRESHOLD_BUY_YES, THRESHOLD_BUY_NO, MIN_CONFIDENCE
+from config import STRATEGY, THRESHOLD_BUY_YES, THRESHOLD_BUY_NO, MIN_CONFIDENCE, SAFE_BET_MIN, SAFE_BET_MAX
 
 
 @dataclass
@@ -68,10 +68,35 @@ def contrarian_strategy(market: dict, yes_price: float | None, no_price: float |
     return Signal("HOLD", 0.0, "Sin extremo detectable", token_id_yes or "", yes_price or 0.0)
 
 
+def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
+    """
+    Compra YES cuando el precio está entre SAFE_BET_MIN y SAFE_BET_MAX.
+    Apuesta a eventos que el mercado ya considera muy probables (ej: 0.78 - 0.92).
+    El retorno es bajo pero el riesgo también.
+    """
+    token_id_yes = _get_token_id(market, "YES")
+    token_id_no = _get_token_id(market, "NO")
+
+    if yes_price and SAFE_BET_MIN <= yes_price <= SAFE_BET_MAX and token_id_yes:
+        # Más confianza cuanto más cerca del centro del rango
+        center = (SAFE_BET_MIN + SAFE_BET_MAX) / 2
+        confidence = 1.0 - abs(yes_price - center) / ((SAFE_BET_MAX - SAFE_BET_MIN) / 2)
+        return Signal("BUY_YES", confidence, f"Safe bet YES en {yes_price:.2f} (rango {SAFE_BET_MIN}-{SAFE_BET_MAX})", token_id_yes, yes_price)
+
+    # También busca NO baratos: si YES está muy alto (>SAFE_BET_MAX), el NO es barato
+    if no_price and SAFE_BET_MIN <= no_price <= SAFE_BET_MAX and token_id_no:
+        center = (SAFE_BET_MIN + SAFE_BET_MAX) / 2
+        confidence = 1.0 - abs(no_price - center) / ((SAFE_BET_MAX - SAFE_BET_MIN) / 2)
+        return Signal("BUY_NO", confidence, f"Safe bet NO en {no_price:.2f} (rango {SAFE_BET_MIN}-{SAFE_BET_MAX})", token_id_no, no_price)
+
+    return Signal("HOLD", 0.0, "Fuera del rango seguro", token_id_yes or "", yes_price or 0.0)
+
+
 STRATEGIES = {
     "THRESHOLD": threshold_strategy,
     "MOMENTUM": momentum_strategy,
     "CONTRARIAN": contrarian_strategy,
+    "SAFE_BET": safe_bet_strategy,
 }
 
 
