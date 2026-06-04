@@ -1,7 +1,7 @@
 """Ejecuta órdenes de compra y venta en Polymarket via py-clob-client."""
 from loguru import logger
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import OrderArgs, OrderType, ApiCreds
+from py_clob_client.clob_types import OrderArgs, OrderType, ApiCreds, PartialCreateOrderOptions
 from py_clob_client.constants import POLYGON
 
 import config
@@ -23,7 +23,18 @@ def build_client() -> ClobClient:
     return client
 
 
-def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> bool:
+def _order_options(market: dict) -> PartialCreateOrderOptions:
+    """Extrae tick_size y neg_risk del mercado para firmar correctamente."""
+    tick = str(market.get("orderPriceMinTickSize", "0.01"))
+    # Normaliza a formato válido
+    valid_ticks = {"0.1", "0.01", "0.001", "0.0001"}
+    if tick not in valid_ticks:
+        tick = "0.01"
+    neg_risk = bool(market.get("negRisk", False))
+    return PartialCreateOrderOptions(tick_size=tick, neg_risk=neg_risk)
+
+
+def execute_signal(client: ClobClient, signal: Signal, market_question: str, market: dict = None) -> bool:
     """Coloca una orden de compra y registra la posición."""
     if signal.action == "HOLD":
         return False
@@ -49,7 +60,8 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> 
             size=size,
             side="BUY",
         )
-        resp = client.create_and_post_order(order_args)
+        options = _order_options(market) if market else None
+        resp = client.create_and_post_order(order_args, options)
         logger.success(f"Compra ejecutada: {resp}")
         add_position(signal.token_id, signal.action, signal.price, size,
                      config.MAX_BET_USDC, market_question)
@@ -59,7 +71,7 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> 
         return False
 
 
-def execute_sell(client: ClobClient, position: Position, current_price: float, reason: str) -> bool:
+def execute_sell(client: ClobClient, position: Position, current_price: float, reason: str, market: dict = None) -> bool:
     """Cierra una posición vendiendo los shares."""
     pnl = (current_price - position.entry_price) * position.size
     pnl_pct = (current_price - position.entry_price) / position.entry_price * 100
@@ -83,7 +95,8 @@ def execute_sell(client: ClobClient, position: Position, current_price: float, r
             size=position.size,
             side="SELL",
         )
-        resp = client.create_and_post_order(order_args)
+        options = _order_options(market) if market else None
+        resp = client.create_and_post_order(order_args, options)
         logger.success(f"Venta ejecutada: {resp}")
         remove_position(position.token_id)
         return True

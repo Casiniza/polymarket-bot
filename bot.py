@@ -163,7 +163,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
 
         if signal.action != "HOLD" and signal.token_id not in open_token_ids:
             question = market.get("question", "")
-            ok = execute_signal(client, signal, question)
+            ok = execute_signal(client, signal, question, market)
             if ok:
                 bet_market_ids.add(market_id)
                 bet_match_keys.add(match_key)
