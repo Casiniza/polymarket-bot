@@ -1,6 +1,7 @@
-"""Gestiona posiciones abiertas. Las persiste en positions.json en el repo."""
+"""Gestiona posiciones abiertas. Las persiste en positions.json y sincroniza con GitHub."""
 import json
 import os
+import subprocess
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from loguru import logger
@@ -33,11 +34,31 @@ def load_positions() -> list[Position]:
 
 def save_positions(positions: list[Position]):
     try:
-        with open(POSITIONS_FILE, "w") as f:
+        with open(POSITIONS_FILE, "w", encoding="utf-8") as f:
             json.dump([asdict(p) for p in positions], f, indent=2)
         logger.info(f"Posiciones guardadas: {len(positions)} abiertas")
+        _push_to_github()
     except Exception as e:
         logger.error(f"Error guardando posiciones: {e}")
+
+
+def _push_to_github():
+    """Sube positions.json a GitHub para que el dashboard lo vea."""
+    try:
+        subprocess.run(["git", "add", POSITIONS_FILE], check=True, capture_output=True)
+        result = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            capture_output=True
+        )
+        if result.returncode != 0:  # hay cambios staged
+            subprocess.run(
+                ["git", "commit", "-m", "chore: update positions [skip ci]"],
+                check=True, capture_output=True
+            )
+            subprocess.run(["git", "push"], check=True, capture_output=True)
+            logger.debug("positions.json sincronizado con GitHub")
+    except Exception as e:
+        logger.debug(f"Git push omitido: {e}")
 
 
 def add_position(token_id: str, action: str, entry_price: float, size: float,
