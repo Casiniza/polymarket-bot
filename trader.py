@@ -77,7 +77,8 @@ def execute_sell(client: ClobClient, position: Position, current_price: float, r
     )
 
     if config.DRY_RUN:
-        remove_position(position.token_id)
+        result = "TP" if "TAKE PROFIT" in reason else "SL"
+        remove_position(position.token_id, current_price, result)
         return True
 
     try:
@@ -92,7 +93,8 @@ def execute_sell(client: ClobClient, position: Position, current_price: float, r
             order_type=OrderType.GTC,
         )
         logger.success(f"Venta ejecutada: {resp}")
-        remove_position(position.token_id)
+        result = "TP" if "TAKE PROFIT" in reason else "SL"
+        remove_position(position.token_id, current_price, result)
         return True
     except Exception as e:
         logger.error(f"Error ejecutando venta: {e}")
