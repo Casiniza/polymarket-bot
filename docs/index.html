@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polymarket Bot Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #58a6ff;
+    }
+
+    #status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: #8b949e;
+    }
+
+    #dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #3fb950;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .value {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .positive { color: #3fb950; }
+    .negative { color: #f85149; }
+    .neutral  { color: #e6edf3; }
+    .blue     { color: #58a6ff; }
+
+    h2 {
+      font-size: 0.95rem;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+
+    .section { margin-bottom: 28px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      color: #8b949e;
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #21262d;
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: #161b22; }
+
+    tbody td {
+      padding: 12px 14px;
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-yes  { background: #1f4d2e; color: #3fb950; }
+    .badge-no   { background: #4d1f1f; color: #f85149; }
+
+    .bar-wrap {
+      background: #21262d;
+      border-radius: 4px;
+      height: 6px;
+      width: 100px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #8b949e;
+      font-size: 0.875rem;
+      background: #161b22;
+      border: 1px dashed #30363d;
+      border-radius: 10px;
+    }
+
+    #log {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #8b949e;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #log .log-line { margin-bottom: 4px; }
+    #log .log-buy  { color: #3fb950; }
+    #log .log-sell { color: #f85149; }
+    #log .log-hold { color: #8b949e; }
+    #log .log-info { color: #58a6ff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 Polymarket Bot Dashboard</h1>
+  <div id="status">
+    <div id="dot"></div>
+    <span id="last-update">Cargando...</span>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="label">Posiciones abiertas</div>
+    <div class="value blue" id="stat-open">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">P&L no realizado</div>
+    <div class="value" id="stat-pnl">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">USDC en juego</div>
+    <div class="value neutral" id="stat-usdc">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Mejor posición</div>
+    <div class="value positive" id="stat-best">—</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Posiciones abiertas</h2>
+  <div id="positions-wrap"></div>
+</div>
+
+<div class="section">
+  <h2>Actividad reciente</h2>
+  <div id="log">
+    <div class="log-line log-info">Conectando con el bot...</div>
+  </div>
+</div>
+
+<script>
+  const POSITIONS_URL =
+    "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/positions.json";
+
+  const GAMMA = "https://gamma-api.polymarket.com";
+
+  let logLines = [];
+  let lastPositionIds = new Set();
+
+  function addLog(msg, type = "info") {
+    const now = new Date().toLocaleTimeString("es-ES");
+    logLines.unshift(`<div class="log-line log-${type}">[${now}] ${msg}</div>`);
+    if (logLines.length > 50) logLines.pop();
+    document.getElementById("log").innerHTML = logLines.join("");
+  }
+
+  async function getCurrentPrice(tokenId) {
+    try {
+      const r = await fetch(`https://clob.polymarket.com/midpoint?token_id=${tokenId}`);
+      if (r.ok) {
+        const d = await r.json();
+        return parseFloat(d.mid) || null;
+      }
+    } catch {}
+    return null;
+  }
+
+  async function loadDashboard() {
+    let positions = [];
+    try {
+      const r = await fetch(POSITIONS_URL + "?t=" + Date.now());
+      positions = r.ok ? await r.json() : [];
+    } catch (e) {
+      addLog("Error cargando positions.json", "sell");
+      return;
+    }
+
+    // Detecta cambios
+    const currentIds = new Set(positions.map(p => p.token_id));
+    for (const id of currentIds) {
+      if (!lastPositionIds.has(id)) {
+        const p = positions.find(x => x.token_id === id);
+        if (p) addLog(`Nueva apuesta: ${p.action} — ${p.market_question.slice(0, 50)}`, "buy");
+      }
+    }
+    for (const id of lastPositionIds) {
+      if (!currentIds.has(id)) {
+        addLog(`Posición cerrada (TP/SL)`, "sell");
+      }
+    }
+    lastPositionIds = currentIds;
+
+    // Precios actuales
+    const priced = await Promise.all(positions.map(async p => {
+      const current = await getCurrentPrice(p.token_id);
+      const change = current ? (current - p.entry_price) / p.entry_price : null;
+      const pnl = change !== null ? change * p.usdc_spent : null;
+      return { ...p, current, change, pnl };
+    }));
+
+    // Stats
+    const totalUsdc = priced.reduce((s, p) => s + (p.usdc_spent || 0), 0);
+    const totalPnl  = priced.reduce((s, p) => s + (p.pnl || 0), 0);
+    const bestChange = priced.length
+      ? Math.max(...priced.map(p => p.change ?? -Infinity))
+      : null;
+
+    document.getElementById("stat-open").textContent = priced.length;
+    document.getElementById("stat-usdc").textContent = `$${totalUsdc.toFixed(2)}`;
+
+    const pnlEl = document.getElementById("stat-pnl");
+    pnlEl.textContent = totalPnl >= 0 ? `+$${totalPnl.toFixed(2)}` : `-$${Math.abs(totalPnl).toFixed(2)}`;
+    pnlEl.className = "value " + (totalPnl >= 0 ? "positive" : "negative");
+
+    const bestEl = document.getElementById("stat-best");
+    if (bestChange !== null && isFinite(bestChange)) {
+      bestEl.textContent = `${bestChange >= 0 ? "+" : ""}${(bestChange * 100).toFixed(1)}%`;
+      bestEl.className = "value " + (bestChange >= 0 ? "positive" : "negative");
+    } else {
+      bestEl.textContent = "—";
+      bestEl.className = "value neutral";
+    }
+
+    // Tabla
+    const wrap = document.getElementById("positions-wrap");
+    if (priced.length === 0) {
+      wrap.innerHTML = `<div class="empty">Sin posiciones abiertas. El bot escaneará nuevos mercados en el próximo ciclo.</div>`;
+    } else {
+      const rows = priced.map(p => {
+        const changeStr = p.change !== null
+          ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change * 100).toFixed(1)}%</span>`
+          : "—";
+        const pnlStr = p.pnl !== null
+          ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>`
+          : "—";
+        const badgeClass = p.action === "BUY_YES" ? "badge-yes" : "badge-no";
+        const badgeText = p.action === "BUY_YES" ? "YES" : "NO";
+        const progress = p.change !== null ? Math.min(Math.abs(p.change) / 0.10 * 100, 100) : 0;
+        const barColor = p.change >= 0 ? "#3fb950" : "#f85149";
+        const entryDate = new Date(p.opened_at).toLocaleDateString("es-ES");
+
+        return `<tr>
+          <td>${p.market_question.slice(0, 52)}</td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td>$${(p.entry_price).toFixed(3)}</td>
+          <td>${p.current !== null ? p.current.toFixed(3) : "—"}</td>
+          <td>${changeStr}
+            <div class="bar-wrap"><div class="bar-fill" style="width:${progress}%;background:${barColor}"></div></div>
+          </td>
+          <td>${pnlStr}</td>
+          <td>$${p.usdc_spent.toFixed(2)}</td>
+          <td>${entryDate}</td>
+        </tr>`;
+      }).join("");
+
+      wrap.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Mercado</th><th>Tipo</th><th>Entrada</th><th>Actual</th>
+            <th>Cambio</th><th>P&amp;L</th><th>USDC</th><th>Fecha</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    document.getElementById("last-update").textContent =
+      "Actualizado: " + new Date().toLocaleTimeString("es-ES");
+  }
+
+  loadDashboard();
+  setInterval(loadDashboard, 30000);
+</script>
+</body>
+</html>
