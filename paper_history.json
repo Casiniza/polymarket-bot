@@ -219,5 +219,18 @@
     "paper": true,
     "opened_at": "2026-06-04T21:13:35.359356",
     "closed_at": "2026-06-04T21:13:38.206489"
+  },
+  {
+    "market_question": "Will France vs. C\u00f4te d'Ivoire end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.82,
+    "exit_price": 0.995,
+    "size": 6.1,
+    "usdc_spent": 5.0,
+    "pnl": 1.0675,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-04T21:13:35.359356",
+    "closed_at": "2026-06-04T21:13:39.949336"
   }
 ]
