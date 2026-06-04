@@ -34,14 +34,5 @@
     "usdc_spent": 5.0,
     "market_question": "Will Elon Musk post 220-239 tweets from May 29 to June 5, 2026?",
     "opened_at": "2026-06-04T23:16:38.866040"
-  },
-  {
-    "token_id": "51446084403526877948832877238215887524769430348348848035291558765872824637487",
-    "action": "BUY_NO",
-    "entry_price": 0.505,
-    "size": 9.9,
-    "usdc_spent": 5.0,
-    "market_question": "Atlanta Dream vs. Indiana Fever",
-    "opened_at": "2026-06-04T23:35:03.503255"
   }
 ]
