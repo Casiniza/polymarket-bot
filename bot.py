@@ -27,14 +27,14 @@ MAX_RUNTIME_S    = 4 * 3600  # 4 horas — el cron lanza uno nuevo cada 4h para 
 
 
 def market_ends_by_tomorrow(market: dict) -> bool:
-    """True si el mercado termina hoy o mañana."""
+    """True si el mercado termina en los próximos 2 días."""
     end_str = market.get("endDateIso") or market.get("endDate", "")
     if not end_str:
         return False
     try:
         end_date = datetime.fromisoformat(end_str[:10])
-        tomorrow = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=1)
-        return end_date.date() <= tomorrow.date()
+        cutoff = (datetime.now(timezone.utc) + timedelta(days=7)).replace(tzinfo=None)
+        return end_date.date() <= cutoff.date()
     except (ValueError, TypeError):
         return False
 
@@ -75,7 +75,7 @@ def scan_markets(client, bet_market_ids: set) -> set:
     Busca nuevas oportunidades. Devuelve el set actualizado de market_ids apostados.
     Solo apuesta en mercados que terminan hoy o mañana y no han sido apostados antes.
     """
-    markets = get_active_markets(limit=50)
+    markets = get_active_markets(limit=100)
     open_token_ids = {p.token_id for p in load_positions()}
     new_bets = 0
 
