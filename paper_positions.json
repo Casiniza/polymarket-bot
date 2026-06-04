@@ -34,5 +34,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Sweden win on 2026-06-04?",
     "opened_at": "2026-06-04T17:51:40.923607"
+  },
+  {
+    "token_id": "13604811938720545503887078559811393934964264639216082537286020377781432940003",
+    "action": "BUY_NO",
+    "entry_price": 0.71,
+    "size": 7.04,
+    "usdc_spent": 5.0,
+    "market_question": "Will Slovenia win on 2026-06-04?",
+    "opened_at": "2026-06-04T17:51:43.168898"
   }
 ]
