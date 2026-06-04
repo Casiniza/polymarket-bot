@@ -258,5 +258,18 @@
     "paper": true,
     "opened_at": "2026-06-04T21:51:53.575007",
     "closed_at": "2026-06-04T22:48:33.476837"
+  },
+  {
+    "market_question": "Atlanta Dream vs. Indiana Fever",
+    "action": "BUY_NO",
+    "entry_price": 0.505,
+    "exit_price": 0.595,
+    "size": 9.9,
+    "usdc_spent": 5.0,
+    "pnl": 0.891,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-04T23:31:43.644200",
+    "closed_at": "2026-06-04T23:31:50.029166"
   }
 ]
