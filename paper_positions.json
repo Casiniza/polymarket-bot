@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Elon Musk post 160-179 tweets from May 29 to June 5, 2026?",
     "opened_at": "2026-06-04T21:08:33.557976"
+  },
+  {
+    "token_id": "12608433391396331155306434267062131916555683778362796330808483570875643412554",
+    "action": "BUY_NO",
+    "entry_price": 0.612,
+    "size": 8.17,
+    "usdc_spent": 5.0,
+    "market_question": "Will the price of Bitcoin be above $64,000 on June 5?",
+    "opened_at": "2026-06-04T21:28:45.325186"
   }
 ]
