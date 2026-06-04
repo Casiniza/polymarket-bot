@@ -115,5 +115,18 @@
     "paper": true,
     "opened_at": "2026-06-04T19:27:04.426483",
     "closed_at": "2026-06-04T19:27:08.422533"
+  },
+  {
+    "market_question": "Will France win on 2026-06-04?",
+    "action": "BUY_YES",
+    "entry_price": 0.825,
+    "exit_price": 0.73,
+    "size": 6.06,
+    "usdc_spent": 5.0,
+    "pnl": -0.5757,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-04T18:51:59.557468",
+    "closed_at": "2026-06-04T19:51:50.647832"
   }
 ]
