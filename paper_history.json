@@ -50,5 +50,18 @@
     "paper": true,
     "opened_at": "2026-06-04T17:35:12.397873",
     "closed_at": "2026-06-04T17:46:17.652909"
+  },
+  {
+    "market_question": "Counter-Strike: M80 vs NRG (BO3) - IEM Cologne Major Stage 1",
+    "action": "BUY_YES",
+    "entry_price": 0.76,
+    "exit_price": 0.845,
+    "size": 6.58,
+    "usdc_spent": 5.0,
+    "pnl": 0.5593,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-04T17:51:38.390271",
+    "closed_at": "2026-06-04T17:51:46.650201"
   }
 ]
