@@ -81,7 +81,7 @@ def get_match_key(market: dict) -> str:
 
 
 def market_ends_by_tomorrow(market: dict) -> bool:
-    """True si el mercado termina en los próximos 2 días."""
+    """True si el mercado termina en los próximos 7 días."""
     end_str = market.get("endDateIso") or market.get("endDate", "")
     if not end_str:
         return False
@@ -91,6 +91,24 @@ def market_ends_by_tomorrow(market: dict) -> bool:
         return end_date.date() <= cutoff.date()
     except (ValueError, TypeError):
         return False
+
+
+def market_not_started(market: dict) -> bool:
+    """
+    True si el partido AÚN NO ha empezado.
+    Usa el startDate del mercado — si es en el futuro, el partido no ha comenzado.
+    Si no hay startDate o es ambiguo, permite la apuesta (conservador).
+    """
+    start_str = market.get("startDate") or market.get("startDateIso") or ""
+    if not start_str:
+        return True
+    try:
+        start_dt = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        # El partido no ha empezado si faltan más de 5 minutos para el inicio
+        return start_dt > now + timedelta(minutes=5)
+    except (ValueError, TypeError):
+        return True
 
 
 def get_market_id(market: dict) -> str:
@@ -137,6 +155,10 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
         if not market_ends_by_tomorrow(market):
             continue
         if not is_winner_sports_market(market):
+            continue
+
+        if not market_not_started(market):
+            logger.debug(f"Descartado (partido en curso): {market.get('question','')[:60]}")
             continue
 
         market_id = get_market_id(market)
