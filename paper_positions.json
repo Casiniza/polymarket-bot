@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Sweden win on 2026-06-04?",
     "opened_at": "2026-06-04T17:51:40.923607"
+  },
+  {
+    "token_id": "12608433391396331155306434267062131916555683778362796330808483570875643412554",
+    "action": "BUY_NO",
+    "entry_price": 0.6145,
+    "size": 8.14,
+    "usdc_spent": 5.0,
+    "market_question": "Will the price of Bitcoin be above $64,000 on June 5?",
+    "opened_at": "2026-06-04T18:11:45.012399"
   }
 ]
