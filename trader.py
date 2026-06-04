@@ -1,4 +1,4 @@
-"""Ejecuta órdenes en Polymarket via py-clob-client."""
+"""Ejecuta órdenes de compra y venta en Polymarket via py-clob-client."""
 from loguru import logger
 from py_clob_client.client import ClobClient
 from py_clob_client.clob_types import OrderArgs, OrderType
@@ -6,6 +6,7 @@ from py_clob_client.constants import POLYGON
 
 import config
 from strategy import Signal
+from positions import Position, add_position, remove_position
 
 
 def build_client() -> ClobClient:
@@ -23,23 +24,22 @@ def build_client() -> ClobClient:
 
 
 def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> bool:
-    """
-    Coloca una orden de mercado para la señal dada.
-    Devuelve True si la orden se ejecutó (o simuló) correctamente.
-    """
+    """Coloca una orden de compra y registra la posición."""
     if signal.action == "HOLD":
         return False
 
     size = round(config.MAX_BET_USDC / signal.price, 2) if signal.price > 0 else 0
 
     logger.info(
-        f"{'[DRY RUN] ' if config.DRY_RUN else ''}Orden: {signal.action} | "
+        f"{'[DRY RUN] ' if config.DRY_RUN else ''}COMPRA: {signal.action} | "
         f"Mercado: {market_question[:60]} | "
-        f"Precio: {signal.price:.3f} | Tamaño: {size} | Razón: {signal.reason}"
+        f"Precio: {signal.price:.3f} | Tamaño: {size} shares | Razón: {signal.reason}"
     )
 
     if config.DRY_RUN:
-        logger.info("DRY_RUN=true — orden no enviada.")
+        logger.info("DRY_RUN=true — orden simulada, posición registrada.")
+        add_position(signal.token_id, signal.action, signal.price, size,
+                     config.MAX_BET_USDC, market_question)
         return True
 
     try:
@@ -50,8 +50,43 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str) -> 
             side="BUY",
         )
         resp = client.create_and_post_order(order_args)
-        logger.success(f"Orden ejecutada: {resp}")
+        logger.success(f"Compra ejecutada: {resp}")
+        add_position(signal.token_id, signal.action, signal.price, size,
+                     config.MAX_BET_USDC, market_question)
         return True
     except Exception as e:
-        logger.error(f"Error ejecutando orden: {e}")
+        logger.error(f"Error ejecutando compra: {e}")
+        return False
+
+
+def execute_sell(client: ClobClient, position: Position, current_price: float, reason: str) -> bool:
+    """Cierra una posición vendiendo los shares."""
+    pnl = (current_price - position.entry_price) * position.size
+    pnl_pct = (current_price - position.entry_price) / position.entry_price * 100
+
+    logger.info(
+        f"{'[DRY RUN] ' if config.DRY_RUN else ''}VENTA ({reason}): {position.action} | "
+        f"Mercado: {position.market_question[:60]} | "
+        f"Entrada: {position.entry_price:.3f} → Actual: {current_price:.3f} | "
+        f"P&L: {pnl:+.2f} USDC ({pnl_pct:+.1f}%)"
+    )
+
+    if config.DRY_RUN:
+        logger.info("DRY_RUN=true — venta simulada, posición cerrada.")
+        remove_position(position.token_id)
+        return True
+
+    try:
+        order_args = OrderArgs(
+            token_id=position.token_id,
+            price=current_price,
+            size=position.size,
+            side="SELL",
+        )
+        resp = client.create_and_post_order(order_args)
+        logger.success(f"Venta ejecutada: {resp}")
+        remove_position(position.token_id)
+        return True
+    except Exception as e:
+        logger.error(f"Error ejecutando venta: {e}")
         return False

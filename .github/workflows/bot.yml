@@ -2,9 +2,11 @@ name: Polymarket Bot
 
 on:
   schedule:
-    # Corre cada hora (puedes ajustar el cron)
     - cron: "0 * * * *"
-  workflow_dispatch:   # Permite ejecución manual desde GitHub
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-bot:
@@ -33,13 +35,23 @@ jobs:
           CLOB_API_KEY: ${{ secrets.CLOB_API_KEY }}
           CLOB_API_SECRET: ${{ secrets.CLOB_API_SECRET }}
           CLOB_API_PASSPHRASE: ${{ secrets.CLOB_API_PASSPHRASE }}
-          MAX_BET_USDC: ${{ vars.MAX_BET_USDC || '10.0' }}
+          MAX_BET_USDC: ${{ vars.MAX_BET_USDC || '5.0' }}
           MIN_CONFIDENCE: ${{ vars.MIN_CONFIDENCE || '0.65' }}
           DRY_RUN: ${{ vars.DRY_RUN || 'true' }}
-          STRATEGY: ${{ vars.STRATEGY || 'THRESHOLD' }}
+          STRATEGY: ${{ vars.STRATEGY || 'SAFE_BET' }}
           THRESHOLD_BUY_YES: ${{ vars.THRESHOLD_BUY_YES || '0.30' }}
           THRESHOLD_BUY_NO: ${{ vars.THRESHOLD_BUY_NO || '0.30' }}
+          SAFE_BET_MIN: ${{ vars.SAFE_BET_MIN || '0.78' }}
+          SAFE_BET_MAX: ${{ vars.SAFE_BET_MAX || '0.92' }}
         run: python bot.py
+
+      - name: Guardar posiciones en el repo
+        run: |
+          git config user.name "polymarket-bot"
+          git config user.email "bot@polymarket"
+          git add positions.json || true
+          git diff --cached --quiet || git commit -m "chore: update positions [skip ci]"
+          git push || true
 
       - name: Upload logs
         if: always()
