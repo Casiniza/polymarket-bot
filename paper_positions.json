@@ -16,5 +16,14 @@
     "usdc_spent": 10.0,
     "market_question": "Will Elon Musk post 160-179 tweets from May 29 to June 5, 2026?",
     "opened_at": "2026-06-04T17:31:02.239643"
+  },
+  {
+    "token_id": "109599485636249063897004139234968009327006026277858797854603253881547059697971",
+    "action": "BUY_YES",
+    "entry_price": 0.825,
+    "size": 6.06,
+    "usdc_spent": 5.0,
+    "market_question": "Will France win on 2026-06-04?",
+    "opened_at": "2026-06-04T18:51:59.557468"
   }
 ]
