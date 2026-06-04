@@ -102,5 +102,18 @@
     "paper": true,
     "opened_at": "2026-06-04T18:11:45.012399",
     "closed_at": "2026-06-04T18:14:59.175416"
+  },
+  {
+    "market_question": "LoL: \u2060Movistar KOI F\u00e9nix vs UCAM Esports Club (BO5) - LES Playoffs",
+    "action": "BUY_YES",
+    "entry_price": 0.845,
+    "exit_price": 0.715,
+    "size": 5.92,
+    "usdc_spent": 5.0,
+    "pnl": -0.7696,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-04T19:27:04.426483",
+    "closed_at": "2026-06-04T19:27:08.422533"
   }
 ]
