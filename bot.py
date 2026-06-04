@@ -249,10 +249,12 @@ def market_ends_today(market: dict) -> bool:
 
 
 def is_any_active_market(market: dict) -> bool:
-    """Para paper trading — acepta cualquier mercado activo (deportes + otros)."""
+    """Para paper trading — acepta cualquier mercado activo excepto política y O/U."""
     question = market.get("question", "").lower()
-    # Solo excluye política
     if any(kw in question for kw in POLITICS_KEYWORDS):
+        return False
+    # Excluye O/U y spreads — demasiado volátiles
+    if any(kw in question for kw in NON_WINNER_KEYWORDS):
         return False
     return True
 
