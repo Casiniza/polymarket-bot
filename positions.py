@@ -35,7 +35,7 @@ def load_positions() -> list[Position]:
 
 def save_positions(positions: list[Position]):
     try:
-        with open(POSITIONS_FILE, "w", encoding="utf-8") as f:
+        with open(POSITIONS_FILE, "w", encoding="utf-8", newline="\n") as f:
             json.dump([asdict(p) for p in positions], f, indent=2)
         logger.info(f"Posiciones guardadas: {len(positions)} abiertas")
         _push_to_github([POSITIONS_FILE])
@@ -70,7 +70,7 @@ def record_closed(position: Position, exit_price: float, result: str):
         "closed_at": datetime.utcnow().isoformat(),
     })
     try:
-        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        with open(HISTORY_FILE, "w", encoding="utf-8", newline="\n") as f:
             json.dump(history, f, indent=2)
         _push_to_github([HISTORY_FILE])
     except Exception as e:
