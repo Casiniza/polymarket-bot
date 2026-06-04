@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will C\u00f4te d'Ivoire win on 2026-06-04?",
     "opened_at": "2026-06-04T21:08:31.092044"
+  },
+  {
+    "token_id": "4079990471612569454846975750698713760388936444543601911989483864480643889770",
+    "action": "BUY_NO",
+    "entry_price": 0.8965,
+    "size": 5.58,
+    "usdc_spent": 5.0,
+    "market_question": "Will Elon Musk post 160-179 tweets from May 29 to June 5, 2026?",
+    "opened_at": "2026-06-04T21:08:33.557976"
   }
 ]
