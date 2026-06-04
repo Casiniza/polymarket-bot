@@ -275,10 +275,12 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             # Paper: solo mercados que terminan hoy, cualquier categoría excepto política
             if not market_ends_today(market): continue
             if not is_any_active_market(market): continue
-            # Paper: permite partidos en curso (más oportunidades)
-            # Paper: acepta mercados con menos liquidez
+            # Descarta mercados ya resueltos (precio en 0.99+ o 0.01-)
+            y_p, n_p = get_prices_from_market(market)
+            if y_p is None: continue
+            if y_p >= 0.99 or y_p <= 0.01: continue  # ya resuelto
             vol = float(market.get("volume24hr") or 0)
-            if vol < 1000: continue  # mínimo $1k en paper
+            if vol < 1000: continue
         else:
             # Real: filtros estrictos
             if not market_ends_by_tomorrow(market): continue
