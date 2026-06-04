@@ -106,5 +106,14 @@
     "usdc_spent": 10.0,
     "market_question": "Counter-Strike: M80 vs NRG (BO3) - IEM Cologne Major Stage 1",
     "opened_at": "2026-06-04T17:27:01.668780"
+  },
+  {
+    "token_id": "49843526852929026774812741256424335239161759452507320406339549030654320281653",
+    "action": "BUY_NO",
+    "entry_price": 0.67,
+    "size": 14.93,
+    "usdc_spent": 10.0,
+    "market_question": "Slovenia vs. Cyprus: O/U 2.5",
+    "opened_at": "2026-06-04T17:27:04.106490"
   }
 ]
