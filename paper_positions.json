@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will France win on 2026-06-04?",
     "opened_at": "2026-06-04T18:51:59.557468"
+  },
+  {
+    "token_id": "62855922599024866129111239707188393578459168335067318437505326961160612616900",
+    "action": "BUY_YES",
+    "entry_price": 0.845,
+    "size": 5.92,
+    "usdc_spent": 5.0,
+    "market_question": "LoL: \u2060Movistar KOI F\u00e9nix vs UCAM Esports Club (BO5) - LES Playoffs",
+    "opened_at": "2026-06-04T19:27:04.426483"
   }
 ]
