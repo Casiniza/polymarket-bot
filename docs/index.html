@@ -245,7 +245,11 @@
     let positions = [];
     try {
       const r = await fetch(POSITIONS_URL + "?t=" + Date.now());
-      positions = r.ok ? await r.json() : [];
+      if (r.ok) {
+        // Strip UTF-8 BOM if present, then parse
+        const text = (await r.text()).replace(/^﻿/, "");
+        positions = text.trim() ? JSON.parse(text) : [];
+      }
     } catch (e) {
       addLog("Error cargando positions.json", "sell");
       return;
