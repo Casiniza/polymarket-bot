@@ -68,40 +68,40 @@
 <body>
 
 <header>
-  <h1>🤖 Polymarket Bot Dashboard</h1>
+  <h1>ðŸ¤– Polymarket Bot Dashboard</h1>
   <div style="display:flex;align-items:center;gap:16px;">
     <div id="status">
       <div id="dot"></div>
-      <span id="bot-status">⚫ Bot desconectado</span>
+      <span id="bot-status">âš« Bot desconectado</span>
     </div>
-    <span id="last-update" style="font-size:0.75rem;color:#8b949e;">—</span>
+    <span id="last-update" style="font-size:0.75rem;color:#8b949e;">â€”</span>
   </div>
 </header>
 
 <!-- Scan countdown -->
 <div class="section" style="margin-bottom:20px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-    <div class="scan-label">Próximo scan: <span id="scan-countdown">5:00</span></div>
+    <div class="scan-label">PrÃ³ximo scan: <span id="scan-countdown">5:00</span></div>
   </div>
   <div class="scan-bar-wrap"><div class="scan-bar-fill" id="scan-bar" style="width:100%"></div></div>
 </div>
 
 <!-- Tabs -->
 <div class="tabs">
-  <div class="tab tab-real active" onclick="switchTab('real')">💰 Apuesta Real</div>
-  <div class="tab tab-paper" onclick="switchTab('paper')">📝 Paper Trading</div>
-  <div class="tab" onclick="switchTab('logs')">📋 Logs</div>
+  <div class="tab tab-real active" onclick="switchTab('real')">ðŸ’° Apuesta Real</div>
+  <div class="tab tab-paper" onclick="switchTab('paper')">ðŸ“ Paper Trading</div>
+  <div class="tab" onclick="switchTab('logs')">ðŸ“‹ Logs</div>
 </div>
 
 <!-- TAB: REAL -->
 <div id="tab-real" class="tab-content active">
   <div class="stats">
-    <div class="stat-card"><div class="label">Posiciones abiertas</div><div class="value blue" id="stat-open">—</div></div>
-    <div class="stat-card"><div class="label">P&L no realizado</div><div class="value" id="stat-pnl">—</div></div>
-    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="stat-realized">—</div></div>
-    <div class="stat-card"><div class="label">USDC en juego</div><div class="value neutral" id="stat-usdc">—</div></div>
-    <div class="stat-card"><div class="label">Mejor posición</div><div class="value" id="stat-best">—</div></div>
-    <div class="stat-card"><div class="label">Win rate</div><div class="value blue" id="stat-winrate">—</div></div>
+    <div class="stat-card"><div class="label">Posiciones abiertas</div><div class="value blue" id="stat-open">â€”</div></div>
+    <div class="stat-card"><div class="label">Ganancia potencial</div><div class="value" id="stat-pnl">â€”</div></div>
+    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="stat-realized">â€”</div></div>
+    <div class="stat-card"><div class="label">USDC en juego</div><div class="value neutral" id="stat-usdc">â€”</div></div>
+    <div class="stat-card"><div class="label">Mejor posiciÃ³n</div><div class="value" id="stat-best">â€”</div></div>
+    <div class="stat-card"><div class="label">Win rate</div><div class="value blue" id="stat-winrate">â€”</div></div>
   </div>
 
   <div class="section">
@@ -124,16 +124,16 @@
 <!-- TAB: PAPER -->
 <div id="tab-paper" class="tab-content">
   <div class="stats">
-    <div class="stat-card"><div class="label">Posiciones paper</div><div class="value orange" id="paper-stat-open">—</div></div>
-    <div class="stat-card"><div class="label">P&L no realizado</div><div class="value" id="paper-stat-pnl">—</div></div>
-    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="paper-stat-realized">—</div></div>
-    <div class="stat-card"><div class="label">USDC simulado en juego</div><div class="value neutral" id="paper-stat-usdc">—</div></div>
-    <div class="stat-card"><div class="label">Mejor posición</div><div class="value" id="paper-stat-best">—</div></div>
-    <div class="stat-card"><div class="label">Win rate</div><div class="value orange" id="paper-stat-winrate">—</div></div>
+    <div class="stat-card"><div class="label">Posiciones paper</div><div class="value orange" id="paper-stat-open">â€”</div></div>
+    <div class="stat-card"><div class="label">Ganancia potencial</div><div class="value" id="paper-stat-pnl">â€”</div></div>
+    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="paper-stat-realized">â€”</div></div>
+    <div class="stat-card"><div class="label">USDC simulado en juego</div><div class="value neutral" id="paper-stat-usdc">â€”</div></div>
+    <div class="stat-card"><div class="label">Mejor posiciÃ³n</div><div class="value" id="paper-stat-best">â€”</div></div>
+    <div class="stat-card"><div class="label">Win rate</div><div class="value orange" id="paper-stat-winrate">â€”</div></div>
   </div>
 
   <div class="section">
-    <h2>Posiciones abiertas <span class="paper-badge">SIMULACIÓN</span></h2>
+    <h2>Posiciones abiertas <span class="paper-badge">SIMULACIÃ“N</span></h2>
     <div id="paper-positions-wrap"></div>
   </div>
 
@@ -199,7 +199,7 @@
     try {
       const r = await fetch(url + "?t=" + Date.now());
       if (!r.ok) return [];
-      const text = (await r.text()).replace(/^﻿/, "");
+      const text = (await r.text()).replace(/^ï»¿/, "");
       return text.trim() ? JSON.parse(text) : [];
     } catch { return []; }
   }
@@ -219,8 +219,8 @@
       return;
     }
     const rows = priced.map(p => {
-      const changeStr = p.change !== null ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change*100).toFixed(1)}%</span>` : "—";
-      const pnlStr = p.pnl !== null ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>` : "—";
+      const changeStr = p.change !== null ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change*100).toFixed(1)}%</span>` : "â€”";
+      const pnlStr = p.pnl !== null ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>` : "â€”";
       const badgeClass = p.action === "BUY_YES" ? "badge-yes" : "badge-no";
       const progress = p.change !== null ? Math.min(Math.abs(p.change) / 0.10 * 100, 100) : 0;
       const barColor = (p.change ?? 0) >= 0 ? "#3fb950" : "#f85149";
@@ -228,7 +228,7 @@
         <td>${p.market_question.slice(0,52)}</td>
         <td><span class="badge ${badgeClass}">${p.action === "BUY_YES" ? "YES" : "NO"}</span></td>
         <td>$${p.entry_price.toFixed(3)}</td>
-        <td>${p.current !== null ? p.current.toFixed(3) : "—"}</td>
+        <td>${p.current !== null ? p.current.toFixed(3) : "â€”"}</td>
         <td>${changeStr}<div class="bar-wrap"><div class="bar-fill" style="width:${progress}%;background:${barColor}"></div></div></td>
         <td>${pnlStr}</td>
         <td>$${p.usdc_spent.toFixed(2)}</td>
@@ -240,7 +240,7 @@
 
   function renderHistoryTable(history, wrapId) {
     const wrap = document.getElementById(wrapId);
-    if (!history.length) { wrap.innerHTML = `<div class="empty">Sin operaciones cerradas aún.</div>`; return; }
+    if (!history.length) { wrap.innerHTML = `<div class="empty">Sin operaciones cerradas aÃºn.</div>`; return; }
     const rows = [...history].reverse().slice(0, 20).map(h => {
       const pnlClass = h.pnl >= 0 ? "positive" : "negative";
       const pnlStr = `${h.pnl >= 0 ? "+" : ""}$${Math.abs(h.pnl).toFixed(2)}`;
@@ -261,7 +261,7 @@
     if (!history.length) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.fillStyle = "#8b949e"; ctx.font = "13px Segoe UI"; ctx.textAlign = "center";
-      ctx.fillText("Sin historial aún", ctx.canvas.width / 2, 80);
+      ctx.fillText("Sin historial aÃºn", ctx.canvas.width / 2, 80);
       return null;
     }
     let cum = 0;
@@ -292,7 +292,7 @@
     const currentIds = new Set(positions.map(p => p.token_id));
     for (const id of currentIds) if (!lastPositionIds.has(id)) {
       const p = positions.find(x => x.token_id === id);
-      if (p) addLog(`Nueva apuesta: ${p.action} — ${p.market_question.slice(0,50)}`, "#3fb950");
+      if (p) addLog(`Nueva apuesta: ${p.action} â€” ${p.market_question.slice(0,50)}`, "#3fb950");
     }
     lastPositionIds = currentIds;
 
@@ -322,8 +322,8 @@
     if (bestChange !== null && isFinite(bestChange)) {
       bestEl.textContent = `${bestChange >= 0 ? "+" : ""}${(bestChange*100).toFixed(1)}%`;
       bestEl.className = "value " + (bestChange >= 0 ? "positive" : "negative");
-    } else { bestEl.textContent = "—"; bestEl.className = "value neutral"; }
-    document.getElementById("stat-winrate").textContent = winRate !== null ? `${winRate}%` : "—";
+    } else { bestEl.textContent = "â€”"; bestEl.className = "value neutral"; }
+    document.getElementById("stat-winrate").textContent = winRate !== null ? `${winRate}%` : "â€”";
 
     renderPositionsTable(priced, "positions-wrap");
     renderHistoryTable(history, "history-wrap");
@@ -361,8 +361,8 @@
     if (bestChange !== null && isFinite(bestChange)) {
       pbEl.textContent = `${bestChange >= 0 ? "+" : ""}${(bestChange*100).toFixed(1)}%`;
       pbEl.className = "value " + (bestChange >= 0 ? "positive" : "negative");
-    } else { pbEl.textContent = "—"; pbEl.className = "value neutral"; }
-    document.getElementById("paper-stat-winrate").textContent = winRate !== null ? `${winRate}%` : "—";
+    } else { pbEl.textContent = "â€”"; pbEl.className = "value neutral"; }
+    document.getElementById("paper-stat-winrate").textContent = winRate !== null ? `${winRate}%` : "â€”";
 
     renderPositionsTable(priced, "paper-positions-wrap");
     renderHistoryTable(history, "paper-history-wrap");
@@ -382,7 +382,7 @@
       const r = await fetch(LOG_SERVER + "?t=" + Date.now(), { signal: AbortSignal.timeout(1500) });
       if (r.ok) {
         const logs = await r.json();
-        document.getElementById("bot-status").innerHTML = "🟢 Bot activo (local)";
+        document.getElementById("bot-status").innerHTML = "ðŸŸ¢ Bot activo (local)";
         document.getElementById("bot-status").style.color = "#3fb950";
         if (logs.length > lastLogCount) {
           logs.slice(lastLogCount).forEach(l => {
@@ -393,7 +393,7 @@
         }
       } else throw new Error();
     } catch {
-      document.getElementById("bot-status").innerHTML = "⚫ Bot desconectado";
+      document.getElementById("bot-status").innerHTML = "âš« Bot desconectado";
       document.getElementById("bot-status").style.color = "#8b949e";
     }
   }
