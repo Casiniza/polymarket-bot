@@ -234,9 +234,32 @@ def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bo
     return True
 
 
+def market_ends_today(market: dict) -> bool:
+    """True si el mercado termina hoy (para paper trading agresivo)."""
+    end_str = market.get("endDateIso") or market.get("endDate", "")
+    if not end_str:
+        return False
+    try:
+        end_date = datetime.fromisoformat(end_str[:10])
+        today = datetime.now(timezone.utc).date()
+        tomorrow = today + timedelta(days=1)
+        return end_date.date() <= tomorrow
+    except (ValueError, TypeError):
+        return False
+
+
+def is_any_active_market(market: dict) -> bool:
+    """Para paper trading — acepta cualquier mercado activo (deportes + otros)."""
+    question = market.get("question", "").lower()
+    # Solo excluye política
+    if any(kw in question for kw in POLITICS_KEYWORDS):
+        return False
+    return True
+
+
 def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
                  price_history: dict, paper: bool = False) -> tuple[set, set]:
-    """Busca nuevas oportunidades. paper=True simula sin ejecutar órdenes reales."""
+    """Busca nuevas oportunidades. paper=True usa reglas más agresivas sin dinero real."""
 
     if not paper and daily_loss_exceeded():
         logger.info("Scan omitido — límite de pérdida diaria alcanzado.")
@@ -248,12 +271,22 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
     new_bets = 0
 
     for market in markets:
-        if not market_ends_by_tomorrow(market): continue
-        if not is_winner_sports_market(market): continue
-        if not market_not_started(market):
-            logger.debug(f"Descartado (en curso): {market.get('question','')[:55]}")
-            continue
-        if not has_enough_liquidity(market): continue
+        if paper:
+            # Paper: solo mercados que terminan hoy, cualquier categoría excepto política
+            if not market_ends_today(market): continue
+            if not is_any_active_market(market): continue
+            # Paper: permite partidos en curso (más oportunidades)
+            # Paper: acepta mercados con menos liquidez
+            vol = float(market.get("volume24hr") or 0)
+            if vol < 1000: continue  # mínimo $1k en paper
+        else:
+            # Real: filtros estrictos
+            if not market_ends_by_tomorrow(market): continue
+            if not is_winner_sports_market(market): continue
+            if not market_not_started(market):
+                logger.debug(f"Descartado (en curso): {market.get('question','')[:55]}")
+                continue
+            if not has_enough_liquidity(market): continue
 
         market_id = get_market_id(market)
         if market_id in bet_market_ids: continue
@@ -276,9 +309,10 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
                 {"outcome": "NO",  "token_id": clob_ids[1]},
             ]
 
-        # Inyecta historial de precios en el market para que MOMENTUM lo use
+        # Inyecta metadatos en el market para estrategias
         hist_prices = [p for _, p in price_history.get(market_id, [])]
         market["_price_history"] = hist_prices
+        market["_paper"] = paper
 
         signal = evaluate(market, yes_price, no_price)
 

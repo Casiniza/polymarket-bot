@@ -25,14 +25,18 @@ def is_world_cup(market: dict) -> bool:
     q = market.get("question", "").lower()
     return any(kw in q for kw in WC_KEYWORDS)
 
-def get_safe_range(market: dict) -> tuple[float, float]:
-    """Devuelve el rango de precio para safe bet, ampliado para el Mundial."""
+def get_safe_range(market: dict, paper: bool = False) -> tuple[float, float]:
+    """Devuelve el rango de precio para safe bet."""
+    if paper:
+        return config.PAPER_SAFE_BET_MIN, config.PAPER_SAFE_BET_MAX
     if is_world_cup(market):
         return config.WC_SAFE_BET_MIN, config.WC_SAFE_BET_MAX
     return config.SAFE_BET_MIN, config.SAFE_BET_MAX
 
-def get_bet_size(market: dict) -> float:
-    """Devuelve el tamaño de apuesta, mayor para el Mundial."""
+def get_bet_size(market: dict, paper: bool = False) -> float:
+    """Devuelve el tamaño de apuesta."""
+    if paper:
+        return config.PAPER_BET_USDC
     if is_world_cup(market):
         logger.info(f"⚽ Mundial detectado — apuesta aumentada a ${config.WC_BET_USDC}")
         return config.WC_BET_USDC
@@ -103,7 +107,8 @@ def contrarian_strategy(market: dict, yes_price: float | None, no_price: float |
 def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
     token_id_yes = _get_token_id(market, "YES")
     token_id_no  = _get_token_id(market, "NO")
-    s_min, s_max = get_safe_range(market)
+    paper = market.get("_paper", False)
+    s_min, s_max = get_safe_range(market, paper)
 
     if yes_price and s_min <= yes_price <= s_max and token_id_yes:
         confidence = 0.7 + 0.3 * (yes_price - s_min) / (s_max - s_min)
