@@ -7,8 +7,8 @@ Uso:
     python generate_credentials.py
 """
 import os
-from py_clob_client.client import ClobClient
-from py_clob_client.constants import POLYGON
+from py_clob_client_v2 import ClobClient
+from py_clob_client_v2.constants import POLYGON
 
 private_key = input("Pega tu PRIVATE KEY de Polygon (sin 0x si la tiene): ").strip()
 if private_key.startswith("0x"):

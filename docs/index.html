@@ -126,6 +126,30 @@
   </div>
 </div>
 
+<!-- Paper trading section -->
+<div class="section">
+  <h2>📝 Paper Trading (simulación paralela)</h2>
+  <div class="stats" style="margin-bottom:14px;">
+    <div class="stat-card">
+      <div class="label">Posiciones paper</div>
+      <div class="value blue" id="paper-stat-open">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">P&L paper no realizado</div>
+      <div class="value" id="paper-stat-pnl">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">P&L paper realizado</div>
+      <div class="value" id="paper-stat-realized">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Win rate paper</div>
+      <div class="value blue" id="paper-stat-winrate">—</div>
+    </div>
+  </div>
+  <div id="paper-positions-wrap"></div>
+</div>
+
 <!-- Activity log -->
 <div class="section">
   <h2>Actividad reciente</h2>
@@ -134,7 +158,9 @@
 
 <script>
   const POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/positions.json";
-  const HISTORY_URL   = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/history.json";
+  const HISTORY_URL        = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/history.json";
+  const PAPER_POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_positions.json";
+  const PAPER_HISTORY_URL   = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_history.json";
   const LOG_SERVER    = "http://localhost:7373";
 
   let logLines = [];
@@ -355,8 +381,58 @@
     renderHistory(history);
     renderChart(history);
 
+    // --- Paper trading ---
+    await loadPaperDashboard();
+
     document.getElementById("last-update").textContent =
       "Actualizado: " + new Date().toLocaleTimeString("es-ES");
+  }
+
+  async function loadPaperDashboard() {
+    let paperPositions = [], paperHistory = [];
+    try {
+      const r1 = await fetch(PAPER_POSITIONS_URL + "?t=" + Date.now());
+      if (r1.ok) { const t = (await r1.text()).replace(/^﻿/, ""); paperPositions = t.trim() ? JSON.parse(t) : []; }
+      const r2 = await fetch(PAPER_HISTORY_URL + "?t=" + Date.now());
+      if (r2.ok) { const t = (await r2.text()).replace(/^﻿/, ""); paperHistory = t.trim() ? JSON.parse(t) : []; }
+    } catch {}
+
+    const priced = await Promise.all(paperPositions.map(async p => {
+      const current = await getCurrentPrice(p.token_id);
+      const change = current ? (current - p.entry_price) / p.entry_price : null;
+      const pnl = change !== null ? change * p.usdc_spent : null;
+      return { ...p, current, change, pnl };
+    }));
+
+    const totalPnl = priced.reduce((s, p) => s + (p.pnl || 0), 0);
+    const realizedPnl = paperHistory.reduce((s, h) => s + (h.pnl || 0), 0);
+    const wins = paperHistory.filter(h => h.pnl > 0).length;
+    const winRate = paperHistory.length ? Math.round(wins / paperHistory.length * 100) : null;
+
+    document.getElementById("paper-stat-open").textContent = priced.length;
+    const ppnlEl = document.getElementById("paper-stat-pnl");
+    ppnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`;
+    ppnlEl.className = "value " + (totalPnl >= 0 ? "positive" : "negative");
+    const prealEl = document.getElementById("paper-stat-realized");
+    prealEl.textContent = paperHistory.length ? `${realizedPnl >= 0 ? "+" : ""}$${realizedPnl.toFixed(2)}` : "$0.00";
+    prealEl.className = "value " + (realizedPnl >= 0 ? "positive" : "negative");
+    document.getElementById("paper-stat-winrate").textContent = winRate !== null ? `${winRate}%` : "—";
+
+    const wrap = document.getElementById("paper-positions-wrap");
+    if (!priced.length) {
+      wrap.innerHTML = `<div class="empty" style="border-color:#30363d;color:#8b949e">Sin posiciones paper abiertas.</div>`;
+    } else {
+      const rows = priced.map(p => {
+        const changeStr = p.change !== null ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change*100).toFixed(1)}%</span>` : "—";
+        const pnlStr = p.pnl !== null ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>` : "—";
+        const badgeClass = p.action === "BUY_YES" ? "badge-yes" : "badge-no";
+        return `<tr><td>${p.market_question.slice(0,52)}</td>
+          <td><span class="badge ${badgeClass}">${p.action === "BUY_YES" ? "YES" : "NO"}</span></td>
+          <td>$${p.entry_price.toFixed(3)}</td><td>${p.current ? p.current.toFixed(3) : "—"}</td>
+          <td>${changeStr}</td><td>${pnlStr}</td></tr>`;
+      }).join("");
+      wrap.innerHTML = `<table><thead><tr><th>Mercado</th><th>Tipo</th><th>Entrada</th><th>Actual</th><th>Cambio</th><th>P&L</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
   }
 
   // --- Live logs desde servidor local del bot ---

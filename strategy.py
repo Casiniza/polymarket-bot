@@ -1,7 +1,11 @@
-"""Estrategias de trading. Cada una devuelve una señal: BUY_YES, BUY_NO o HOLD."""
+"""
+Estrategias de trading.
+- Soporta múltiples estrategias simultáneas: elige la de mayor confianza.
+- Detección automática del Mundial para ajustar parámetros.
+"""
 from dataclasses import dataclass
 from loguru import logger
-from config import STRATEGY, THRESHOLD_BUY_YES, THRESHOLD_BUY_NO, MIN_CONFIDENCE, SAFE_BET_MIN, SAFE_BET_MAX
+import config
 
 
 @dataclass
@@ -11,109 +15,141 @@ class Signal:
     reason: str
     token_id: str
     price: float
+    strategy: str = ""   # nombre de la estrategia que generó la señal
 
+
+# --- Detección Mundial ---
+WC_KEYWORDS = ["world cup", "fifa", "mundial", "coupe du monde"]
+
+def is_world_cup(market: dict) -> bool:
+    q = market.get("question", "").lower()
+    return any(kw in q for kw in WC_KEYWORDS)
+
+def get_safe_range(market: dict) -> tuple[float, float]:
+    """Devuelve el rango de precio para safe bet, ampliado para el Mundial."""
+    if is_world_cup(market):
+        return config.WC_SAFE_BET_MIN, config.WC_SAFE_BET_MAX
+    return config.SAFE_BET_MIN, config.SAFE_BET_MAX
+
+def get_bet_size(market: dict) -> float:
+    """Devuelve el tamaño de apuesta, mayor para el Mundial."""
+    if is_world_cup(market):
+        logger.info(f"⚽ Mundial detectado — apuesta aumentada a ${config.WC_BET_USDC}")
+        return config.WC_BET_USDC
+    return config.MAX_BET_USDC
+
+
+# --- Estrategias ---
 
 def threshold_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
-    """
-    Compra YES si el precio es anormalmente bajo (mercado subestima el evento)
-    o NO si el precio de YES es anormalmente alto.
-    """
     token_id_yes = _get_token_id(market, "YES")
-    token_id_no = _get_token_id(market, "NO")
+    token_id_no  = _get_token_id(market, "NO")
+    t_yes = config.THRESHOLD_BUY_YES
+    t_no  = config.THRESHOLD_BUY_NO
 
-    if yes_price and yes_price < THRESHOLD_BUY_YES and token_id_yes:
-        confidence = min(1.0, (THRESHOLD_BUY_YES - yes_price) / THRESHOLD_BUY_YES + 0.5)
-        return Signal("BUY_YES", confidence, f"YES price {yes_price:.2f} < threshold {THRESHOLD_BUY_YES}", token_id_yes, yes_price)
-
-    if no_price and no_price < THRESHOLD_BUY_NO and token_id_no:
-        confidence = min(1.0, (THRESHOLD_BUY_NO - no_price) / THRESHOLD_BUY_NO + 0.5)
-        return Signal("BUY_NO", confidence, f"NO price {no_price:.2f} < threshold {THRESHOLD_BUY_NO}", token_id_no, no_price)
-
-    return Signal("HOLD", 0.0, "Sin oportunidad", token_id_yes or "", yes_price or 0.0)
+    if yes_price and yes_price < t_yes and token_id_yes:
+        confidence = min(1.0, (t_yes - yes_price) / t_yes + 0.5)
+        return Signal("BUY_YES", confidence, f"YES {yes_price:.2f} < {t_yes}", token_id_yes, yes_price, "THRESHOLD")
+    if no_price and no_price < t_no and token_id_no:
+        confidence = min(1.0, (t_no - no_price) / t_no + 0.5)
+        return Signal("BUY_NO", confidence, f"NO {no_price:.2f} < {t_no}", token_id_no, no_price, "THRESHOLD")
+    return Signal("HOLD", 0.0, "Sin oportunidad", token_id_yes or "", yes_price or 0.0, "THRESHOLD")
 
 
 def momentum_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
     """
-    Compra en la dirección del momentum reciente.
-    Requiere histórico de precios — aquí usa la diferencia bid/ask como proxy.
+    Detecta momentum usando el historial de precios del mercado.
+    Si el precio ha subido consistentemente en la última hora, compra en esa dirección.
     """
     token_id_yes = _get_token_id(market, "YES")
-    if not yes_price or not no_price or not token_id_yes:
-        return Signal("HOLD", 0.0, "Datos insuficientes", "", 0.0)
+    token_id_no  = _get_token_id(market, "NO")
+    if not yes_price or not no_price:
+        return Signal("HOLD", 0.0, "Datos insuficientes", "", 0.0, "MOMENTUM")
 
+    price_history = market.get("_price_history", [])  # lista de precios recientes [más antiguo ... más nuevo]
+
+    if len(price_history) >= 3:
+        # Comprueba tendencia: si los últimos 3 precios son ascendentes/descendentes
+        trend = price_history[-1] - price_history[0]
+        if trend > 0.05 and yes_price > 0.5 and token_id_yes:
+            confidence = min(0.95, 0.65 + trend)
+            return Signal("BUY_YES", confidence, f"Momentum YES +{trend:.2f} en {len(price_history)} obs.", token_id_yes, yes_price, "MOMENTUM")
+        if trend < -0.05 and no_price > 0.5 and token_id_no:
+            confidence = min(0.95, 0.65 + abs(trend))
+            return Signal("BUY_NO", confidence, f"Momentum NO {trend:.2f} en {len(price_history)} obs.", token_id_no, no_price, "MOMENTUM")
+
+    # Fallback: spread como proxy de momentum
     spread = abs(yes_price - no_price)
-    # Si spread es grande, hay momentum en la dirección dominante
-    if yes_price > no_price and spread > 0.1:
-        return Signal("BUY_YES", min(spread, 1.0), f"Momentum YES (spread {spread:.2f})", token_id_yes, yes_price)
-    if no_price > yes_price and spread > 0.1:
-        token_id_no = _get_token_id(market, "NO")
-        return Signal("BUY_NO", min(spread, 1.0), f"Momentum NO (spread {spread:.2f})", token_id_no or "", no_price)
+    if yes_price > no_price and spread > 0.15 and token_id_yes:
+        return Signal("BUY_YES", min(spread, 0.9), f"Spread momentum YES ({spread:.2f})", token_id_yes, yes_price, "MOMENTUM")
+    if no_price > yes_price and spread > 0.15 and token_id_no:
+        return Signal("BUY_NO", min(spread, 0.9), f"Spread momentum NO ({spread:.2f})", token_id_no, no_price, "MOMENTUM")
 
-    return Signal("HOLD", 0.0, "Sin momentum claro", token_id_yes, yes_price)
+    return Signal("HOLD", 0.0, "Sin momentum claro", token_id_yes or "", yes_price, "MOMENTUM")
 
 
 def contrarian_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
-    """Va en contra del mercado cuando el consenso parece extremo."""
     token_id_yes = _get_token_id(market, "YES")
-    token_id_no = _get_token_id(market, "NO")
-
+    token_id_no  = _get_token_id(market, "NO")
     if yes_price and yes_price > 0.85 and token_id_no:
         confidence = (yes_price - 0.85) / 0.15
-        return Signal("BUY_NO", confidence, f"YES sobrecomprado en {yes_price:.2f}", token_id_no, 1 - yes_price)
-
+        return Signal("BUY_NO", confidence, f"YES sobrecomprado {yes_price:.2f}", token_id_no, 1 - yes_price, "CONTRARIAN")
     if yes_price and yes_price < 0.15 and token_id_yes:
         confidence = (0.15 - yes_price) / 0.15
-        return Signal("BUY_YES", confidence, f"YES sobrevendido en {yes_price:.2f}", token_id_yes, yes_price)
-
-    return Signal("HOLD", 0.0, "Sin extremo detectable", token_id_yes or "", yes_price or 0.0)
+        return Signal("BUY_YES", confidence, f"YES sobrevendido {yes_price:.2f}", token_id_yes, yes_price, "CONTRARIAN")
+    return Signal("HOLD", 0.0, "Sin extremo", token_id_yes or "", yes_price or 0.0, "CONTRARIAN")
 
 
 def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
-    """
-    Compra YES cuando el precio está entre SAFE_BET_MIN y SAFE_BET_MAX.
-    Apuesta a eventos que el mercado ya considera muy probables (ej: 0.78 - 0.92).
-    El retorno es bajo pero el riesgo también.
-    """
     token_id_yes = _get_token_id(market, "YES")
-    token_id_no = _get_token_id(market, "NO")
+    token_id_no  = _get_token_id(market, "NO")
+    s_min, s_max = get_safe_range(market)
 
-    if yes_price and SAFE_BET_MIN <= yes_price <= SAFE_BET_MAX and token_id_yes:
-        # Confianza proporcional a qué tan dentro del rango está el precio
-        confidence = 0.7 + 0.3 * (yes_price - SAFE_BET_MIN) / (SAFE_BET_MAX - SAFE_BET_MIN)
-        return Signal("BUY_YES", confidence, f"Safe bet YES en {yes_price:.2f} (rango {SAFE_BET_MIN}-{SAFE_BET_MAX})", token_id_yes, yes_price)
-
-    if no_price and SAFE_BET_MIN <= no_price <= SAFE_BET_MAX and token_id_no:
-        confidence = 0.7 + 0.3 * (no_price - SAFE_BET_MIN) / (SAFE_BET_MAX - SAFE_BET_MIN)
-        return Signal("BUY_NO", confidence, f"Safe bet NO en {no_price:.2f} (rango {SAFE_BET_MIN}-{SAFE_BET_MAX})", token_id_no, no_price)
-
-    return Signal("HOLD", 0.0, "Fuera del rango seguro", token_id_yes or "", yes_price or 0.0)
+    if yes_price and s_min <= yes_price <= s_max and token_id_yes:
+        confidence = 0.7 + 0.3 * (yes_price - s_min) / (s_max - s_min)
+        return Signal("BUY_YES", confidence, f"Safe bet YES {yes_price:.2f} ({s_min}-{s_max})", token_id_yes, yes_price, "SAFE_BET")
+    if no_price and s_min <= no_price <= s_max and token_id_no:
+        confidence = 0.7 + 0.3 * (no_price - s_min) / (s_max - s_min)
+        return Signal("BUY_NO", confidence, f"Safe bet NO {no_price:.2f} ({s_min}-{s_max})", token_id_no, no_price, "SAFE_BET")
+    return Signal("HOLD", 0.0, "Fuera del rango seguro", token_id_yes or "", yes_price or 0.0, "SAFE_BET")
 
 
 STRATEGIES = {
-    "THRESHOLD": threshold_strategy,
-    "MOMENTUM": momentum_strategy,
+    "THRESHOLD":  threshold_strategy,
+    "MOMENTUM":   momentum_strategy,
     "CONTRARIAN": contrarian_strategy,
-    "SAFE_BET": safe_bet_strategy,
+    "SAFE_BET":   safe_bet_strategy,
 }
 
 
 def evaluate(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
-    fn = STRATEGIES.get(STRATEGY, threshold_strategy)
-    signal = fn(market, yes_price, no_price)
-    if signal.confidence < MIN_CONFIDENCE:
-        logger.debug(f"Señal descartada (confianza {signal.confidence:.2f} < {MIN_CONFIDENCE}): {signal.reason}")
-        signal.action = "HOLD"
-    return signal
+    """
+    Evalúa todas las estrategias activas y devuelve la señal de mayor confianza.
+    """
+    best = Signal("HOLD", 0.0, "Sin señal", "", yes_price or 0.0)
+
+    for name in config.STRATEGIES_ACTIVE:
+        fn = STRATEGIES.get(name)
+        if not fn:
+            continue
+        signal = fn(market, yes_price, no_price)
+        if signal.action != "HOLD" and signal.confidence > best.confidence:
+            best = signal
+
+    if best.action != "HOLD" and best.confidence < config.MIN_CONFIDENCE:
+        logger.debug(f"Señal descartada (confianza {best.confidence:.2f} < {config.MIN_CONFIDENCE}): {best.reason}")
+        best.action = "HOLD"
+    elif best.action != "HOLD":
+        logger.debug(f"Señal [{best.strategy}] confianza {best.confidence:.2f}: {best.reason}")
+
+    return best
 
 
 def _get_token_id(market: dict, outcome: str) -> str | None:
-    # Primero busca en tokens (lista de dicts con outcome explícito)
     tokens = market.get("tokens") or []
     for t in tokens:
         if isinstance(t, dict) and t.get("outcome", "").upper() == outcome:
             return t.get("token_id") or t.get("tokenId")
-
-    # Fallback: clobTokenIds — Polymarket siempre los ordena [YES, NO]
     clob_ids = market.get("clobTokenIds") or []
     if isinstance(clob_ids, list) and len(clob_ids) >= 2:
         if outcome == "YES":

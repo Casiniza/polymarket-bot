@@ -15,7 +15,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime, timezone, timedelta
 from loguru import logger
 from markets import get_active_markets, get_prices_from_market, get_midpoint
-from strategy import evaluate
+from strategy import evaluate, is_world_cup
 from trader import build_client, execute_signal, execute_sell
 from positions import load_positions, save_positions, load_history
 import config
@@ -191,69 +191,83 @@ def get_market_id(market: dict) -> str:
     return market.get("conditionId") or market.get("id", "")
 
 
-def check_positions(client):
+def check_positions(client, paper: bool = False):
     """Revisa posiciones abiertas y ejecuta TP/SL si corresponde."""
-    positions = load_positions()
+    positions = load_positions(paper)
     if not positions:
         return
 
-    logger.info(f"Revisando {len(positions)} posiciones...")
+    label = "[PAPER] " if paper else ""
     for pos in positions:
         current_price = get_midpoint(pos.token_id)
         if current_price is None:
-            logger.warning(f"Sin precio para {pos.token_id[:12]}...")
             continue
-
         change = (current_price - pos.entry_price) / pos.entry_price
-
         if change >= TAKE_PROFIT:
-            execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}%")
+            execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}%", paper=paper)
         elif change <= -STOP_LOSS:
-            execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}%")
+            execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}%", paper=paper)
         else:
             logger.info(
-                f"Manteniendo | {pos.market_question[:50]} | "
+                f"{label}Manteniendo | {pos.market_question[:50]} | "
                 f"{pos.entry_price:.3f} → {current_price:.3f} ({change*100:+.1f}%)"
             )
 
 
-def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set, set]:
+def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bool:
     """
-    Busca nuevas oportunidades de ganador directo.
-    Devuelve sets actualizados de market_ids y match_keys apostados.
+    True si el precio ha sido estable en los últimos scans.
+    Mantiene un historial en memoria y rechaza si la volatilidad supera MAX_PRICE_VOLATILITY.
     """
-    # Comprueba límite de pérdida diaria antes de buscar nuevas apuestas
-    if daily_loss_exceeded():
+    now = time.time()
+    history = price_history.setdefault(market_id, [])
+    history.append((now, yes_price))
+    # Mantiene solo los últimos 30 minutos
+    price_history[market_id] = [(t, p) for t, p in history if now - t < 1800]
+    prices = [p for _, p in price_history[market_id]]
+    if len(prices) < 2:
+        return True  # sin historial suficiente, permite la apuesta
+    volatility = max(prices) - min(prices)
+    if volatility > config.MAX_PRICE_VOLATILITY:
+        logger.debug(f"Descartado (volatilidad {volatility:.3f} > {config.MAX_PRICE_VOLATILITY}): {market_id[:20]}")
+        return False
+    return True
+
+
+def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
+                 price_history: dict, paper: bool = False) -> tuple[set, set]:
+    """Busca nuevas oportunidades. paper=True simula sin ejecutar órdenes reales."""
+
+    if not paper and daily_loss_exceeded():
         logger.info("Scan omitido — límite de pérdida diaria alcanzado.")
         return bet_market_ids, bet_match_keys
 
+    label = "[PAPER] " if paper else ""
     markets = get_active_markets(limit=100)
-    open_token_ids = {p.token_id for p in load_positions()}
+    open_token_ids = {p.token_id for p in load_positions(paper)}
     new_bets = 0
 
     for market in markets:
-        if not market_ends_by_tomorrow(market):
-            continue
-        if not is_winner_sports_market(market):
-            continue
+        if not market_ends_by_tomorrow(market): continue
+        if not is_winner_sports_market(market): continue
         if not market_not_started(market):
-            logger.debug(f"Descartado (partido en curso): {market.get('question','')[:60]}")
+            logger.debug(f"Descartado (en curso): {market.get('question','')[:55]}")
             continue
-        if not has_enough_liquidity(market):
-            continue
+        if not has_enough_liquidity(market): continue
 
         market_id = get_market_id(market)
-        if market_id in bet_market_ids:
-            continue
+        if market_id in bet_market_ids: continue
 
         match_key = get_match_key(market)
         if match_key in bet_match_keys:
-            logger.debug(f"Ya apostado en este partido: {match_key[:55]}")
+            logger.debug(f"Ya apostado: {match_key[:55]}")
             continue
 
         yes_price, no_price = get_prices_from_market(market)
-        if yes_price is None:
-            continue
+        if yes_price is None: continue
+
+        # Filtro de estabilidad de precio
+        if not is_price_stable(market_id, yes_price, price_history): continue
 
         clob_ids = market.get("clobTokenIds") or []
         if len(clob_ids) >= 2 and not market.get("tokens"):
@@ -262,11 +276,18 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
                 {"outcome": "NO",  "token_id": clob_ids[1]},
             ]
 
+        # Inyecta historial de precios en el market para que MOMENTUM lo use
+        hist_prices = [p for _, p in price_history.get(market_id, [])]
+        market["_price_history"] = hist_prices
+
         signal = evaluate(market, yes_price, no_price)
 
         if signal.action != "HOLD" and signal.token_id not in open_token_ids:
             question = market.get("question", "")
-            ok = execute_signal(client, signal, question, market)
+            wc = is_world_cup(market)
+            if wc:
+                logger.info(f"⚽ MUNDIAL detectado: {question[:55]}")
+            ok = execute_signal(client, signal, question, market, paper=paper)
             if ok:
                 bet_market_ids.add(market_id)
                 bet_match_keys.add(match_key)
@@ -276,8 +297,9 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
     winner_markets = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_winner_sports_market(m))
     daily_loss = get_daily_loss()
     logger.info(
-        f"Scan completado | {winner_markets} partidos elegibles | {new_bets} nuevas apuestas | "
-        f"Pérdida diaria: -${daily_loss:.2f} / -${config.MAX_DAILY_LOSS_USDC:.2f}"
+        f"{label}Scan completado | {winner_markets} elegibles | {new_bets} apuestas | "
+        f"Estrategias: {','.join(config.STRATEGIES_ACTIVE)} | "
+        f"Pérdida diaria: -${daily_loss:.2f}/-${config.MAX_DAILY_LOSS_USDC:.2f}"
     )
     return bet_market_ids, bet_match_keys
 
@@ -293,23 +315,41 @@ def main():
     logger.info(f"Bot iniciado | TP: +{TAKE_PROFIT*100:.0f}% | SL: -{STOP_LOSS*100:.0f}% | "
                 f"TP/SL continuo cada {SCAN_POSITIONS_S}s | Scan mercados cada {SCAN_MARKETS_S}s")
 
-    existing_positions = load_positions()
-    bet_market_ids: set = {p.token_id for p in existing_positions}
-    bet_match_keys: set = {get_match_key({"question": p.market_question}) for p in existing_positions}
+    existing = load_positions()
+    bet_market_ids:  set = {p.token_id for p in existing}
+    bet_match_keys:  set = {get_match_key({"question": p.market_question}) for p in existing}
+
+    # Paper trading — estado separado
+    paper_existing      = load_positions(paper=True)
+    paper_bet_ids:  set = {p.token_id for p in paper_existing}
+    paper_match_keys: set = {get_match_key({"question": p.market_question}) for p in paper_existing}
+
+    price_history: dict = {}  # {market_id: [(timestamp, price), ...]}
     start_time = time.time()
     last_market_scan = 0
+
+    if config.PAPER_TRADING:
+        logger.info("📝 Paper trading activado — simulación paralela en paper_positions.json")
 
     while time.time() - start_time < MAX_RUNTIME_S:
         now = time.time()
 
-        # Scan de mercados cada 5 minutos
         if now - last_market_scan >= SCAN_MARKETS_S:
             logger.info("=== SCAN MERCADOS ===")
-            bet_market_ids, bet_match_keys = scan_markets(client, bet_market_ids, bet_match_keys)
+            bet_market_ids, bet_match_keys = scan_markets(
+                client, bet_market_ids, bet_match_keys, price_history, paper=False
+            )
+            if config.PAPER_TRADING:
+                paper_bet_ids, paper_match_keys = scan_markets(
+                    None, paper_bet_ids, paper_match_keys, price_history, paper=True
+                )
             last_market_scan = now
 
         # TP/SL continuo cada 3 segundos
-        check_positions(client)
+        check_positions(client, paper=False)
+        if config.PAPER_TRADING:
+            check_positions(None, paper=True)
+
         time.sleep(SCAN_POSITIONS_S)
 
     logger.info("Bot detenido — límite de tiempo alcanzado.")
