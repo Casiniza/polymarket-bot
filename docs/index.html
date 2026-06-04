@@ -63,6 +63,9 @@
     #log .log-line { margin-bottom: 4px; }
 
     .paper-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; background: #3d2a1a; color: #f0883e; margin-left: 6px; }
+    .period-btn { background: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; transition: all 0.15s; }
+    .period-btn:hover { background: #30363d; color: #e6edf3; }
+    .period-btn.active { background: #58a6ff22; border-color: #58a6ff; color: #58a6ff; }
   </style>
 </head>
 <body>
@@ -95,13 +98,39 @@
 
 <!-- TAB: REAL -->
 <div id="tab-real" class="tab-content active">
+
+  <!-- Capital real -->
+  <div class="stats" style="margin-bottom:16px;">
+    <div class="stat-card" style="border-color:#58a6ff44">
+      <div class="label">Capital en Polymarket</div>
+      <div class="value blue" id="stat-capital">—</div>
+      <div style="font-size:0.75rem;color:#8b949e;margin-top:4px;">Balance USDC disponible</div>
+    </div>
+    <div class="stat-card" style="border-color:#58a6ff44">
+      <div class="label">Resultado hoy</div>
+      <div class="value" id="stat-today">—</div>
+    </div>
+    <div class="stat-card" style="border-color:#58a6ff44">
+      <div class="label">Esta semana</div>
+      <div class="value" id="stat-week">—</div>
+    </div>
+    <div class="stat-card" style="border-color:#58a6ff44">
+      <div class="label">Este mes</div>
+      <div class="value" id="stat-month">—</div>
+    </div>
+    <div class="stat-card" style="border-color:#58a6ff44">
+      <div class="label">Este año</div>
+      <div class="value" id="stat-year">—</div>
+    </div>
+  </div>
+
   <div class="stats">
-    <div class="stat-card"><div class="label">Posiciones abiertas</div><div class="value blue" id="stat-open"></div></div>
-    <div class="stat-card"><div class="label">Ganancia potencial</div><div class="value" id="stat-pnl"></div></div>
-    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="stat-realized"></div></div>
-    <div class="stat-card"><div class="label">USDC en juego</div><div class="value neutral" id="stat-usdc"></div></div>
-    <div class="stat-card"><div class="label">MEJOR POSICION</div><div class="value" id="stat-best"></div></div>
-    <div class="stat-card"><div class="label">Win rate</div><div class="value blue" id="stat-winrate"></div></div>
+    <div class="stat-card"><div class="label">Posiciones abiertas</div><div class="value blue" id="stat-open">—</div></div>
+    <div class="stat-card"><div class="label">Ganancia potencial</div><div class="value" id="stat-pnl">—</div></div>
+    <div class="stat-card"><div class="label">P&amp;L realizado total</div><div class="value" id="stat-realized">—</div></div>
+    <div class="stat-card"><div class="label">USDC en juego</div><div class="value neutral" id="stat-usdc">—</div></div>
+    <div class="stat-card"><div class="label">Mejor posicion</div><div class="value" id="stat-best">—</div></div>
+    <div class="stat-card"><div class="label">Win rate</div><div class="value blue" id="stat-winrate">—</div></div>
   </div>
 
   <div class="section">
@@ -109,9 +138,20 @@
     <div id="positions-wrap"></div>
   </div>
 
+  <!-- Period selector -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+    <h2 style="margin:0">P&amp;L acumulado</h2>
+    <div style="display:flex;gap:4px;margin-left:12px;">
+      <button class="period-btn active" onclick="setPeriod('all')">Todo</button>
+      <button class="period-btn" onclick="setPeriod('year')">Año</button>
+      <button class="period-btn" onclick="setPeriod('month')">Mes</button>
+      <button class="period-btn" onclick="setPeriod('week')">Semana</button>
+      <button class="period-btn" onclick="setPeriod('day')">Hoy</button>
+    </div>
+  </div>
+
   <div class="two-col section">
     <div>
-      <h2>P&L acumulado</h2>
       <div class="chart-wrap"><canvas id="pnl-chart" height="160"></canvas></div>
     </div>
     <div>
@@ -123,13 +163,39 @@
 
 <!-- TAB: PAPER -->
 <div id="tab-paper" class="tab-content">
+
+  <!-- Capital simulado -->
+  <div class="stats" style="margin-bottom:16px;">
+    <div class="stat-card" style="border-color:#f0883e44">
+      <div class="label">Capital simulado</div>
+      <div class="value orange" id="paper-stat-capital">—</div>
+      <div style="font-size:0.75rem;color:#8b949e;margin-top:4px;">Inicio: $100.00</div>
+    </div>
+    <div class="stat-card" style="border-color:#f0883e44">
+      <div class="label">Resultado hoy</div>
+      <div class="value" id="paper-stat-today">—</div>
+    </div>
+    <div class="stat-card" style="border-color:#f0883e44">
+      <div class="label">Esta semana</div>
+      <div class="value" id="paper-stat-week">—</div>
+    </div>
+    <div class="stat-card" style="border-color:#f0883e44">
+      <div class="label">Este mes</div>
+      <div class="value" id="paper-stat-month">—</div>
+    </div>
+    <div class="stat-card" style="border-color:#f0883e44">
+      <div class="label">Este año</div>
+      <div class="value" id="paper-stat-year">—</div>
+    </div>
+  </div>
+
   <div class="stats">
-    <div class="stat-card"><div class="label">Posiciones paper</div><div class="value orange" id="paper-stat-open"></div></div>
-    <div class="stat-card"><div class="label">Ganancia potencial</div><div class="value" id="paper-stat-pnl"></div></div>
-    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="paper-stat-realized"></div></div>
-    <div class="stat-card"><div class="label">USDC simulado en juego</div><div class="value neutral" id="paper-stat-usdc"></div></div>
-    <div class="stat-card"><div class="label">MEJOR POSICION</div><div class="value" id="paper-stat-best"></div></div>
-    <div class="stat-card"><div class="label">Win rate</div><div class="value orange" id="paper-stat-winrate"></div></div>
+    <div class="stat-card"><div class="label">Posiciones paper</div><div class="value orange" id="paper-stat-open">—</div></div>
+    <div class="stat-card"><div class="label">Ganancia potencial</div><div class="value" id="paper-stat-pnl">—</div></div>
+    <div class="stat-card"><div class="label">P&amp;L realizado total</div><div class="value" id="paper-stat-realized">—</div></div>
+    <div class="stat-card"><div class="label">USDC simulado en juego</div><div class="value neutral" id="paper-stat-usdc">—</div></div>
+    <div class="stat-card"><div class="label">Mejor posicion</div><div class="value" id="paper-stat-best">—</div></div>
+    <div class="stat-card"><div class="label">Win rate</div><div class="value orange" id="paper-stat-winrate">—</div></div>
   </div>
 
   <div class="section">
@@ -158,6 +224,10 @@
 </div>
 
 <script>
+  const PAPER_INITIAL_CAPITAL = 100.0; // Capital inicial simulado
+  let currentPeriod = 'all';
+  let allHistory = [], allPaperHistory = [];
+
   const POSITIONS_URL      = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/positions.json";
   const HISTORY_URL        = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/history.json";
   const PAPER_POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_positions.json";
@@ -284,6 +354,63 @@
     });
   }
 
+  // --- Period filter ---
+  function setPeriod(period) {
+    currentPeriod = period;
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderPeriodStats(allHistory, false);
+    pnlChart = renderChart(filterByPeriod(allHistory), 'pnl-chart', pnlChart);
+  }
+
+  function filterByPeriod(history) {
+    if (currentPeriod === 'all') return history;
+    const now = new Date();
+    const cutoff = new Date();
+    if (currentPeriod === 'day')   cutoff.setHours(0,0,0,0);
+    if (currentPeriod === 'week')  cutoff.setDate(now.getDate() - 7);
+    if (currentPeriod === 'month') cutoff.setMonth(now.getMonth() - 1);
+    if (currentPeriod === 'year')  cutoff.setFullYear(now.getFullYear() - 1);
+    return history.filter(h => new Date(h.closed_at) >= cutoff);
+  }
+
+  function pnlForPeriod(history, period) {
+    const now = new Date();
+    const cutoff = new Date();
+    if (period === 'day')   cutoff.setHours(0,0,0,0);
+    if (period === 'week')  cutoff.setDate(now.getDate() - 7);
+    if (period === 'month') cutoff.setMonth(now.getMonth() - 1);
+    if (period === 'year')  cutoff.setFullYear(now.getFullYear() - 1);
+    const filtered = history.filter(h => new Date(h.closed_at) >= cutoff);
+    return filtered.reduce((s, h) => s + (h.pnl || 0), 0);
+  }
+
+  function renderPeriodStats(history, isPaper) {
+    const prefix = isPaper ? 'paper-stat-' : 'stat-';
+    ['today','week','month','year'].forEach((p, i) => {
+      const period = ['day','week','month','year'][i];
+      const pnl = pnlForPeriod(history, period);
+      const el = document.getElementById(prefix + p);
+      if (el) {
+        el.textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
+        el.className = 'value ' + (pnl >= 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral');
+      }
+    });
+  }
+
+  // --- Balance real ---
+  async function loadRealBalance() {
+    try {
+      const r = await fetch(LOG_SERVER + '/balance?t=' + Date.now(), { signal: AbortSignal.timeout(1500) });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.usdc !== null && d.usdc !== undefined) {
+          document.getElementById('stat-capital').textContent = '$' + parseFloat(d.usdc).toFixed(2);
+        }
+      }
+    } catch {}
+  }
+
   // --- Real tab ---
   async function loadReal() {
     const positions = await fetchJson(POSITIONS_URL);
@@ -325,9 +452,11 @@
     } else { bestEl.textContent = ""; bestEl.className = "value neutral"; }
     document.getElementById("stat-winrate").textContent = winRate !== null ? `${winRate}%` : "";
 
+    allHistory = history;
     renderPositionsTable(priced, "positions-wrap");
-    renderHistoryTable(history, "history-wrap");
-    pnlChart = renderChart(history, "pnl-chart", pnlChart);
+    renderHistoryTable(filterByPeriod(history), "history-wrap");
+    renderPeriodStats(history, false);
+    pnlChart = renderChart(filterByPeriod(history), "pnl-chart", pnlChart);
   }
 
   // --- Paper tab ---
@@ -364,6 +493,12 @@
     } else { pbEl.textContent = ""; pbEl.className = "value neutral"; }
     document.getElementById("paper-stat-winrate").textContent = winRate !== null ? `${winRate}%` : "";
 
+    // Capital simulado = inicial + P&L realizado
+    const simulatedCapital = PAPER_INITIAL_CAPITAL + realizedPnl;
+    document.getElementById("paper-stat-capital").textContent = '$' + simulatedCapital.toFixed(2);
+
+    allPaperHistory = history;
+    renderPeriodStats(history, true);
     renderPositionsTable(priced, "paper-positions-wrap");
     renderHistoryTable(history, "paper-history-wrap");
     paperPnlChart = renderChart(history, "paper-pnl-chart", paperPnlChart);
@@ -407,6 +542,8 @@
   setInterval(loadAll, 30000);
   loadLiveLogs();
   setInterval(loadLiveLogs, 3000);
+  loadRealBalance();
+  setInterval(loadRealBalance, 60000);
 </script>
 </body>
 </html>

@@ -45,16 +45,39 @@ logger.add("logs/bot.log", rotation="10 MB", retention="7 days", level="DEBUG")
 logger.add(_sink, level="INFO", format="{message}")
 
 
+_balance_cache: dict = {"usdc": None, "updated": 0}
+
+def get_real_balance(client) -> float | None:
+    """Obtiene el balance USDC real de Polymarket (cachea 60s)."""
+    now = time.time()
+    if _balance_cache["usdc"] is not None and now - _balance_cache["updated"] < 60:
+        return _balance_cache["usdc"]
+    try:
+        from py_clob_client_v2.clob_types import BalanceAllowanceParams, AssetType
+        bal = client.get_balance_allowance(BalanceAllowanceParams(asset_type=AssetType.COLLATERAL))
+        usdc = int(bal.get("balance", 0)) / 1e6
+        _balance_cache["usdc"] = usdc
+        _balance_cache["updated"] = now
+        return usdc
+    except Exception:
+        return _balance_cache.get("usdc")
+
+
 class LogHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        path = self.path.split("?")[0]
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(json.dumps(list(_log_buffer)).encode())
+        if path == "/balance":
+            bal = _balance_cache.get("usdc")
+            self.wfile.write(json.dumps({"usdc": bal}).encode())
+        else:
+            self.wfile.write(json.dumps(list(_log_buffer)).encode())
 
     def log_message(self, *args):
-        pass  # silencia los logs del servidor HTTP
+        pass
 
 
 def start_log_server():
@@ -349,6 +372,8 @@ def main():
 
     start_log_server()
     client = build_client() if not config.DRY_RUN else None
+    if client:
+        get_real_balance(client)  # precarga el balance al arrancar
 
     logger.info(f"Bot iniciado | TP: +{TAKE_PROFIT*100:.0f}% | SL: -{STOP_LOSS*100:.0f}% | "
                 f"TP/SL continuo cada {SCAN_POSITIONS_S}s | Scan mercados cada {SCAN_MARKETS_S}s")
@@ -387,6 +412,10 @@ def main():
         check_positions(client, paper=False)
         if config.PAPER_TRADING:
             check_positions(None, paper=True)
+
+        # Refresca balance cada ~60s
+        if client and int(time.time()) % 60 < SCAN_POSITIONS_S:
+            get_real_balance(client)
 
         time.sleep(SCAN_POSITIONS_S)
 
