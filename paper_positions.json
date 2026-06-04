@@ -124,5 +124,14 @@
     "usdc_spent": 10.0,
     "market_question": "Will Sweden win on 2026-06-04?",
     "opened_at": "2026-06-04T17:27:06.477192"
+  },
+  {
+    "token_id": "78033757375544438353061393975235922538175497679028672419756928987530571382528",
+    "action": "BUY_NO",
+    "entry_price": 0.9995,
+    "size": 10.01,
+    "usdc_spent": 10.0,
+    "market_question": "Will Elon Musk post 260-279 tweets from May 29 to June 5, 2026?",
+    "opened_at": "2026-06-04T17:27:09.147038"
   }
 ]
