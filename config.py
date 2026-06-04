@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PRIVATE_KEY = os.getenv("PRIVATE_KEY", "")
+DEPOSIT_WALLET = os.getenv("DEPOSIT_WALLET", "")
 CLOB_API_KEY = os.getenv("CLOB_API_KEY", "")
 CLOB_API_SECRET = os.getenv("CLOB_API_SECRET", "")
 CLOB_API_PASSPHRASE = os.getenv("CLOB_API_PASSPHRASE", "")
