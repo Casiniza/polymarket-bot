@@ -12,6 +12,8 @@ CLOB_API_PASSPHRASE = os.getenv("CLOB_API_PASSPHRASE", "")
 MAX_BET_USDC = float(os.getenv("MAX_BET_USDC", "10.0"))
 MIN_CONFIDENCE = float(os.getenv("MIN_CONFIDENCE", "0.65"))
 DRY_RUN = os.getenv("DRY_RUN", "true").lower() == "true"
+MAX_DAILY_LOSS_USDC = float(os.getenv("MAX_DAILY_LOSS_USDC", "15.0"))
+MIN_MARKET_VOLUME = float(os.getenv("MIN_MARKET_VOLUME", "10000.0"))
 
 STRATEGY = os.getenv("STRATEGY", "SAFE_BET")
 THRESHOLD_BUY_YES = float(os.getenv("THRESHOLD_BUY_YES", "0.30"))

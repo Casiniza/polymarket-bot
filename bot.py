@@ -12,7 +12,7 @@ from loguru import logger
 from markets import get_active_markets, get_prices_from_market, get_midpoint
 from strategy import evaluate
 from trader import build_client, execute_signal, execute_sell
-from positions import load_positions, save_positions
+from positions import load_positions, save_positions, load_history
 import config
 
 logger.remove()
@@ -78,6 +78,39 @@ def get_match_key(market: dict) -> str:
     # Normaliza: quita texto después de "?" o ":" para quedarse con el nombre base
     q = q.split("?")[0].split(":")[0].strip()
     return q
+
+
+def get_daily_loss() -> float:
+    """Calcula la pérdida realizada de hoy (negativo = pérdida)."""
+    today = datetime.now(timezone.utc).date()
+    history = load_history()
+    daily_pnl = sum(
+        h.get("pnl", 0) for h in history
+        if h.get("pnl", 0) < 0 and
+        datetime.fromisoformat(h.get("closed_at", "2000-01-01")).date() == today
+    )
+    return abs(daily_pnl)
+
+
+def daily_loss_exceeded() -> bool:
+    """True si ya se alcanzó el límite de pérdida diaria."""
+    loss = get_daily_loss()
+    if loss >= config.MAX_DAILY_LOSS_USDC:
+        logger.warning(
+            f"LÍMITE DE PÉRDIDA DIARIA alcanzado: -${loss:.2f} / -${config.MAX_DAILY_LOSS_USDC:.2f}. "
+            f"No se abrirán nuevas apuestas hoy."
+        )
+        return True
+    return False
+
+
+def has_enough_liquidity(market: dict) -> bool:
+    """True si el mercado tiene volumen 24h suficiente."""
+    vol = float(market.get("volume24hr") or market.get("volume24hrClob") or 0)
+    if vol < config.MIN_MARKET_VOLUME:
+        logger.debug(f"Descartado (volumen ${vol:.0f} < ${config.MIN_MARKET_VOLUME:.0f}): {market.get('question','')[:50]}")
+        return False
+    return True
 
 
 def market_ends_by_tomorrow(market: dict) -> bool:
@@ -147,6 +180,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
     Busca nuevas oportunidades de ganador directo.
     Devuelve sets actualizados de market_ids y match_keys apostados.
     """
+    # Comprueba límite de pérdida diaria antes de buscar nuevas apuestas
+    if daily_loss_exceeded():
+        logger.info("Scan omitido — límite de pérdida diaria alcanzado.")
+        return bet_market_ids, bet_match_keys
+
     markets = get_active_markets(limit=100)
     open_token_ids = {p.token_id for p in load_positions()}
     new_bets = 0
@@ -156,9 +194,10 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
             continue
         if not is_winner_sports_market(market):
             continue
-
         if not market_not_started(market):
             logger.debug(f"Descartado (partido en curso): {market.get('question','')[:60]}")
+            continue
+        if not has_enough_liquidity(market):
             continue
 
         market_id = get_market_id(market)
@@ -193,7 +232,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set,
                 new_bets += 1
 
     winner_markets = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_winner_sports_market(m))
-    logger.info(f"Scan completado | {winner_markets} partidos (ganador) elegibles | {new_bets} nuevas apuestas")
+    daily_loss = get_daily_loss()
+    logger.info(
+        f"Scan completado | {winner_markets} partidos elegibles | {new_bets} nuevas apuestas | "
+        f"Pérdida diaria: -${daily_loss:.2f} / -${config.MAX_DAILY_LOSS_USDC:.2f}"
+    )
     return bet_market_ids, bet_match_keys
 
 
