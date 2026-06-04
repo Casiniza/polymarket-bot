@@ -61,5 +61,14 @@
     "usdc_spent": 10.0,
     "market_question": "Will the price of Bitcoin be above $66,000 on June 4?",
     "opened_at": "2026-06-04T17:25:42.586914"
+  },
+  {
+    "token_id": "70657716057338997723782859904699445307112367959187352240026021205331908713332",
+    "action": "BUY_NO",
+    "entry_price": 0.9995,
+    "size": 10.01,
+    "usdc_spent": 10.0,
+    "market_question": "Will the price of Bitcoin be above $70,000 on June 4?",
+    "opened_at": "2026-06-04T17:25:45.102634"
   }
 ]
