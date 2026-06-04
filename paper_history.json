@@ -24,5 +24,18 @@
     "paper": true,
     "opened_at": "2026-06-04T17:27:01.668780",
     "closed_at": "2026-06-04T17:27:16.596035"
+  },
+  {
+    "market_question": "Slovenia vs. Cyprus: O/U 2.5",
+    "action": "BUY_NO",
+    "entry_price": 0.67,
+    "exit_price": 0.355,
+    "size": 14.93,
+    "usdc_spent": 10.0,
+    "pnl": -4.703,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-04T17:27:04.106490",
+    "closed_at": "2026-06-04T17:27:22.862534"
   }
 ]
