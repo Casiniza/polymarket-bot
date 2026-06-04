@@ -9,23 +9,33 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; padding: 24px; }
 
-    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     header h1 { font-size: 1.4rem; font-weight: 600; color: #58a6ff; }
     #status { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #8b949e; }
     #dot { width: 8px; height: 8px; border-radius: 50%; background: #3fb950; animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid #30363d; }
+    .tab { padding: 10px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 8px 8px 0 0; color: #8b949e; background: transparent; border: 1px solid transparent; border-bottom: none; transition: all 0.15s; }
+    .tab:hover { color: #e6edf3; background: #161b22; }
+    .tab.active { color: #e6edf3; background: #161b22; border-color: #30363d; border-bottom: 1px solid #161b22; margin-bottom: -1px; }
+    .tab-real.active { color: #58a6ff; }
+    .tab-paper.active { color: #f0883e; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Stats */
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
     .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 18px; }
     .stat-card .label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
     .stat-card .value { font-size: 1.6rem; font-weight: 700; }
 
-    .positive { color: #3fb950; } .negative { color: #f85149; } .neutral { color: #e6edf3; } .blue { color: #58a6ff; }
+    .positive { color: #3fb950; } .negative { color: #f85149; } .neutral { color: #e6edf3; } .blue { color: #58a6ff; } .orange { color: #f0883e; }
 
     h2 { font-size: 0.95rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
     .section { margin-bottom: 28px; }
 
-    /* Scan countdown */
     .scan-bar-wrap { background: #21262d; border-radius: 4px; height: 4px; margin-bottom: 6px; overflow: hidden; }
     .scan-bar-fill { height: 100%; background: #58a6ff; border-radius: 4px; transition: width 1s linear; }
     .scan-label { font-size: 0.75rem; color: #8b949e; }
@@ -44,150 +54,154 @@
 
     .bar-wrap { background: #21262d; border-radius: 4px; height: 6px; width: 100px; overflow: hidden; }
     .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
-
     .empty { text-align: center; padding: 40px; color: #8b949e; font-size: 0.875rem; background: #161b22; border: 1px dashed #30363d; border-radius: 10px; }
-
     .chart-wrap { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; }
-
-    #log { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; font-family: 'Courier New', monospace; font-size: 0.78rem; color: #8b949e; max-height: 200px; overflow-y: auto; }
-    #log .log-line { margin-bottom: 4px; }
-    #log .log-buy  { color: #3fb950; }
-    #log .log-sell { color: #f85149; }
-    #log .log-info { color: #58a6ff; }
-
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    #log { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; font-family: 'Courier New', monospace; font-size: 0.78rem; color: #8b949e; max-height: 250px; overflow-y: auto; }
+    #log .log-line { margin-bottom: 4px; }
+
+    .paper-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; background: #3d2a1a; color: #f0883e; margin-left: 6px; }
   </style>
 </head>
 <body>
 
 <header>
   <h1>🤖 Polymarket Bot Dashboard</h1>
-  <div id="status">
-    <div id="dot"></div>
-    <span id="last-update">Cargando...</span>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div id="status">
+      <div id="dot"></div>
+      <span id="bot-status">⚫ Bot desconectado</span>
+    </div>
+    <span id="last-update" style="font-size:0.75rem;color:#8b949e;">—</span>
   </div>
 </header>
 
-<!-- Stats -->
-<div class="stats">
-  <div class="stat-card">
-    <div class="label">Posiciones abiertas</div>
-    <div class="value blue" id="stat-open">—</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">P&L no realizado</div>
-    <div class="value" id="stat-pnl">—</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">P&L realizado total</div>
-    <div class="value" id="stat-realized">—</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">USDC en juego</div>
-    <div class="value neutral" id="stat-usdc">—</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Mejor posición</div>
-    <div class="value positive" id="stat-best">—</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Win rate</div>
-    <div class="value blue" id="stat-winrate">—</div>
-  </div>
-</div>
-
-<!-- Scan countdown + bot status -->
-<div class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-    <div class="scan-label">Próximo scan de mercados: <span id="scan-countdown">5:00</span></div>
-    <div id="bot-status" style="font-size:0.75rem;color:#8b949e;">⚫ Bot desconectado</div>
+<!-- Scan countdown -->
+<div class="section" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+    <div class="scan-label">Próximo scan: <span id="scan-countdown">5:00</span></div>
   </div>
   <div class="scan-bar-wrap"><div class="scan-bar-fill" id="scan-bar" style="width:100%"></div></div>
 </div>
 
-<!-- Open positions -->
-<div class="section">
-  <h2>Posiciones abiertas</h2>
-  <div id="positions-wrap"></div>
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab tab-real active" onclick="switchTab('real')">💰 Apuesta Real</div>
+  <div class="tab tab-paper" onclick="switchTab('paper')">📝 Paper Trading</div>
+  <div class="tab" onclick="switchTab('logs')">📋 Logs</div>
 </div>
 
-<!-- Chart + History side by side -->
-<div class="two-col section">
-  <div>
-    <h2>P&L acumulado</h2>
-    <div class="chart-wrap">
-      <canvas id="pnl-chart" height="160"></canvas>
-    </div>
+<!-- TAB: REAL -->
+<div id="tab-real" class="tab-content active">
+  <div class="stats">
+    <div class="stat-card"><div class="label">Posiciones abiertas</div><div class="value blue" id="stat-open">—</div></div>
+    <div class="stat-card"><div class="label">P&L no realizado</div><div class="value" id="stat-pnl">—</div></div>
+    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="stat-realized">—</div></div>
+    <div class="stat-card"><div class="label">USDC en juego</div><div class="value neutral" id="stat-usdc">—</div></div>
+    <div class="stat-card"><div class="label">Mejor posición</div><div class="value" id="stat-best">—</div></div>
+    <div class="stat-card"><div class="label">Win rate</div><div class="value blue" id="stat-winrate">—</div></div>
   </div>
-  <div>
-    <h2>Historial de operaciones</h2>
-    <div id="history-wrap"></div>
+
+  <div class="section">
+    <h2>Posiciones abiertas</h2>
+    <div id="positions-wrap"></div>
+  </div>
+
+  <div class="two-col section">
+    <div>
+      <h2>P&L acumulado</h2>
+      <div class="chart-wrap"><canvas id="pnl-chart" height="160"></canvas></div>
+    </div>
+    <div>
+      <h2>Historial de operaciones</h2>
+      <div id="history-wrap"></div>
+    </div>
   </div>
 </div>
 
-<!-- Paper trading section -->
-<div class="section">
-  <h2>📝 Paper Trading (simulación paralela)</h2>
-  <div class="stats" style="margin-bottom:14px;">
-    <div class="stat-card">
-      <div class="label">Posiciones paper</div>
-      <div class="value blue" id="paper-stat-open">—</div>
+<!-- TAB: PAPER -->
+<div id="tab-paper" class="tab-content">
+  <div class="stats">
+    <div class="stat-card"><div class="label">Posiciones paper</div><div class="value orange" id="paper-stat-open">—</div></div>
+    <div class="stat-card"><div class="label">P&L no realizado</div><div class="value" id="paper-stat-pnl">—</div></div>
+    <div class="stat-card"><div class="label">P&L realizado total</div><div class="value" id="paper-stat-realized">—</div></div>
+    <div class="stat-card"><div class="label">USDC simulado en juego</div><div class="value neutral" id="paper-stat-usdc">—</div></div>
+    <div class="stat-card"><div class="label">Mejor posición</div><div class="value" id="paper-stat-best">—</div></div>
+    <div class="stat-card"><div class="label">Win rate</div><div class="value orange" id="paper-stat-winrate">—</div></div>
+  </div>
+
+  <div class="section">
+    <h2>Posiciones abiertas <span class="paper-badge">SIMULACIÓN</span></h2>
+    <div id="paper-positions-wrap"></div>
+  </div>
+
+  <div class="two-col section">
+    <div>
+      <h2>P&L acumulado paper</h2>
+      <div class="chart-wrap"><canvas id="paper-pnl-chart" height="160"></canvas></div>
     </div>
-    <div class="stat-card">
-      <div class="label">P&L paper no realizado</div>
-      <div class="value" id="paper-stat-pnl">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">P&L paper realizado</div>
-      <div class="value" id="paper-stat-realized">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Win rate paper</div>
-      <div class="value blue" id="paper-stat-winrate">—</div>
+    <div>
+      <h2>Historial paper</h2>
+      <div id="paper-history-wrap"></div>
     </div>
   </div>
-  <div id="paper-positions-wrap"></div>
 </div>
 
-<!-- Activity log -->
-<div class="section">
-  <h2>Actividad reciente</h2>
-  <div id="log"><div class="log-line log-info">Conectando con el bot...</div></div>
+<!-- TAB: LOGS -->
+<div id="tab-logs" class="tab-content">
+  <div class="section">
+    <h2>Actividad en tiempo real</h2>
+    <div id="log"><div class="log-line" style="color:#58a6ff">Conectando con el bot...</div></div>
+  </div>
 </div>
 
 <script>
-  const POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/positions.json";
+  const POSITIONS_URL      = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/positions.json";
   const HISTORY_URL        = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/history.json";
   const PAPER_POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_positions.json";
   const PAPER_HISTORY_URL   = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_history.json";
-  const LOG_SERVER    = "http://localhost:7373";
+  const LOG_SERVER          = "http://localhost:7373";
+  const SCAN_INTERVAL       = 300;
 
-  let logLines = [];
-  let lastPositionIds = new Set();
   let pnlChart = null;
-  const SCAN_INTERVAL = 300;
+  let paperPnlChart = null;
+  let logLines = [];
+  let lastLogCount = 0;
+  let lastPositionIds = new Set();
 
-  // Countdown basado en tiempo real — persiste al recargar
-  function updateScanCountdown() {
-    const now = Math.floor(Date.now() / 1000);
-    const secondsLeft = SCAN_INTERVAL - (now % SCAN_INTERVAL);
-    const m = Math.floor(secondsLeft / 60);
-    const s = secondsLeft % 60;
-    document.getElementById("scan-countdown").textContent = `${m}:${s.toString().padStart(2,"0")}`;
-    document.getElementById("scan-bar").style.width = (secondsLeft / SCAN_INTERVAL * 100) + "%";
+  // --- Tabs ---
+  function switchTab(name) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+    document.getElementById("tab-" + name).classList.add("active");
+    document.querySelector(".tab-" + (name === "logs" ? "" : name) + (name === "logs" ? ":last-child" : "")).classList.add("active");
+    // fix tab highlight
+    const tabs = document.querySelectorAll(".tab");
+    const idx = name === "real" ? 0 : name === "paper" ? 1 : 2;
+    tabs[idx].classList.add("active");
   }
 
+  // --- Countdown ---
+  function updateScanCountdown() {
+    const now = Math.floor(Date.now() / 1000);
+    const left = SCAN_INTERVAL - (now % SCAN_INTERVAL);
+    const m = Math.floor(left / 60), s = left % 60;
+    document.getElementById("scan-countdown").textContent = `${m}:${s.toString().padStart(2,"0")}`;
+    document.getElementById("scan-bar").style.width = (left / SCAN_INTERVAL * 100) + "%";
+  }
   setInterval(updateScanCountdown, 1000);
   updateScanCountdown();
 
-  function resetScanTimer() {} // ya no necesario, el timer es basado en reloj real
-
-  function addLog(msg, type = "info") {
-    const now = new Date().toLocaleTimeString("es-ES");
-    logLines.unshift(`<div class="log-line log-${type}">[${now}] ${msg}</div>`);
-    if (logLines.length > 50) logLines.pop();
-    document.getElementById("log").innerHTML = logLines.join("");
+  // --- Helpers ---
+  async function fetchJson(url) {
+    try {
+      const r = await fetch(url + "?t=" + Date.now());
+      if (!r.ok) return [];
+      const text = (await r.text()).replace(/^﻿/, "");
+      return text.trim() ? JSON.parse(text) : [];
+    } catch { return []; }
   }
 
   async function getCurrentPrice(tokenId) {
@@ -198,56 +212,70 @@
     return null;
   }
 
-  async function loadHistory() {
-    try {
-      const r = await fetch(HISTORY_URL + "?t=" + Date.now());
-      if (!r.ok) return [];
-      const text = (await r.text()).replace(/^﻿/, "");
-      return text.trim() ? JSON.parse(text) : [];
-    } catch { return []; }
-  }
-
-  function renderChart(history) {
-    const ctx = document.getElementById("pnl-chart").getContext("2d");
-    if (!history.length) {
-      if (pnlChart) { pnlChart.destroy(); pnlChart = null; }
-      ctx.fillStyle = "#8b949e";
-      ctx.font = "13px Segoe UI";
-      ctx.textAlign = "center";
-      ctx.fillText("Sin historial aún", ctx.canvas.width / 2, 80);
+  function renderPositionsTable(priced, wrapId) {
+    const wrap = document.getElementById(wrapId);
+    if (!priced.length) {
+      wrap.innerHTML = `<div class="empty">Sin posiciones abiertas.</div>`;
       return;
     }
+    const rows = priced.map(p => {
+      const changeStr = p.change !== null ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change*100).toFixed(1)}%</span>` : "—";
+      const pnlStr = p.pnl !== null ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>` : "—";
+      const badgeClass = p.action === "BUY_YES" ? "badge-yes" : "badge-no";
+      const progress = p.change !== null ? Math.min(Math.abs(p.change) / 0.10 * 100, 100) : 0;
+      const barColor = (p.change ?? 0) >= 0 ? "#3fb950" : "#f85149";
+      return `<tr>
+        <td>${p.market_question.slice(0,52)}</td>
+        <td><span class="badge ${badgeClass}">${p.action === "BUY_YES" ? "YES" : "NO"}</span></td>
+        <td>$${p.entry_price.toFixed(3)}</td>
+        <td>${p.current !== null ? p.current.toFixed(3) : "—"}</td>
+        <td>${changeStr}<div class="bar-wrap"><div class="bar-fill" style="width:${progress}%;background:${barColor}"></div></div></td>
+        <td>${pnlStr}</td>
+        <td>$${p.usdc_spent.toFixed(2)}</td>
+        <td>${new Date(p.opened_at).toLocaleDateString("es-ES")}</td>
+      </tr>`;
+    }).join("");
+    wrap.innerHTML = `<table><thead><tr><th>Mercado</th><th>Tipo</th><th>Entrada</th><th>Actual</th><th>Cambio</th><th>P&L</th><th>USDC</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
 
-    // Build cumulative P&L series
+  function renderHistoryTable(history, wrapId) {
+    const wrap = document.getElementById(wrapId);
+    if (!history.length) { wrap.innerHTML = `<div class="empty">Sin operaciones cerradas aún.</div>`; return; }
+    const rows = [...history].reverse().slice(0, 20).map(h => {
+      const pnlClass = h.pnl >= 0 ? "positive" : "negative";
+      const pnlStr = `${h.pnl >= 0 ? "+" : ""}$${Math.abs(h.pnl).toFixed(2)}`;
+      const badge = h.result === "TP" ? "badge-tp" : "badge-sl";
+      return `<tr>
+        <td>${h.market_question.slice(0,42)}</td>
+        <td><span class="badge ${badge}">${h.result}</span></td>
+        <td><span class="${pnlClass}">${pnlStr}</span></td>
+        <td>${new Date(h.closed_at).toLocaleDateString("es-ES")}</td>
+      </tr>`;
+    }).join("");
+    wrap.innerHTML = `<table><thead><tr><th>Mercado</th><th>Resultado</th><th>P&L</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function renderChart(history, canvasId, chartRef) {
+    const ctx = document.getElementById(canvasId).getContext("2d");
+    if (chartRef) chartRef.destroy();
+    if (!history.length) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.fillStyle = "#8b949e"; ctx.font = "13px Segoe UI"; ctx.textAlign = "center";
+      ctx.fillText("Sin historial aún", ctx.canvas.width / 2, 80);
+      return null;
+    }
     let cum = 0;
-    const labels = [];
-    const data = [];
+    const labels = [], data = [];
     history.forEach(h => {
       cum += h.pnl || 0;
       labels.push(new Date(h.closed_at).toLocaleDateString("es-ES", { month:"short", day:"numeric" }));
       data.push(parseFloat(cum.toFixed(2)));
     });
-
     const color = cum >= 0 ? "#3fb950" : "#f85149";
-
-    if (pnlChart) pnlChart.destroy();
-    pnlChart = new Chart(ctx, {
+    return new Chart(ctx, {
       type: "line",
-      data: {
-        labels,
-        datasets: [{
-          data,
-          borderColor: color,
-          backgroundColor: color + "22",
-          borderWidth: 2,
-          pointRadius: 3,
-          fill: true,
-          tension: 0.3,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
+      data: { labels, datasets: [{ data, borderColor: color, backgroundColor: color + "22", borderWidth: 2, pointRadius: 3, fill: true, tension: 0.3 }] },
+      options: { responsive: true, plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { color: "#8b949e", font: { size: 10 } }, grid: { color: "#21262d" } },
           y: { ticks: { color: "#8b949e", font: { size: 10 }, callback: v => "$" + v }, grid: { color: "#21262d" } }
@@ -256,62 +284,18 @@
     });
   }
 
-  function renderHistory(history) {
-    const wrap = document.getElementById("history-wrap");
-    if (!history.length) {
-      wrap.innerHTML = `<div class="empty">Sin operaciones cerradas aún.</div>`;
-      return;
-    }
-    const rows = [...history].reverse().slice(0, 20).map(h => {
-      const pnlClass = h.pnl >= 0 ? "positive" : "negative";
-      const pnlStr = `${h.pnl >= 0 ? "+" : ""}$${Math.abs(h.pnl).toFixed(2)}`;
-      const badge = h.result === "TP" ? "badge-tp" : "badge-sl";
-      const date = new Date(h.closed_at).toLocaleDateString("es-ES");
-      return `<tr>
-        <td>${h.market_question.slice(0,40)}</td>
-        <td><span class="badge ${badge}">${h.result}</span></td>
-        <td><span class="${pnlClass}">${pnlStr}</span></td>
-        <td>${date}</td>
-      </tr>`;
-    }).join("");
-    wrap.innerHTML = `<table>
-      <thead><tr><th>Mercado</th><th>Resultado</th><th>P&L</th><th>Fecha</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-  }
+  // --- Real tab ---
+  async function loadReal() {
+    const positions = await fetchJson(POSITIONS_URL);
+    const history   = await fetchJson(HISTORY_URL);
 
-  async function loadDashboard() {
-    // Positions
-    let positions = [];
-    try {
-      const r = await fetch(POSITIONS_URL + "?t=" + Date.now());
-      if (r.ok) {
-        const text = (await r.text()).replace(/^﻿/, "");
-        positions = text.trim() ? JSON.parse(text) : [];
-      }
-    } catch (e) { addLog("Error cargando positions.json: " + e.message, "sell"); return; }
-
-    // History
-    const history = await loadHistory();
-
-    // Detect changes
     const currentIds = new Set(positions.map(p => p.token_id));
-    for (const id of currentIds) {
-      if (!lastPositionIds.has(id)) {
-        const p = positions.find(x => x.token_id === id);
-        if (p) addLog(`Nueva apuesta: ${p.action} — ${p.market_question.slice(0,50)}`, "buy");
-      }
-    }
-    for (const id of lastPositionIds) {
-      if (!currentIds.has(id)) {
-        const h = history[history.length - 1];
-        const result = h ? `${h.result} ${h.pnl >= 0 ? "+" : ""}$${h.pnl.toFixed(2)}` : "cerrada";
-        addLog(`Posición ${result}`, "sell");
-      }
+    for (const id of currentIds) if (!lastPositionIds.has(id)) {
+      const p = positions.find(x => x.token_id === id);
+      if (p) addLog(`Nueva apuesta: ${p.action} — ${p.market_question.slice(0,50)}`, "#3fb950");
     }
     lastPositionIds = currentIds;
 
-    // Prices
     const priced = await Promise.all(positions.map(async p => {
       const current = await getCurrentPrice(p.token_id);
       const change = current ? (current - p.entry_price) / p.entry_price : null;
@@ -319,124 +303,79 @@
       return { ...p, current, change, pnl };
     }));
 
-    // Stats
-    const totalUsdc    = priced.reduce((s, p) => s + (p.usdc_spent || 0), 0);
-    const totalPnl     = priced.reduce((s, p) => s + (p.pnl || 0), 0);
-    const realizedPnl  = history.reduce((s, h) => s + (h.pnl || 0), 0);
-    const wins         = history.filter(h => h.pnl > 0).length;
-    const winRate      = history.length ? Math.round(wins / history.length * 100) : null;
-    const bestChange   = priced.length ? Math.max(...priced.map(p => p.change ?? -Infinity)) : null;
+    const totalUsdc   = priced.reduce((s, p) => s + (p.usdc_spent || 0), 0);
+    const totalPnl    = priced.reduce((s, p) => s + (p.pnl || 0), 0);
+    const realizedPnl = history.reduce((s, h) => s + (h.pnl || 0), 0);
+    const wins        = history.filter(h => h.pnl > 0).length;
+    const winRate     = history.length ? Math.round(wins / history.length * 100) : null;
+    const bestChange  = priced.length ? Math.max(...priced.map(p => p.change ?? -Infinity)) : null;
 
     document.getElementById("stat-open").textContent = priced.length;
     document.getElementById("stat-usdc").textContent = `$${totalUsdc.toFixed(2)}`;
-
     const pnlEl = document.getElementById("stat-pnl");
     pnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`;
     pnlEl.className = "value " + (totalPnl >= 0 ? "positive" : "negative");
-
-    const realEl = document.getElementById("stat-realized");
-    realEl.textContent = history.length ? `${realizedPnl >= 0 ? "+" : ""}$${realizedPnl.toFixed(2)}` : "$0.00";
-    realEl.className = "value " + (realizedPnl >= 0 ? "positive" : "negative");
-
+    const rEl = document.getElementById("stat-realized");
+    rEl.textContent = history.length ? `${realizedPnl >= 0 ? "+" : ""}$${realizedPnl.toFixed(2)}` : "$0.00";
+    rEl.className = "value " + (realizedPnl >= 0 ? "positive" : "negative");
     const bestEl = document.getElementById("stat-best");
     if (bestChange !== null && isFinite(bestChange)) {
-      bestEl.textContent = `${bestChange >= 0 ? "+" : ""}${(bestChange * 100).toFixed(1)}%`;
+      bestEl.textContent = `${bestChange >= 0 ? "+" : ""}${(bestChange*100).toFixed(1)}%`;
       bestEl.className = "value " + (bestChange >= 0 ? "positive" : "negative");
     } else { bestEl.textContent = "—"; bestEl.className = "value neutral"; }
-
     document.getElementById("stat-winrate").textContent = winRate !== null ? `${winRate}%` : "—";
 
-    // Open positions table
-    const wrap = document.getElementById("positions-wrap");
-    if (!priced.length) {
-      wrap.innerHTML = `<div class="empty">Sin posiciones abiertas. El bot escaneará nuevos mercados en el próximo ciclo.</div>`;
-    } else {
-      const rows = priced.map(p => {
-        const changeStr = p.change !== null
-          ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change * 100).toFixed(1)}%</span>`
-          : "—";
-        const pnlStr = p.pnl !== null
-          ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>`
-          : "—";
-        const badgeClass = p.action === "BUY_YES" ? "badge-yes" : "badge-no";
-        const progress = p.change !== null ? Math.min(Math.abs(p.change) / 0.10 * 100, 100) : 0;
-        const barColor = (p.change ?? 0) >= 0 ? "#3fb950" : "#f85149";
-        return `<tr>
-          <td>${p.market_question.slice(0,52)}</td>
-          <td><span class="badge ${badgeClass}">${p.action === "BUY_YES" ? "YES" : "NO"}</span></td>
-          <td>$${p.entry_price.toFixed(3)}</td>
-          <td>${p.current !== null ? p.current.toFixed(3) : "—"}</td>
-          <td>${changeStr}<div class="bar-wrap"><div class="bar-fill" style="width:${progress}%;background:${barColor}"></div></div></td>
-          <td>${pnlStr}</td>
-          <td>$${p.usdc_spent.toFixed(2)}</td>
-          <td>${new Date(p.opened_at).toLocaleDateString("es-ES")}</td>
-        </tr>`;
-      }).join("");
-      wrap.innerHTML = `<table><thead><tr>
-        <th>Mercado</th><th>Tipo</th><th>Entrada</th><th>Actual</th>
-        <th>Cambio</th><th>P&L</th><th>USDC</th><th>Fecha</th>
-      </tr></thead><tbody>${rows}</tbody></table>`;
-    }
-
-    renderHistory(history);
-    renderChart(history);
-
-    // --- Paper trading ---
-    await loadPaperDashboard();
-
-    document.getElementById("last-update").textContent =
-      "Actualizado: " + new Date().toLocaleTimeString("es-ES");
+    renderPositionsTable(priced, "positions-wrap");
+    renderHistoryTable(history, "history-wrap");
+    pnlChart = renderChart(history, "pnl-chart", pnlChart);
   }
 
-  async function loadPaperDashboard() {
-    let paperPositions = [], paperHistory = [];
-    try {
-      const r1 = await fetch(PAPER_POSITIONS_URL + "?t=" + Date.now());
-      if (r1.ok) { const t = (await r1.text()).replace(/^﻿/, ""); paperPositions = t.trim() ? JSON.parse(t) : []; }
-      const r2 = await fetch(PAPER_HISTORY_URL + "?t=" + Date.now());
-      if (r2.ok) { const t = (await r2.text()).replace(/^﻿/, ""); paperHistory = t.trim() ? JSON.parse(t) : []; }
-    } catch {}
+  // --- Paper tab ---
+  async function loadPaper() {
+    const positions = await fetchJson(PAPER_POSITIONS_URL);
+    const history   = await fetchJson(PAPER_HISTORY_URL);
 
-    const priced = await Promise.all(paperPositions.map(async p => {
+    const priced = await Promise.all(positions.map(async p => {
       const current = await getCurrentPrice(p.token_id);
       const change = current ? (current - p.entry_price) / p.entry_price : null;
       const pnl = change !== null ? change * p.usdc_spent : null;
       return { ...p, current, change, pnl };
     }));
 
-    const totalPnl = priced.reduce((s, p) => s + (p.pnl || 0), 0);
-    const realizedPnl = paperHistory.reduce((s, h) => s + (h.pnl || 0), 0);
-    const wins = paperHistory.filter(h => h.pnl > 0).length;
-    const winRate = paperHistory.length ? Math.round(wins / paperHistory.length * 100) : null;
+    const totalUsdc   = priced.reduce((s, p) => s + (p.usdc_spent || 0), 0);
+    const totalPnl    = priced.reduce((s, p) => s + (p.pnl || 0), 0);
+    const realizedPnl = history.reduce((s, h) => s + (h.pnl || 0), 0);
+    const wins        = history.filter(h => h.pnl > 0).length;
+    const winRate     = history.length ? Math.round(wins / history.length * 100) : null;
+    const bestChange  = priced.length ? Math.max(...priced.map(p => p.change ?? -Infinity)) : null;
 
     document.getElementById("paper-stat-open").textContent = priced.length;
+    document.getElementById("paper-stat-usdc").textContent = `$${totalUsdc.toFixed(2)}`;
     const ppnlEl = document.getElementById("paper-stat-pnl");
     ppnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`;
     ppnlEl.className = "value " + (totalPnl >= 0 ? "positive" : "negative");
-    const prealEl = document.getElementById("paper-stat-realized");
-    prealEl.textContent = paperHistory.length ? `${realizedPnl >= 0 ? "+" : ""}$${realizedPnl.toFixed(2)}` : "$0.00";
-    prealEl.className = "value " + (realizedPnl >= 0 ? "positive" : "negative");
+    const prEl = document.getElementById("paper-stat-realized");
+    prEl.textContent = history.length ? `${realizedPnl >= 0 ? "+" : ""}$${realizedPnl.toFixed(2)}` : "$0.00";
+    prEl.className = "value " + (realizedPnl >= 0 ? "positive" : "negative");
+    const pbEl = document.getElementById("paper-stat-best");
+    if (bestChange !== null && isFinite(bestChange)) {
+      pbEl.textContent = `${bestChange >= 0 ? "+" : ""}${(bestChange*100).toFixed(1)}%`;
+      pbEl.className = "value " + (bestChange >= 0 ? "positive" : "negative");
+    } else { pbEl.textContent = "—"; pbEl.className = "value neutral"; }
     document.getElementById("paper-stat-winrate").textContent = winRate !== null ? `${winRate}%` : "—";
 
-    const wrap = document.getElementById("paper-positions-wrap");
-    if (!priced.length) {
-      wrap.innerHTML = `<div class="empty" style="border-color:#30363d;color:#8b949e">Sin posiciones paper abiertas.</div>`;
-    } else {
-      const rows = priced.map(p => {
-        const changeStr = p.change !== null ? `<span class="${p.change >= 0 ? "positive" : "negative"}">${p.change >= 0 ? "+" : ""}${(p.change*100).toFixed(1)}%</span>` : "—";
-        const pnlStr = p.pnl !== null ? `<span class="${p.pnl >= 0 ? "positive" : "negative"}">${p.pnl >= 0 ? "+" : ""}$${Math.abs(p.pnl).toFixed(2)}</span>` : "—";
-        const badgeClass = p.action === "BUY_YES" ? "badge-yes" : "badge-no";
-        return `<tr><td>${p.market_question.slice(0,52)}</td>
-          <td><span class="badge ${badgeClass}">${p.action === "BUY_YES" ? "YES" : "NO"}</span></td>
-          <td>$${p.entry_price.toFixed(3)}</td><td>${p.current ? p.current.toFixed(3) : "—"}</td>
-          <td>${changeStr}</td><td>${pnlStr}</td></tr>`;
-      }).join("");
-      wrap.innerHTML = `<table><thead><tr><th>Mercado</th><th>Tipo</th><th>Entrada</th><th>Actual</th><th>Cambio</th><th>P&L</th></tr></thead><tbody>${rows}</tbody></table>`;
-    }
+    renderPositionsTable(priced, "paper-positions-wrap");
+    renderHistoryTable(history, "paper-history-wrap");
+    paperPnlChart = renderChart(history, "paper-pnl-chart", paperPnlChart);
   }
 
-  // --- Live logs desde servidor local del bot ---
-  let lastLogCount = 0;
+  // --- Live logs ---
+  function addLog(msg, color = "#58a6ff") {
+    const now = new Date().toLocaleTimeString("es-ES");
+    logLines.unshift(`<div class="log-line" style="color:${color}">[${now}] ${msg}</div>`);
+    if (logLines.length > 100) logLines.length = 100;
+    document.getElementById("log").innerHTML = logLines.join("");
+  }
 
   async function loadLiveLogs() {
     try {
@@ -445,37 +384,27 @@
         const logs = await r.json();
         document.getElementById("bot-status").innerHTML = "🟢 Bot activo (local)";
         document.getElementById("bot-status").style.color = "#3fb950";
-
-        // Solo añade líneas nuevas
         if (logs.length > lastLogCount) {
-          const newLines = logs.slice(lastLogCount);
-          newLines.forEach(l => {
-            const type = l.level === "SUCCESS" ? "buy"
-                       : l.level === "ERROR"   ? "sell"
-                       : l.level === "WARNING" ? "sell"
-                       : "info";
-            const color = type === "buy" ? "#3fb950" : type === "sell" ? "#f85149" : "#58a6ff";
-            logLines.unshift(
-              `<div class="log-line" style="color:${color}">[${l.time}] ${l.text}</div>`
-            );
+          logs.slice(lastLogCount).forEach(l => {
+            const color = l.level === "SUCCESS" ? "#3fb950" : l.level === "ERROR" || l.level === "WARNING" ? "#f85149" : "#8b949e";
+            addLog(l.text, color);
           });
-          if (logLines.length > 100) logLines.length = 100;
-          document.getElementById("log").innerHTML = logLines.join("");
           lastLogCount = logs.length;
         }
-      } else {
-        throw new Error("no response");
-      }
+      } else throw new Error();
     } catch {
       document.getElementById("bot-status").innerHTML = "⚫ Bot desconectado";
       document.getElementById("bot-status").style.color = "#8b949e";
     }
   }
 
-  loadDashboard();
-  setInterval(() => { loadDashboard(); resetScanTimer(); }, 30000);
+  async function loadAll() {
+    await Promise.all([loadReal(), loadPaper()]);
+    document.getElementById("last-update").textContent = "Actualizado: " + new Date().toLocaleTimeString("es-ES");
+  }
 
-  // Logs en vivo cada 3 segundos
+  loadAll();
+  setInterval(loadAll, 30000);
   loadLiveLogs();
   setInterval(loadLiveLogs, 3000);
 </script>
