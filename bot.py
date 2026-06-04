@@ -26,49 +26,58 @@ SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
 MAX_RUNTIME_S    = 4 * 3600  # 4 horas — el cron lanza uno nuevo cada 4h para cobertura 24/7
 
 
-SPORTS_KEYWORDS = [
-    "vs.", "vs ", " vs ", "game", "match", "series", "winner", "win the",
-    "nba", "nfl", "mlb", "nhl", "ufc", "fifa", "world cup", "champions league",
+WINNER_KEYWORDS = [
+    " vs ", "vs.", "win the", "winner", "world cup", "champions league",
     "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
     "super bowl", "playoffs", "finals", "semifinal", "quarterfinal",
-    "basketball", "football", "soccer", "baseball", "hockey", "tennis",
-    "golf", "f1", "formula 1", "moto gp", "boxing", "wrestling",
-    "orioles", "yankees", "dodgers", "giants", "cubs", "braves", "padres",
-    "phillies", "guardians", "royals", "athletics", "pirates", "blue jays",
-    "knicks", "lakers", "celtics", "warriors", "heat", "spurs", "bulls",
-    "score", "total", "over/under", "o/u", "spread", "points",
+    "nba finals", "ufc", "boxing",
+]
+
+# Mercados que NO son de ganador directo — los excluimos
+NON_WINNER_KEYWORDS = [
+    "over/under", "o/u", "spread", "total", "points", "goals",
+    "score", "half", "quarter", "first", "last", "both teams",
+    "clean sheet", "anytime", "assist", "card", "corner",
 ]
 
 POLITICS_KEYWORDS = [
     "election", "elect", "president", "mayor", "senator", "governor",
     "congress", "parliament", "vote", "ballot", "candidate", "political",
-    "minister", "chancellor", "prime minister", "approval rating",
-    "poll", "polling", "democrat", "republican", "party", "campaign",
-    "ceasefire", "peace deal", "treaty", "sanction", "tariff", "war",
-    "iran", "russia", "ukraine", "israel", "gaza", "nato", "g7", "g20",
+    "minister", "chancellor", "prime minister", "poll", "polling",
+    "democrat", "republican", "party", "campaign", "ceasefire",
+    "peace deal", "treaty", "sanction", "tariff", "war",
+    "iran", "russia", "ukraine", "israel", "gaza", "nato",
     "trump", "biden", "macron", "zelensky", "putin",
 ]
 
 LIVE_KEYWORDS = ["live", "in-play", "in play", "currently", "right now"]
 
 
-def is_sports_market(market: dict) -> bool:
-    """True solo si el mercado es deportivo y no es político ni en vivo."""
+def is_winner_sports_market(market: dict) -> bool:
+    """True solo si es un mercado de ganador directo de un partido deportivo."""
     question = market.get("question", "").lower()
     tags = [t.get("label", "").lower() for t in (market.get("tags") or []) if isinstance(t, dict)]
     category = (market.get("category") or "").lower()
     text = question + " " + category + " " + " ".join(tags)
 
-    # Rechaza política
     if any(kw in text for kw in POLITICS_KEYWORDS):
         return False
-
-    # Rechaza en vivo
     if any(kw in text for kw in LIVE_KEYWORDS):
         return False
+    if any(kw in text for kw in NON_WINNER_KEYWORDS):
+        return False
+    return any(kw in text for kw in WINNER_KEYWORDS)
 
-    # Acepta si hay keyword deportivo
-    return any(kw in text for kw in SPORTS_KEYWORDS)
+
+def get_match_key(market: dict) -> str:
+    """
+    Clave única por partido — extrae los equipos/nombres del título.
+    Evita apostar dos veces en el mismo partido.
+    """
+    q = market.get("question", "").lower()
+    # Normaliza: quita texto después de "?" o ":" para quedarse con el nombre base
+    q = q.split("?")[0].split(":")[0].strip()
+    return q
 
 
 def market_ends_by_tomorrow(market: dict) -> bool:
@@ -115,10 +124,10 @@ def check_positions(client):
             )
 
 
-def scan_markets(client, bet_market_ids: set) -> set:
+def scan_markets(client, bet_market_ids: set, bet_match_keys: set) -> tuple[set, set]:
     """
-    Busca nuevas oportunidades. Devuelve el set actualizado de market_ids apostados.
-    Solo apuesta en mercados que terminan hoy o mañana y no han sido apostados antes.
+    Busca nuevas oportunidades de ganador directo.
+    Devuelve sets actualizados de market_ids y match_keys apostados.
     """
     markets = get_active_markets(limit=100)
     open_token_ids = {p.token_id for p in load_positions()}
@@ -127,14 +136,17 @@ def scan_markets(client, bet_market_ids: set) -> set:
     for market in markets:
         if not market_ends_by_tomorrow(market):
             continue
-
-        if not is_sports_market(market):
-            logger.debug(f"Descartado (no deportivo): {market.get('question','')[:60]}")
+        if not is_winner_sports_market(market):
             continue
 
         market_id = get_market_id(market)
         if market_id in bet_market_ids:
-            continue  # ya apostamos en este mercado
+            continue
+
+        match_key = get_match_key(market)
+        if match_key in bet_match_keys:
+            logger.debug(f"Ya apostado en este partido: {match_key[:55]}")
+            continue
 
         yes_price, no_price = get_prices_from_market(market)
         if yes_price is None:
@@ -154,13 +166,13 @@ def scan_markets(client, bet_market_ids: set) -> set:
             ok = execute_signal(client, signal, question)
             if ok:
                 bet_market_ids.add(market_id)
+                bet_match_keys.add(match_key)
                 open_token_ids.add(signal.token_id)
                 new_bets += 1
 
-    eligible = sum(1 for m in markets if market_ends_by_tomorrow(m))
-    sports = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_sports_market(m))
-    logger.info(f"Scan completado | {eligible} en plazo | {sports} deportivos | {new_bets} nuevas apuestas")
-    return bet_market_ids
+    winner_markets = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_winner_sports_market(m))
+    logger.info(f"Scan completado | {winner_markets} partidos (ganador) elegibles | {new_bets} nuevas apuestas")
+    return bet_market_ids, bet_match_keys
 
 
 def main():
@@ -173,7 +185,9 @@ def main():
     logger.info(f"Bot iniciado | TP: +{TAKE_PROFIT*100:.0f}% | SL: -{STOP_LOSS*100:.0f}% | "
                 f"Scan posiciones: {SCAN_POSITIONS_S}s | Scan mercados: {SCAN_MARKETS_S}s")
 
-    bet_market_ids: set = {p.token_id for p in load_positions()}  # carga historial de apuestas
+    existing_positions = load_positions()
+    bet_market_ids: set = {p.token_id for p in existing_positions}
+    bet_match_keys: set = {get_match_key({"question": p.market_question}) for p in existing_positions}
     start_time = time.time()
     last_market_scan = 0  # fuerza scan inmediato al arrancar
 
@@ -183,7 +197,7 @@ def main():
         # Scan de mercados cada 5 minutos
         if now - last_market_scan >= SCAN_MARKETS_S:
             logger.info("=== SCAN MERCADOS ===")
-            bet_market_ids = scan_markets(client, bet_market_ids)
+            bet_market_ids, bet_match_keys = scan_markets(client, bet_market_ids, bet_match_keys)
             last_market_scan = now
 
         # Revisión de posiciones cada 30 segundos
