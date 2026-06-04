@@ -110,8 +110,17 @@ def evaluate(market: dict, yes_price: float | None, no_price: float | None) -> S
 
 
 def _get_token_id(market: dict, outcome: str) -> str | None:
-    tokens = market.get("tokens") or market.get("clobTokenIds") or []
+    # Primero busca en tokens (lista de dicts con outcome explícito)
+    tokens = market.get("tokens") or []
     for t in tokens:
         if isinstance(t, dict) and t.get("outcome", "").upper() == outcome:
             return t.get("token_id") or t.get("tokenId")
+
+    # Fallback: clobTokenIds — Polymarket siempre los ordena [YES, NO]
+    clob_ids = market.get("clobTokenIds") or []
+    if isinstance(clob_ids, list) and len(clob_ids) >= 2:
+        if outcome == "YES":
+            return clob_ids[0] if isinstance(clob_ids[0], str) else None
+        if outcome == "NO":
+            return clob_ids[1] if isinstance(clob_ids[1], str) else None
     return None
