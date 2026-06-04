@@ -1,7 +1,7 @@
 """Ejecuta órdenes de compra y venta en Polymarket via py-clob-client."""
 from loguru import logger
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import OrderArgs, OrderType
+from py_clob_client.clob_types import OrderArgs, OrderType, ApiCreds
 from py_clob_client.constants import POLYGON
 
 import config
@@ -14,11 +14,11 @@ def build_client() -> ClobClient:
         host=config.CLOB_HOST,
         key=config.PRIVATE_KEY,
         chain_id=POLYGON,
-        creds={
-            "apiKey": config.CLOB_API_KEY,
-            "secret": config.CLOB_API_SECRET,
-            "passphrase": config.CLOB_API_PASSPHRASE,
-        },
+        creds=ApiCreds(
+            api_key=config.CLOB_API_KEY,
+            api_secret=config.CLOB_API_SECRET,
+            api_passphrase=config.CLOB_API_PASSPHRASE,
+        ),
     )
     return client
 
