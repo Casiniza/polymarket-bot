@@ -23,7 +23,7 @@ TAKE_PROFIT      = 0.10   # +10%
 STOP_LOSS        = 0.10   # -10%
 SCAN_POSITIONS_S = 30     # revisar posiciones cada 30 segundos
 SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
-MAX_RUNTIME_S    = 5 * 3600  # 5 horas (margen antes del límite de 6h de Actions)
+MAX_RUNTIME_S    = 4 * 3600  # 4 horas — el cron lanza uno nuevo cada 4h para cobertura 24/7
 
 
 def market_ends_by_tomorrow(market: dict) -> bool:
