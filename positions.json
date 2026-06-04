@@ -1,1 +1,11 @@
-﻿[]
+[
+  {
+    "token_id": "42000591201865125119599363888751347745094475951068823660163883977034059369038",
+    "action": "BUY_NO",
+    "entry_price": 0.865,
+    "size": 5.78,
+    "usdc_spent": 5.0,
+    "market_question": "Athletics vs. Chicago Cubs",
+    "opened_at": "2026-06-04T01:54:53.423120"
+  }
+]
