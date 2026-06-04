@@ -203,8 +203,8 @@ def market_not_started(market: dict) -> bool:
     try:
         start_dt = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
         now = datetime.now(timezone.utc)
-        # El partido no ha empezado si faltan más de 5 minutos para el inicio
-        return start_dt > now + timedelta(minutes=5)
+        # Permite hasta 30 minutos después del inicio (precio aún estable)
+        return start_dt > now - timedelta(minutes=30)
     except (ValueError, TypeError):
         return True
 
