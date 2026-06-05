@@ -97,14 +97,5 @@
     "usdc_spent": 5.0,
     "market_question": "LoL: Anyone's Legend vs LGD Gaming (BO5) - LPL Playoffs",
     "opened_at": "2026-06-05T11:17:36.604420"
-  },
-  {
-    "token_id": "70032134853746188329220018475414525447968067721110255521752711172672833766682",
-    "action": "BUY_YES",
-    "entry_price": 0.965,
-    "size": 5.18,
-    "usdc_spent": 5.0,
-    "market_question": "Will China PR win on 2026-06-05?",
-    "opened_at": "2026-06-05T12:37:41.687741"
   }
 ]
