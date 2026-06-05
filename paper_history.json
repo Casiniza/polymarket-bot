@@ -960,5 +960,18 @@
     "paper": true,
     "opened_at": "2026-06-05T14:16:10.129592",
     "closed_at": "2026-06-05T14:16:22.975418"
+  },
+  {
+    "market_question": "Will Thailand win on 2026-06-05?",
+    "action": "BUY_YES",
+    "entry_price": 0.805,
+    "exit_price": 0.165,
+    "size": 6.21,
+    "usdc_spent": 5.0,
+    "pnl": -3.9744,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T14:16:10.129592",
+    "closed_at": "2026-06-05T14:16:24.808462"
   }
 ]
