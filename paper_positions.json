@@ -52,14 +52,5 @@
     "usdc_spent": 5.0,
     "market_question": "Will Guatemala win on 2026-06-04?",
     "opened_at": "2026-06-05T00:32:16.929330"
-  },
-  {
-    "token_id": "12608433391396331155306434267062131916555683778362796330808483570875643412554",
-    "action": "BUY_NO",
-    "entry_price": 0.727,
-    "size": 6.88,
-    "usdc_spent": 5.0,
-    "market_question": "Will the price of Bitcoin be above $64,000 on June 5?",
-    "opened_at": "2026-06-05T01:08:48.519535"
   }
 ]
