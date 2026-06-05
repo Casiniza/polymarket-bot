@@ -124,5 +124,14 @@
     "usdc_spent": 5.0,
     "market_question": "Counter-Strike: Liquid vs FlyQuest (BO3) - IEM Cologne Major Stage 1",
     "opened_at": "2026-06-05T15:17:55.516826"
+  },
+  {
+    "token_id": "72731043432714424599929497190980465957037680131643411880365821313468524146186",
+    "action": "BUY_NO",
+    "entry_price": 0.915,
+    "size": 5.46,
+    "usdc_spent": 5.0,
+    "market_question": "Will the price of Bitcoin be above $62,000 on June 5?",
+    "opened_at": "2026-06-05T15:17:57.949718"
   }
 ]
