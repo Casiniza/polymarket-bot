@@ -106,5 +106,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Elon Musk post 200-219 tweets from May 29 to June 5, 2026?",
     "opened_at": "2026-06-05T11:27:44.877476"
+  },
+  {
+    "token_id": "70032134853746188329220018475414525447968067721110255521752711172672833766682",
+    "action": "BUY_YES",
+    "entry_price": 0.965,
+    "size": 5.18,
+    "usdc_spent": 5.0,
+    "market_question": "Will China PR win on 2026-06-05?",
+    "opened_at": "2026-06-05T12:37:41.687741"
   }
 ]
