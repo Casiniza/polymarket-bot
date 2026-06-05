@@ -61,5 +61,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will the price of Bitcoin be above $64,000 on June 5?",
     "opened_at": "2026-06-05T01:08:48.519535"
+  },
+  {
+    "token_id": "17220625304440819453069042384493546324358700037067737787743990599205839554280",
+    "action": "BUY_NO",
+    "entry_price": 0.635,
+    "size": 7.87,
+    "usdc_spent": 5.0,
+    "market_question": "Golden State Valkyries vs. Minnesota Lynx",
+    "opened_at": "2026-06-05T01:24:01.997486"
   }
 ]
