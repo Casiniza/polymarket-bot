@@ -843,5 +843,18 @@
     "paper": true,
     "opened_at": "2026-06-05T09:09:35.502206",
     "closed_at": "2026-06-05T10:48:57.331092"
+  },
+  {
+    "market_question": "Counter-Strike: TYLOO vs Lynn Vision (BO3) - IEM Cologne Major Stage 1",
+    "action": "BUY_YES",
+    "entry_price": 0.615,
+    "exit_price": 0.685,
+    "size": 8.13,
+    "usdc_spent": 5.0,
+    "pnl": 0.5691,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-05T05:39:01.732219",
+    "closed_at": "2026-06-05T12:11:26.072309"
   }
 ]
