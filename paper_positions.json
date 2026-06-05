@@ -43,5 +43,14 @@
     "usdc_spent": 5.0,
     "market_question": "Knicks vs. Spurs",
     "opened_at": "2026-06-05T00:00:28.898827"
+  },
+  {
+    "token_id": "72297164453293860585130126086675002283616122515460995289017858801127127033743",
+    "action": "BUY_NO",
+    "entry_price": 0.9835,
+    "size": 5.08,
+    "usdc_spent": 5.0,
+    "market_question": "Will Guatemala win on 2026-06-04?",
+    "opened_at": "2026-06-05T00:32:16.929330"
   }
 ]
