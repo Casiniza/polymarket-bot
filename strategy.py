@@ -2,8 +2,10 @@
 Estrategias de trading.
 - Soporta múltiples estrategias simultáneas: elige la de mayor confianza.
 - Detección automática del Mundial para ajustar parámetros.
+- Dynamic Position Sizing para paper trading basado en P&L reciente.
 """
 from dataclasses import dataclass
+from datetime import datetime, timezone, timedelta
 from loguru import logger
 import config
 
@@ -33,13 +35,49 @@ def get_safe_range(market: dict, paper: bool = False) -> tuple[float, float]:
         return config.WC_SAFE_BET_MIN, config.WC_SAFE_BET_MAX
     return config.SAFE_BET_MIN, config.SAFE_BET_MAX
 
+def get_dynamic_paper_bet(price: float = 0.0) -> float:
+    """
+    Dynamic Position Sizing para paper trading.
+    Calcula el P&L de las últimas 3 horas y ajusta la apuesta:
+      - Racha buena  (P&L > +$2)  → $10
+      - Neutro       (-$2 a +$2)  → $5
+      - Racha mala   (P&L < -$2)  → $3
+    Además, si el precio supera el umbral de alta confianza → apuesta máxima.
+    """
+    try:
+        from positions import load_history
+        history = load_history(paper=True)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=3)
+        recent_pnl = sum(
+            h.get("pnl", 0) for h in history
+            if datetime.fromisoformat(h.get("closed_at", "2000-01-01")).replace(tzinfo=timezone.utc) >= cutoff
+        )
+    except Exception:
+        recent_pnl = 0.0
+
+    # Alta confianza por precio — siempre apuesta máxima
+    if price >= config.PAPER_HIGH_CONF_THRESHOLD:
+        logger.info(f"[PAPER] Alta confianza precio {price:.2f} → apuesta max ${config.PAPER_HIGH_CONF_BET}")
+        return config.PAPER_HIGH_CONF_BET
+
+    # Dynamic sizing por P&L reciente
+    if recent_pnl > 2.0:
+        size = config.PAPER_HIGH_CONF_BET
+        logger.info(f"[PAPER] Racha buena (P&L 3h: +${recent_pnl:.2f}) → apuesta ${size}")
+    elif recent_pnl < -2.0:
+        size = max(config.PAPER_BET_USDC * 0.6, 3.0)
+        logger.info(f"[PAPER] Racha mala (P&L 3h: -${abs(recent_pnl):.2f}) → apuesta reducida ${size:.1f}")
+    else:
+        size = config.PAPER_BET_USDC
+        logger.debug(f"[PAPER] Neutro (P&L 3h: ${recent_pnl:.2f}) → apuesta normal ${size}")
+
+    return size
+
+
 def get_bet_size(market: dict, paper: bool = False, price: float = 0.0) -> float:
-    """Devuelve el tamaño de apuesta. En paper, apuesta doble si el precio es muy alto."""
+    """Devuelve el tamaño de apuesta."""
     if paper:
-        if price >= config.PAPER_HIGH_CONF_THRESHOLD:
-            logger.info(f"[PAPER] Alta confianza ({price:.2f} >= {config.PAPER_HIGH_CONF_THRESHOLD}) — apuesta doble ${config.PAPER_HIGH_CONF_BET}")
-            return config.PAPER_HIGH_CONF_BET
-        return config.PAPER_BET_USDC
+        return get_dynamic_paper_bet(price)
     if is_world_cup(market):
         logger.info(f"[Mundial] apuesta aumentada a ${config.WC_BET_USDC}")
         return config.WC_BET_USDC
