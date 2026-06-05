@@ -97,14 +97,5 @@
     "usdc_spent": 5.0,
     "market_question": "Counter-Strike: Liquid vs FlyQuest (BO3) - IEM Cologne Major Stage 1",
     "opened_at": "2026-06-05T06:56:11.564089"
-  },
-  {
-    "token_id": "82402009861505585504639588731966299869474958311676243658234159883672968928941",
-    "action": "BUY_YES",
-    "entry_price": 0.785,
-    "size": 6.37,
-    "usdc_spent": 5.0,
-    "market_question": "Will Elon Musk post 180-199 tweets from May 29 to June 5, 2026?",
-    "opened_at": "2026-06-05T09:09:35.502206"
   }
 ]
