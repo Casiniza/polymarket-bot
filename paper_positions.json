@@ -16,14 +16,5 @@
     "usdc_spent": 5.0,
     "market_question": "Bitcoin Up or Down on June 6?",
     "opened_at": "2026-06-05T22:10:40.067304"
-  },
-  {
-    "token_id": "89505570798936640022510973315593494452774010007599343836930564230876682470974",
-    "action": "BUY_NO",
-    "entry_price": 0.929,
-    "size": 10.76,
-    "usdc_spent": 10.0,
-    "market_question": "Will the price of Bitcoin be above $64,000 on June 6?",
-    "opened_at": "2026-06-05T22:33:37.406989"
   }
 ]
