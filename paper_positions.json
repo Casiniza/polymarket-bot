@@ -52,5 +52,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Guatemala win on 2026-06-04?",
     "opened_at": "2026-06-05T00:32:16.929330"
+  },
+  {
+    "token_id": "21330573423235633760686264664806621787401620522085624053107024725120634134182",
+    "action": "BUY_YES",
+    "entry_price": 0.845,
+    "size": 5.92,
+    "usdc_spent": 5.0,
+    "market_question": "Golden Knights vs. Hurricanes",
+    "opened_at": "2026-06-05T02:04:34.138078"
   }
 ]
