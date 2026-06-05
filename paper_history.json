@@ -466,5 +466,18 @@
     "paper": true,
     "opened_at": "2026-06-04T21:08:33.557976",
     "closed_at": "2026-06-05T02:12:19.550857"
+  },
+  {
+    "market_question": "Golden Knights vs. Hurricanes",
+    "action": "BUY_YES",
+    "entry_price": 0.845,
+    "exit_price": 0.755,
+    "size": 5.92,
+    "usdc_spent": 5.0,
+    "pnl": -0.5328,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T02:04:34.138078",
+    "closed_at": "2026-06-05T02:33:49.787166"
   }
 ]
