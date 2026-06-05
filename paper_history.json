@@ -505,5 +505,18 @@
     "paper": true,
     "opened_at": "2026-06-05T02:58:52.334806",
     "closed_at": "2026-06-05T03:20:11.111834"
+  },
+  {
+    "market_question": "Will Mexico win on 2026-06-04?",
+    "action": "BUY_YES",
+    "entry_price": 0.865,
+    "exit_price": 0.955,
+    "size": 5.78,
+    "usdc_spent": 5.0,
+    "pnl": 0.5202,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-05T02:58:52.334806",
+    "closed_at": "2026-06-05T03:20:12.770329"
   }
 ]
