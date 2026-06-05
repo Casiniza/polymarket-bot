@@ -303,7 +303,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             # Descarta mercados ya resueltos (precio en 0.99+ o 0.01-)
             y_p, n_p = get_prices_from_market(market)
             if y_p is None: continue
-            if y_p >= 0.99 or y_p <= 0.01: continue  # ya resuelto
+            if y_p >= 0.95 or y_p <= 0.05: continue  # ya resuelto o a punto de resolver
             vol = float(market.get("volume24hr") or 0)
             if vol < 1000: continue
         else:
