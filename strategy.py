@@ -33,12 +33,15 @@ def get_safe_range(market: dict, paper: bool = False) -> tuple[float, float]:
         return config.WC_SAFE_BET_MIN, config.WC_SAFE_BET_MAX
     return config.SAFE_BET_MIN, config.SAFE_BET_MAX
 
-def get_bet_size(market: dict, paper: bool = False) -> float:
-    """Devuelve el tamaño de apuesta."""
+def get_bet_size(market: dict, paper: bool = False, price: float = 0.0) -> float:
+    """Devuelve el tamaño de apuesta. En paper, apuesta doble si el precio es muy alto."""
     if paper:
+        if price >= config.PAPER_HIGH_CONF_THRESHOLD:
+            logger.info(f"[PAPER] Alta confianza ({price:.2f} >= {config.PAPER_HIGH_CONF_THRESHOLD}) — apuesta doble ${config.PAPER_HIGH_CONF_BET}")
+            return config.PAPER_HIGH_CONF_BET
         return config.PAPER_BET_USDC
     if is_world_cup(market):
-        logger.info(f"⚽ Mundial detectado — apuesta aumentada a ${config.WC_BET_USDC}")
+        logger.info(f"[Mundial] apuesta aumentada a ${config.WC_BET_USDC}")
         return config.WC_BET_USDC
     return config.MAX_BET_USDC
 

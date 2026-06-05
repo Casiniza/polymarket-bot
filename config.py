@@ -31,10 +31,12 @@ WC_SAFE_BET_MIN      = float(os.getenv("WC_SAFE_BET_MIN", "0.75"))
 WC_SAFE_BET_MAX      = float(os.getenv("WC_SAFE_BET_MAX", "0.95"))
 
 # Paper trading (simulación paralela — más agresivo)
-PAPER_TRADING        = os.getenv("PAPER_TRADING", "true").lower() == "true"
-PAPER_SAFE_BET_MIN   = float(os.getenv("PAPER_SAFE_BET_MIN", "0.65"))
-PAPER_SAFE_BET_MAX   = float(os.getenv("PAPER_SAFE_BET_MAX", "0.93"))
-PAPER_BET_USDC       = float(os.getenv("PAPER_BET_USDC", "5.0"))
+PAPER_TRADING            = os.getenv("PAPER_TRADING", "true").lower() == "true"
+PAPER_SAFE_BET_MIN       = float(os.getenv("PAPER_SAFE_BET_MIN", "0.65"))
+PAPER_SAFE_BET_MAX       = float(os.getenv("PAPER_SAFE_BET_MAX", "0.93"))
+PAPER_BET_USDC           = float(os.getenv("PAPER_BET_USDC", "5.0"))
+PAPER_HIGH_CONF_THRESHOLD = float(os.getenv("PAPER_HIGH_CONF_THRESHOLD", "0.88"))  # por encima de esto apuesta doble
+PAPER_HIGH_CONF_BET      = float(os.getenv("PAPER_HIGH_CONF_BET", "10.0"))         # apuesta doble en alta confianza
 
 CLOB_HOST  = "https://clob.polymarket.com"
 GAMMA_HOST = "https://gamma-api.polymarket.com"

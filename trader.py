@@ -35,7 +35,7 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
     if signal.action == "HOLD":
         return False
 
-    bet_usdc = get_bet_size(market, paper=paper) if market else (config.PAPER_BET_USDC if paper else config.MAX_BET_USDC)
+    bet_usdc = get_bet_size(market, paper=paper, price=signal.price) if market else (config.PAPER_BET_USDC if paper else config.MAX_BET_USDC)
     size = round(bet_usdc / signal.price, 2) if signal.price > 0 else 0
     label = "[PAPER] " if paper else ("[DRY RUN] " if config.DRY_RUN else "")
 
