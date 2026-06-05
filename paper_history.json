@@ -635,5 +635,18 @@
     "paper": true,
     "opened_at": "2026-06-05T05:09:05.295705",
     "closed_at": "2026-06-05T05:09:16.096702"
+  },
+  {
+    "market_question": "Will the price of Bitcoin be above $64,000 on June 5?",
+    "action": "BUY_NO",
+    "entry_price": 0.7175,
+    "exit_price": 0.6435,
+    "size": 6.97,
+    "usdc_spent": 5.0,
+    "pnl": -0.5158,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T05:09:02.784705",
+    "closed_at": "2026-06-05T05:11:17.116913"
   }
 ]
