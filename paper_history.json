@@ -1181,5 +1181,18 @@
     "paper": true,
     "opened_at": "2026-06-05T15:18:00.272162",
     "closed_at": "2026-06-05T15:37:47.169877"
+  },
+  {
+    "market_question": "Counter-Strike: NRG vs BIG (BO3) - IEM Cologne Major Stage 1",
+    "action": "BUY_NO",
+    "entry_price": 0.705,
+    "exit_price": 0.785,
+    "size": 7.09,
+    "usdc_spent": 5.0,
+    "pnl": 0.5672,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-05T17:10:06.586227",
+    "closed_at": "2026-06-05T17:25:50.494321"
   }
 ]
