@@ -310,7 +310,7 @@
 
   function renderHistoryTable(history, wrapId) {
     const wrap = document.getElementById(wrapId);
-    if (!history.length) { wrap.innerHTML = `<div class="empty">Sin operaciones cerradas aÃºn.</div>`; return; }
+    if (!history.length) { wrap.innerHTML = `<div class="empty">Sin operaciones cerradas aun.</div>`; return; }
     const rows = [...history].reverse().slice(0, 20).map(h => {
       const pnlClass = h.pnl >= 0 ? "positive" : "negative";
       const pnlStr = `${h.pnl >= 0 ? "+" : ""}$${Math.abs(h.pnl).toFixed(2)}`;
@@ -331,7 +331,7 @@
     if (!history.length) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.fillStyle = "#8b949e"; ctx.font = "13px Segoe UI"; ctx.textAlign = "center";
-      ctx.fillText("Sin historial aÃºn", ctx.canvas.width / 2, 80);
+      ctx.fillText("Sin historial aun", ctx.canvas.width / 2, 80);
       return null;
     }
     let cum = 0;
