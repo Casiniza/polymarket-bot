@@ -921,5 +921,18 @@
     "paper": true,
     "opened_at": "2026-06-05T12:37:41.687741",
     "closed_at": "2026-06-05T13:06:01.950327"
+  },
+  {
+    "market_question": "Will China PR win on 2026-06-05?",
+    "action": "BUY_YES",
+    "entry_price": 0.965,
+    "exit_price": 0.865,
+    "size": 5.18,
+    "usdc_spent": 5.0,
+    "pnl": -0.518,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T12:37:41.687741",
+    "closed_at": "2026-06-05T13:06:03.733702"
   }
 ]
