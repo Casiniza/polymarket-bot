@@ -1090,5 +1090,18 @@
     "paper": true,
     "opened_at": "2026-06-05T06:56:11.564089",
     "closed_at": "2026-06-05T14:32:35.436491"
+  },
+  {
+    "market_question": "Counter-Strike: Liquid vs FlyQuest (BO3) - IEM Cologne Major Stage 1",
+    "action": "BUY_YES",
+    "entry_price": 0.605,
+    "exit_price": 0.535,
+    "size": 8.26,
+    "usdc_spent": 5.0,
+    "pnl": -0.5782,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T06:56:11.564089",
+    "closed_at": "2026-06-05T14:32:37.708163"
   }
 ]
