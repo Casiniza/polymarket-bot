@@ -341,7 +341,14 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         market["_price_history"] = hist_prices
         market["_paper"] = paper
 
-        signal = evaluate(market, yes_price, no_price)
+        # En paper: también prueba ALWAYS_NO en mercados no deportivos
+        if paper and not is_winner_sports_market(market):
+            from strategy import always_no_strategy
+            signal = always_no_strategy(market, yes_price, no_price)
+            if signal.action == "HOLD":
+                continue
+        else:
+            signal = evaluate(market, yes_price, no_price)
 
         if signal.action != "HOLD" and signal.token_id not in open_token_ids:
             question = market.get("question", "")

@@ -160,11 +160,35 @@ def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | N
     return Signal("HOLD", 0.0, "Fuera del rango seguro", token_id_yes or "", yes_price or 0.0, "SAFE_BET")
 
 
+def always_no_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
+    """
+    Basado en 'Nothing Ever Happens' — el 73.4% de mercados Polymarket resuelven en NO.
+    Compra NO cuando su precio está entre 0.60 y 0.75 (el mercado aún no ha descontado
+    la probabilidad base de NO).
+    Solo para paper trading en mercados no deportivos.
+    """
+    token_id_no = _get_token_id(market, "NO")
+    if not token_id_no or no_price is None:
+        return Signal("HOLD", 0.0, "Sin token NO", "", 0.0, "ALWAYS_NO")
+
+    NO_MIN, NO_MAX = 0.60, 0.75
+
+    if NO_MIN <= no_price <= NO_MAX:
+        # Confianza basada en cuánto se aleja del 73.4% base rate
+        confidence = 0.70 + 0.15 * (no_price - NO_MIN) / (NO_MAX - NO_MIN)
+        return Signal("BUY_NO", confidence,
+                      f"Always NO: {no_price:.2f} en rango {NO_MIN}-{NO_MAX} (base rate 73.4%)",
+                      token_id_no, no_price, "ALWAYS_NO")
+
+    return Signal("HOLD", 0.0, "NO fuera del rango base rate", "", no_price or 0.0, "ALWAYS_NO")
+
+
 STRATEGIES = {
     "THRESHOLD":  threshold_strategy,
     "MOMENTUM":   momentum_strategy,
     "CONTRARIAN": contrarian_strategy,
     "SAFE_BET":   safe_bet_strategy,
+    "ALWAYS_NO":  always_no_strategy,
 }
 
 
