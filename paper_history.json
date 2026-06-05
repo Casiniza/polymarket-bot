@@ -1064,5 +1064,18 @@
     "paper": true,
     "opened_at": "2026-06-05T13:35:08.887973",
     "closed_at": "2026-06-05T14:28:33.271677"
+  },
+  {
+    "market_question": "Will Elon Musk post 200-219 tweets from May 29 to June 5, 2026?",
+    "action": "BUY_NO",
+    "entry_price": 0.805,
+    "exit_price": 0.89,
+    "size": 6.21,
+    "usdc_spent": 5.0,
+    "pnl": 0.5278,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-05T13:35:08.887973",
+    "closed_at": "2026-06-05T14:28:33.545813"
   }
 ]
