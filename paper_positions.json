@@ -43,5 +43,14 @@
     "usdc_spent": 5.0,
     "market_question": "Golden Knights vs. Hurricanes",
     "opened_at": "2026-06-04T23:46:48.499035"
+  },
+  {
+    "token_id": "89197230931921713679747543407334161079954641716437720586655130807468320244629",
+    "action": "BUY_NO",
+    "entry_price": 0.665,
+    "size": 7.52,
+    "usdc_spent": 5.0,
+    "market_question": "Knicks vs. Spurs",
+    "opened_at": "2026-06-05T00:00:28.898827"
   }
 ]
