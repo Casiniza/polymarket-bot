@@ -999,5 +999,31 @@
     "paper": true,
     "opened_at": "2026-06-05T14:21:18.319371",
     "closed_at": "2026-06-05T14:24:39.772092"
+  },
+  {
+    "market_question": "Will the price of Bitcoin be above $60,000 on June 5?",
+    "action": "BUY_YES",
+    "entry_price": 0.846,
+    "exit_price": 0.738,
+    "size": 5.91,
+    "usdc_spent": 5.0,
+    "pnl": -0.6383,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T14:21:18.862453",
+    "closed_at": "2026-06-05T14:24:42.857726"
+  },
+  {
+    "market_question": "Will the price of Bitcoin be above $60,000 on June 5?",
+    "action": "BUY_YES",
+    "entry_price": 0.846,
+    "exit_price": 0.738,
+    "size": 5.91,
+    "usdc_spent": 5.0,
+    "pnl": -0.6383,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T14:21:18.862453",
+    "closed_at": "2026-06-05T14:24:42.918058"
   }
 ]
