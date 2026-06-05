@@ -687,5 +687,18 @@
     "paper": true,
     "opened_at": "2026-06-05T07:17:18.313721",
     "closed_at": "2026-06-05T07:17:30.813955"
+  },
+  {
+    "market_question": "Bitcoin Up or Down on June 5?",
+    "action": "BUY_NO",
+    "entry_price": 0.915,
+    "exit_price": 0.815,
+    "size": 5.46,
+    "usdc_spent": 5.0,
+    "pnl": -0.546,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T07:17:13.813918",
+    "closed_at": "2026-06-05T07:33:48.542343"
   }
 ]
