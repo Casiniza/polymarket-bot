@@ -427,5 +427,18 @@
     "paper": true,
     "opened_at": "2026-06-05T01:24:04.211328",
     "closed_at": "2026-06-05T01:24:14.164915"
+  },
+  {
+    "market_question": "Will Czechia win on 2026-06-04?",
+    "action": "BUY_YES",
+    "entry_price": 0.625,
+    "exit_price": 0.525,
+    "size": 8.0,
+    "usdc_spent": 5.0,
+    "pnl": -0.8,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T01:24:04.211328",
+    "closed_at": "2026-06-05T01:24:14.626918"
   }
 ]
