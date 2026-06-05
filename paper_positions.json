@@ -124,5 +124,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Elon Musk post 200-219 tweets from May 29 to June 5, 2026?",
     "opened_at": "2026-06-05T15:18:03.141530"
+  },
+  {
+    "token_id": "85324895962191125458611484094390553539012555693988703969452065661384596558285",
+    "action": "BUY_NO",
+    "entry_price": 0.705,
+    "size": 7.09,
+    "usdc_spent": 5.0,
+    "market_question": "Counter-Strike: NRG vs BIG (BO3) - IEM Cologne Major Stage 1",
+    "opened_at": "2026-06-05T17:10:06.586227"
   }
 ]
