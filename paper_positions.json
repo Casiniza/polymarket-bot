@@ -99,15 +99,6 @@
     "opened_at": "2026-06-05T06:56:11.564089"
   },
   {
-    "token_id": "86604599948927920697347342983964689906319748643618247325765806539715704608532",
-    "action": "BUY_YES",
-    "entry_price": 0.875,
-    "size": 5.71,
-    "usdc_spent": 5.0,
-    "market_question": "LoL: Anyone's Legend vs LGD Gaming (BO5) - LPL Playoffs",
-    "opened_at": "2026-06-05T07:16:12.760794"
-  },
-  {
     "token_id": "49884439398704579782622465881697212538741859355490347424577379959362562418969",
     "action": "BUY_NO",
     "entry_price": 0.795,
