@@ -106,5 +106,14 @@
     "usdc_spent": 5.0,
     "market_question": "LoL: Anyone's Legend vs LGD Gaming (BO5) - LPL Playoffs",
     "opened_at": "2026-06-05T07:16:12.760794"
+  },
+  {
+    "token_id": "82402009861505585504639588731966299869474958311676243658234159883672968928941",
+    "action": "BUY_YES",
+    "entry_price": 0.695,
+    "size": 7.19,
+    "usdc_spent": 5.0,
+    "market_question": "Will Elon Musk post 180-199 tweets from May 29 to June 5, 2026?",
+    "opened_at": "2026-06-05T07:36:55.381567"
   }
 ]
