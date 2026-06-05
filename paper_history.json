@@ -401,5 +401,18 @@
     "paper": true,
     "opened_at": "2026-06-05T01:24:01.997486",
     "closed_at": "2026-06-05T01:24:09.857284"
+  },
+  {
+    "market_question": "Golden State Valkyries vs. Minnesota Lynx",
+    "action": "BUY_NO",
+    "entry_price": 0.635,
+    "exit_price": 0.57,
+    "size": 7.87,
+    "usdc_spent": 5.0,
+    "pnl": -0.5116,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T01:24:01.997486",
+    "closed_at": "2026-06-05T01:24:11.493407"
   }
 ]
