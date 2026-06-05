@@ -88,5 +88,14 @@
     "usdc_spent": 5.0,
     "market_question": "Counter-Strike: TYLOO vs Lynn Vision (BO3) - IEM Cologne Major Stage 1",
     "opened_at": "2026-06-05T05:39:01.732219"
+  },
+  {
+    "token_id": "65965352933866951482941663409912405592869201106533755704209457508970603649906",
+    "action": "BUY_YES",
+    "entry_price": 0.605,
+    "size": 8.26,
+    "usdc_spent": 5.0,
+    "market_question": "Counter-Strike: Liquid vs FlyQuest (BO3) - IEM Cologne Major Stage 1",
+    "opened_at": "2026-06-05T06:56:11.564089"
   }
 ]
