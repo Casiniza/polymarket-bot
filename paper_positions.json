@@ -7,14 +7,5 @@
     "usdc_spent": 5.0,
     "market_question": "Knicks vs. Spurs",
     "opened_at": "2026-06-05T18:23:34.077190"
-  },
-  {
-    "token_id": "85324895962191125458611484094390553539012555693988703969452065661384596558285",
-    "action": "BUY_NO",
-    "entry_price": 0.85,
-    "size": 5.88,
-    "usdc_spent": 5.0,
-    "market_question": "Counter-Strike: NRG vs BIG (BO3) - IEM Cologne Major Stage 1",
-    "opened_at": "2026-06-05T18:23:37.085195"
   }
 ]
