@@ -70,5 +70,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Serbia win on 2026-06-04?",
     "opened_at": "2026-06-05T03:16:59.003978"
+  },
+  {
+    "token_id": "112369611883568026386458898154529710700412208791541634262071575750251123819042",
+    "action": "BUY_NO",
+    "entry_price": 0.745,
+    "size": 6.71,
+    "usdc_spent": 5.0,
+    "market_question": "Bitcoin Up or Down on June 5?",
+    "opened_at": "2026-06-05T05:01:32.205469"
   }
 ]
