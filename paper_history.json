@@ -193,5 +193,18 @@
     "paper": true,
     "opened_at": "2026-06-06T01:35:42.079066",
     "closed_at": "2026-06-06T01:46:10.845807"
+  },
+  {
+    "market_question": "Phoenix Mercury vs. PortlandFire",
+    "action": "BUY_YES",
+    "entry_price": 0.55,
+    "exit_price": 0.465,
+    "size": 5.45,
+    "usdc_spent": 3.0,
+    "pnl": -0.4633,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T02:48:18.678140",
+    "closed_at": "2026-06-06T02:48:22.973957"
   }
 ]
