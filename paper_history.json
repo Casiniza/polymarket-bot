@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "market_question": "Counter-Strike: BetBoom Team vs GamerLegion (BO1) - IEM Cologne Major Stage 2",
+    "action": "BUY_YES",
+    "entry_price": 0.675,
+    "exit_price": 0.745,
+    "size": 7.41,
+    "usdc_spent": 5.0,
+    "pnl": 0.5187,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T18:42:23.485211",
+    "closed_at": "2026-06-06T18:43:10.155538"
+  }
+]
