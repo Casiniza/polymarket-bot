@@ -115,5 +115,18 @@
     "paper": true,
     "opened_at": "2026-06-06T21:17:59.013012",
     "closed_at": "2026-06-06T21:18:03.317161"
+  },
+  {
+    "market_question": "Golden State Valkyries vs. Las Vegas Aces",
+    "action": "BUY_NO",
+    "entry_price": 0.745,
+    "exit_price": 0.995,
+    "size": 13.42,
+    "usdc_spent": 10.0,
+    "pnl": 3.355,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T21:17:59.013012",
+    "closed_at": "2026-06-06T21:18:04.332702"
   }
 ]
