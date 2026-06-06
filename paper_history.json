@@ -349,5 +349,18 @@
     "paper": true,
     "opened_at": "2026-06-06T01:35:46.329698",
     "closed_at": "2026-06-06T09:41:00.014206"
+  },
+  {
+    "market_question": "Counter-Strike: 9z vs FlyQuest (BO1) - IEM Cologne Major Stage 2",
+    "action": "BUY_YES",
+    "entry_price": 0.82,
+    "exit_price": 0.995,
+    "size": 6.1,
+    "usdc_spent": 5.0,
+    "pnl": 1.0675,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T11:18:46.818225",
+    "closed_at": "2026-06-06T11:18:48.345173"
   }
 ]
