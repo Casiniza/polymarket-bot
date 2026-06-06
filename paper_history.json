@@ -89,5 +89,44 @@
     "paper": true,
     "opened_at": "2026-06-05T23:19:10.813696",
     "closed_at": "2026-06-05T23:19:22.514267"
+  },
+  {
+    "market_question": "Bitcoin Up or Down on June 6?",
+    "action": "BUY_YES",
+    "entry_price": 0.805,
+    "exit_price": 0.715,
+    "size": 3.73,
+    "usdc_spent": 3.0,
+    "pnl": -0.3357,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-05T23:19:10.813696",
+    "closed_at": "2026-06-05T23:19:22.560667"
+  },
+  {
+    "market_question": "Connecticut Sun vs. Chicago Sky",
+    "action": "BUY_YES",
+    "entry_price": 0.71,
+    "exit_price": 0.55,
+    "size": 7.04,
+    "usdc_spent": 5.0,
+    "pnl": -1.1264,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T00:21:37.009514",
+    "closed_at": "2026-06-06T00:21:40.124187"
+  },
+  {
+    "market_question": "Connecticut Sun vs. Chicago Sky",
+    "action": "BUY_YES",
+    "entry_price": 0.71,
+    "exit_price": 0.55,
+    "size": 7.04,
+    "usdc_spent": 5.0,
+    "pnl": -1.1264,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T00:21:37.009514",
+    "closed_at": "2026-06-06T00:21:40.201122"
   }
 ]
