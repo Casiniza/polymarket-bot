@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "token_id": "22377693747519837033065846765415710983970486190083402741699286805417141639235",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "size": 14.39,
+    "usdc_spent": 10.0,
+    "market_question": "UFC Fight Night: Yuneisy Duben vs. Jeisla Chaves (Women's Flyweight, Prelims)",
+    "opened_at": "2026-06-06T21:32:47.270716"
+  }
+]
