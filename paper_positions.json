@@ -34,5 +34,14 @@
     "usdc_spent": 3.0,
     "market_question": "Connecticut Sun vs. Chicago Sky",
     "opened_at": "2026-06-06T01:35:44.288435"
+  },
+  {
+    "token_id": "19198355965425198538583429842779437474614435151326196554462173812505569206605",
+    "action": "BUY_NO",
+    "entry_price": 0.755,
+    "size": 3.97,
+    "usdc_spent": 3.0,
+    "market_question": "LoL: JD Gaming vs Bilibili Gaming (BO5) - LPL Playoffs",
+    "opened_at": "2026-06-06T01:35:46.329698"
   }
 ]
