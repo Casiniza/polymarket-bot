@@ -466,5 +466,18 @@
     "paper": true,
     "opened_at": "2026-06-06T13:11:23.021181",
     "closed_at": "2026-06-06T13:11:26.860107"
+  },
+  {
+    "market_question": "LoL: Deep Cross Gaming vs GAM Esports (BO5) - LCP Playoffs",
+    "action": "BUY_YES",
+    "entry_price": 0.905,
+    "exit_price": 0.9995,
+    "size": 11.05,
+    "usdc_spent": 10.0,
+    "pnl": 1.0442,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T13:11:23.021181",
+    "closed_at": "2026-06-06T13:11:28.553287"
   }
 ]
