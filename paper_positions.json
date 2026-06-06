@@ -1,14 +1,5 @@
 [
   {
-    "token_id": "28538098607892871424477227619866246492870328197978452151032097920321192362185",
-    "action": "BUY_YES",
-    "entry_price": 0.675,
-    "size": 7.41,
-    "usdc_spent": 5.0,
-    "market_question": "Counter-Strike: BetBoom Team vs GamerLegion (BO1) - IEM Cologne Major Stage 2",
-    "opened_at": "2026-06-06T18:42:23.485211"
-  },
-  {
     "token_id": "82816512681122325064406330530283187772033525461638544147033254714177356733318",
     "action": "BUY_NO",
     "entry_price": 0.665,
