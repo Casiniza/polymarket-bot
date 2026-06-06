@@ -25,14 +25,5 @@
     "usdc_spent": 10.0,
     "market_question": "Counter-Strike: G2 vs M80 (BO1) - IEM Cologne Major Stage 2",
     "opened_at": "2026-06-06T13:11:20.698624"
-  },
-  {
-    "token_id": "78375473161817839535842957033556981685150128832119999659431733751509983451088",
-    "action": "BUY_NO",
-    "entry_price": 0.895,
-    "size": 11.17,
-    "usdc_spent": 10.0,
-    "market_question": "LoL: Movistar KOI vs Karmine Corp (BO5) - LEC Playoffs",
-    "opened_at": "2026-06-06T17:11:36.526578"
   }
 ]
