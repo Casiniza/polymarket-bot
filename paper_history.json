@@ -76,5 +76,31 @@
     "paper": true,
     "opened_at": "2026-06-06T21:17:36.332501",
     "closed_at": "2026-06-06T21:17:38.247173"
+  },
+  {
+    "market_question": "LoL: FlyQuest vs Team Liquid (BO5) - LCS Playoffs",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "exit_price": 0.615,
+    "size": 14.39,
+    "usdc_spent": 10.0,
+    "pnl": -1.1512,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T21:17:56.776404",
+    "closed_at": "2026-06-06T21:17:59.380342"
+  },
+  {
+    "market_question": "LoL: FlyQuest vs Team Liquid (BO5) - LCS Playoffs",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "exit_price": 0.615,
+    "size": 14.39,
+    "usdc_spent": 10.0,
+    "pnl": -1.1512,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T21:17:56.776404",
+    "closed_at": "2026-06-06T21:17:59.392762"
   }
 ]
