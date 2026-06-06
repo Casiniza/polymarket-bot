@@ -25,14 +25,5 @@
     "usdc_spent": 10.0,
     "market_question": "Counter-Strike: G2 vs M80 (BO1) - IEM Cologne Major Stage 2",
     "opened_at": "2026-06-06T13:11:20.698624"
-  },
-  {
-    "token_id": "5946786990814739735522078754476937448572752475499388245790800470820652764904",
-    "action": "BUY_YES",
-    "entry_price": 0.695,
-    "size": 14.39,
-    "usdc_spent": 10.0,
-    "market_question": "Dota 2: Aurora vs LGD Gaming - Game 1 Winner",
-    "opened_at": "2026-06-06T15:22:42.645272"
   }
 ]
