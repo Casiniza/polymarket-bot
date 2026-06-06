@@ -323,5 +323,18 @@
     "paper": true,
     "opened_at": "2026-06-06T00:01:26.173744",
     "closed_at": "2026-06-06T07:25:42.479040"
+  },
+  {
+    "market_question": "LoL: JD Gaming vs Bilibili Gaming (BO5) - LPL Playoffs",
+    "action": "BUY_NO",
+    "entry_price": 0.755,
+    "exit_price": 0.845,
+    "size": 3.97,
+    "usdc_spent": 3.0,
+    "pnl": 0.3573,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T01:35:46.329698",
+    "closed_at": "2026-06-06T09:40:58.902101"
   }
 ]
