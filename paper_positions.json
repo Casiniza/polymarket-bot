@@ -7,5 +7,14 @@
     "usdc_spent": 10.0,
     "market_question": "UFC Fight Night: Yuneisy Duben vs. Jeisla Chaves (Women's Flyweight, Prelims)",
     "opened_at": "2026-06-06T21:07:33.725812"
+  },
+  {
+    "token_id": "9188783727936264077380906306618836297681731617053495001158987534737898683153",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "size": 14.39,
+    "usdc_spent": 10.0,
+    "market_question": "LoL: FlyQuest vs Team Liquid (BO5) - LCS Playoffs",
+    "opened_at": "2026-06-06T21:12:34.467803"
   }
 ]
