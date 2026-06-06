@@ -570,5 +570,18 @@
     "paper": true,
     "opened_at": "2026-06-06T15:57:59.857626",
     "closed_at": "2026-06-06T15:58:04.448986"
+  },
+  {
+    "market_question": "Dota 2: Aurora vs LGD Gaming - Game 2 Winner",
+    "action": "BUY_NO",
+    "entry_price": 0.91,
+    "exit_price": 0.6,
+    "size": 10.99,
+    "usdc_spent": 10.0,
+    "pnl": -3.4069,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T17:11:33.549735",
+    "closed_at": "2026-06-06T17:11:37.138021"
   }
 ]
