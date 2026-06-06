@@ -115,17 +115,33 @@ POLITICS_KEYWORDS = [
     "trump", "biden", "macron", "zelensky", "putin",
 ]
 
+# Mercados de crypto — demasiado volátiles para TP/SL de 10%
+CRYPTO_KEYWORDS = [
+    "bitcoin", "btc", "ethereum", "eth", "crypto", "solana", "sol",
+    "xrp", "doge", "dogecoin", "bnb", "price of", "above $", "below $",
+    "up or down", "coin", "token", "defi", "nft",
+]
+
 LIVE_KEYWORDS = ["live", "in-play", "in play", "currently", "right now"]
 
 
+def is_crypto_market(market: dict) -> bool:
+    """True si el mercado es de crypto — los excluimos siempre."""
+    question = market.get("question", "").lower()
+    category = (market.get("category") or "").lower()
+    text = question + " " + category
+    return any(kw in text for kw in CRYPTO_KEYWORDS)
+
 def is_winner_sports_market(market: dict) -> bool:
-    """True solo si es un mercado de ganador directo de un partido deportivo."""
+    """True solo si es un mercado de ganador directo de un partido deportivo o esports."""
     question = market.get("question", "").lower()
     tags = [t.get("label", "").lower() for t in (market.get("tags") or []) if isinstance(t, dict)]
     category = (market.get("category") or "").lower()
     text = question + " " + category + " " + " ".join(tags)
 
     if any(kw in text for kw in POLITICS_KEYWORDS):
+        return False
+    if any(kw in text for kw in CRYPTO_KEYWORDS):
         return False
     if any(kw in text for kw in LIVE_KEYWORDS):
         return False
@@ -272,11 +288,12 @@ def market_ends_today(market: dict) -> bool:
 
 
 def is_any_active_market(market: dict) -> bool:
-    """Para paper trading — acepta cualquier mercado activo excepto política y O/U."""
+    """Para paper trading — acepta cualquier mercado activo excepto política, crypto y O/U."""
     question = market.get("question", "").lower()
     if any(kw in question for kw in POLITICS_KEYWORDS):
         return False
-    # Excluye O/U y spreads — demasiado volátiles
+    if any(kw in question for kw in CRYPTO_KEYWORDS):
+        return False
     if any(kw in question for kw in NON_WINNER_KEYWORDS):
         return False
     return True
@@ -309,6 +326,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         else:
             # Real: filtros estrictos
             if not market_ends_by_tomorrow(market): continue
+            if is_crypto_market(market): continue
             if not is_winner_sports_market(market): continue
             if not market_not_started(market):
                 logger.debug(f"Descartado (en curso): {market.get('question','')[:55]}")
@@ -341,6 +359,10 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         market["_price_history"] = hist_prices
         market["_paper"] = paper
 
+        label_pre = "[PAPER] " if paper else "[REAL]  "
+        no_str = f"{no_price:.3f}" if no_price else "?"
+        logger.debug(f"{label_pre}Candidato: {market.get('question','')[:55]} | YES={yes_price:.3f} NO={no_str}")
+
         # En paper: también prueba ALWAYS_NO en mercados no deportivos
         if paper and not is_winner_sports_market(market):
             from strategy import always_no_strategy
@@ -372,7 +394,47 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
     return bet_market_ids, bet_match_keys
 
 
+def _rebuild_match_keys_from_history(paper: bool) -> set:
+    """
+    Reconstruye el conjunto de match_keys apostados desde el historial completo.
+    Evita re-apostar mercados ya cerrados por TP/SL tras un reinicio del bot.
+    Solo incluye operaciones recientes (últimas 12h) para no bloquear mercados futuros.
+    """
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=12)
+    keys = set()
+    for h in load_history(paper):
+        try:
+            closed = datetime.fromisoformat(h.get("closed_at", "2000-01-01")).replace(tzinfo=timezone.utc)
+            if closed >= cutoff:
+                keys.add(get_match_key({"question": h.get("market_question", "")}))
+        except (ValueError, TypeError):
+            pass
+    return keys
+
+
+def _write_heartbeat():
+    """Escribe heartbeat.json y lo sube a GitHub. El dashboard lo lee para saber si el bot está vivo."""
+    try:
+        with open("heartbeat.json", "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"ts": datetime.now(timezone.utc).isoformat(), "interval_s": SCAN_MARKETS_S}, f)
+        from positions import _push_to_github
+        _push_to_github(["heartbeat.json"])
+    except Exception as e:
+        logger.debug(f"Heartbeat omitido: {e}")
+
+
 def main():
+    # Lock file — evita múltiples instancias simultáneas
+    import msvcrt
+    lock_path = "bot.lock"
+    try:
+        lock_file = open(lock_path, "w")
+        msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        logger.error("Ya hay una instancia del bot corriendo. Saliendo.")
+        sys.exit(0)
+
     if not config.PRIVATE_KEY and not config.DRY_RUN:
         logger.error("PRIVATE_KEY no configurada y DRY_RUN=false. Abortando.")
         sys.exit(1)
@@ -387,12 +449,19 @@ def main():
 
     existing = load_positions()
     bet_market_ids:  set = {p.token_id for p in existing}
-    bet_match_keys:  set = {get_match_key({"question": p.market_question}) for p in existing}
+    # Reconstruye desde historial para no re-apostar mercados ya cerrados tras reinicio
+    bet_match_keys:  set = (
+        {get_match_key({"question": p.market_question}) for p in existing}
+        | _rebuild_match_keys_from_history(paper=False)
+    )
 
     # Paper trading — estado separado
     paper_existing      = load_positions(paper=True)
     paper_bet_ids:  set = {p.token_id for p in paper_existing}
-    paper_match_keys: set = {get_match_key({"question": p.market_question}) for p in paper_existing}
+    paper_match_keys: set = (
+        {get_match_key({"question": p.market_question}) for p in paper_existing}
+        | _rebuild_match_keys_from_history(paper=True)
+    )
 
     price_history: dict = {}  # {market_id: [(timestamp, price), ...]}
     start_time = time.time()
@@ -413,6 +482,7 @@ def main():
                 paper_bet_ids, paper_match_keys = scan_markets(
                     None, paper_bet_ids, paper_match_keys, price_history, paper=True
                 )
+            _write_heartbeat()
             last_market_scan = now
 
         # TP/SL continuo cada 3 segundos
