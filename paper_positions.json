@@ -25,14 +25,5 @@
     "usdc_spent": 10.0,
     "market_question": "Counter-Strike: G2 vs M80 (BO1) - IEM Cologne Major Stage 2",
     "opened_at": "2026-06-06T13:11:20.698624"
-  },
-  {
-    "token_id": "70434420142163507943372006023101944527526656624914219869656334879758038751628",
-    "action": "BUY_YES",
-    "entry_price": 0.905,
-    "size": 11.05,
-    "usdc_spent": 10.0,
-    "market_question": "LoL: Deep Cross Gaming vs GAM Esports (BO5) - LCP Playoffs",
-    "opened_at": "2026-06-06T13:11:23.021181"
   }
 ]
