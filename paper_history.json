@@ -206,5 +206,18 @@
     "paper": true,
     "opened_at": "2026-06-06T21:07:33.725812",
     "closed_at": "2026-06-06T21:32:41.134103"
+  },
+  {
+    "market_question": "UFC Fight Night: Yuneisy Duben vs. Jeisla Chaves (Women's Flyweight, Prelims)",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "exit_price": 0.775,
+    "size": 14.39,
+    "usdc_spent": 10.0,
+    "pnl": 1.1512,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T21:32:47.270716",
+    "closed_at": "2026-06-06T21:32:48.042913"
   }
 ]
