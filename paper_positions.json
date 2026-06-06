@@ -25,14 +25,5 @@
     "usdc_spent": 3.0,
     "market_question": "LoL: JD Gaming vs Bilibili Gaming (BO5) - LPL Playoffs",
     "opened_at": "2026-06-06T01:35:46.329698"
-  },
-  {
-    "token_id": "9795049445420150790714690336392016722951958167801255762381384122933529604552",
-    "action": "BUY_YES",
-    "entry_price": 0.55,
-    "size": 5.45,
-    "usdc_spent": 3.0,
-    "market_question": "Phoenix Mercury vs. PortlandFire",
-    "opened_at": "2026-06-06T02:51:21.515096"
   }
 ]
