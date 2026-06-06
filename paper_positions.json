@@ -7,5 +7,14 @@
     "usdc_spent": 10.0,
     "market_question": "UFC Fight Night: Yuneisy Duben vs. Jeisla Chaves (Women's Flyweight, Prelims)",
     "opened_at": "2026-06-06T21:07:33.725812"
+  },
+  {
+    "token_id": "91747541075461802909405719065738031518193797595073347186933352865520628058288",
+    "action": "BUY_NO",
+    "entry_price": 0.745,
+    "size": 6.71,
+    "usdc_spent": 5.0,
+    "market_question": "Golden State Valkyries vs. Las Vegas Aces",
+    "opened_at": "2026-06-06T21:17:36.332501"
   }
 ]
