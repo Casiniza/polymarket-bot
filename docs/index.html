@@ -232,7 +232,7 @@
   const HISTORY_URL        = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/history.json";
   const PAPER_POSITIONS_URL = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_positions.json";
   const PAPER_HISTORY_URL   = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/paper_history.json";
-  const LOG_SERVER          = "http://localhost:7373";
+  const HEARTBEAT_URL       = "https://raw.githubusercontent.com/Casiniza/polymarket-bot/master/heartbeat.json";
   const SCAN_INTERVAL       = 300;
 
   let pnlChart = null;
@@ -398,17 +398,36 @@
     });
   }
 
+  // --- Heartbeat: estado del bot vía GitHub ---
+  async function checkHeartbeat() {
+    try {
+      const r = await fetch(HEARTBEAT_URL + "?t=" + Date.now());
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      const lastTs = new Date(d.ts);
+      const ageMin = (Date.now() - lastTs.getTime()) / 60000;
+      const dot = document.getElementById("dot");
+      const statusEl = document.getElementById("bot-status");
+      if (ageMin < 12) {
+        dot.style.background = "#3fb950";
+        statusEl.textContent = "Bot activo";
+        statusEl.style.color = "#3fb950";
+        addLog(`Último scan: ${lastTs.toLocaleTimeString("es-ES")} (hace ${Math.round(ageMin)} min)`, "#3fb950");
+      } else {
+        dot.style.background = "#f85149";
+        statusEl.textContent = `Bot inactivo (${Math.round(ageMin)} min sin scan)`;
+        statusEl.style.color = "#f85149";
+      }
+    } catch {
+      document.getElementById("dot").style.background = "#8b949e";
+      document.getElementById("bot-status").textContent = "Bot desconectado";
+      document.getElementById("bot-status").style.color = "#8b949e";
+    }
+  }
+
   // --- Balance real ---
   async function loadRealBalance() {
-    try {
-      const r = await fetch(LOG_SERVER + '/balance?t=' + Date.now(), { signal: AbortSignal.timeout(1500) });
-      if (r.ok) {
-        const d = await r.json();
-        if (d.usdc !== null && d.usdc !== undefined) {
-          document.getElementById('stat-capital').textContent = '$' + parseFloat(d.usdc).toFixed(2);
-        }
-      }
-    } catch {}
+    // El balance se obtiene del heartbeat o queda en — si no hay trades reales aún
   }
 
   // --- Real tab ---
@@ -512,38 +531,13 @@
     document.getElementById("log").innerHTML = logLines.join("");
   }
 
-  async function loadLiveLogs() {
-    try {
-      const r = await fetch(LOG_SERVER + "?t=" + Date.now(), { signal: AbortSignal.timeout(1500) });
-      if (r.ok) {
-        const logs = await r.json();
-        document.getElementById("bot-status").innerHTML = "Bot activo (local)";
-        document.getElementById("bot-status").style.color = "#3fb950";
-        if (logs.length > lastLogCount) {
-          logs.slice(lastLogCount).forEach(l => {
-            const color = l.level === "SUCCESS" ? "#3fb950" : l.level === "ERROR" || l.level === "WARNING" ? "#f85149" : "#8b949e";
-            addLog(l.text, color);
-          });
-          lastLogCount = logs.length;
-        }
-      } else throw new Error();
-    } catch {
-      document.getElementById("bot-status").innerHTML = "Bot desconectado";
-      document.getElementById("bot-status").style.color = "#8b949e";
-    }
-  }
-
   async function loadAll() {
-    await Promise.all([loadReal(), loadPaper()]);
+    await Promise.all([loadReal(), loadPaper(), checkHeartbeat()]);
     document.getElementById("last-update").textContent = "Actualizado: " + new Date().toLocaleTimeString("es-ES");
   }
 
   loadAll();
   setInterval(loadAll, 30000);
-  loadLiveLogs();
-  setInterval(loadLiveLogs, 3000);
-  loadRealBalance();
-  setInterval(loadRealBalance, 60000);
 </script>
 </body>
 </html>
