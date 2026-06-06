@@ -167,5 +167,18 @@
     "paper": true,
     "opened_at": "2026-06-06T01:35:44.288435",
     "closed_at": "2026-06-06T01:35:49.050602"
+  },
+  {
+    "market_question": "Connecticut Sun vs. Chicago Sky",
+    "action": "BUY_NO",
+    "entry_price": 0.835,
+    "exit_price": 0.715,
+    "size": 3.59,
+    "usdc_spent": 3.0,
+    "pnl": -0.4308,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T01:35:44.288435",
+    "closed_at": "2026-06-06T01:35:50.097266"
   }
 ]
