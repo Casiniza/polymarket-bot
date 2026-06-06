@@ -258,5 +258,18 @@
     "paper": true,
     "opened_at": "2026-06-06T03:21:59.444552",
     "closed_at": "2026-06-06T03:22:03.375787"
+  },
+  {
+    "market_question": "Knicks vs. Spurs",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "exit_price": 0.325,
+    "size": 4.32,
+    "usdc_spent": 3.0,
+    "pnl": -1.5984,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T03:21:59.444552",
+    "closed_at": "2026-06-06T03:22:04.514818"
   }
 ]
