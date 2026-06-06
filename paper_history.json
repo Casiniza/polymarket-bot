@@ -310,5 +310,18 @@
     "paper": true,
     "opened_at": "2026-06-06T00:31:40.343052",
     "closed_at": "2026-06-06T05:43:15.732126"
+  },
+  {
+    "market_question": "Will Alexander Zverev win the 2026 Men's French Open?",
+    "action": "BUY_YES",
+    "entry_price": 0.773,
+    "exit_price": 0.5,
+    "size": 6.47,
+    "usdc_spent": 5.0,
+    "pnl": -1.7663,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-06T00:01:26.173744",
+    "closed_at": "2026-06-06T07:25:42.479040"
   }
 ]
