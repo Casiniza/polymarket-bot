@@ -16,5 +16,14 @@
     "usdc_spent": 5.0,
     "market_question": "Golden State Valkyries vs. Las Vegas Aces",
     "opened_at": "2026-06-06T21:17:36.332501"
+  },
+  {
+    "token_id": "9188783727936264077380906306618836297681731617053495001158987534737898683153",
+    "action": "BUY_NO",
+    "entry_price": 0.695,
+    "size": 14.39,
+    "usdc_spent": 10.0,
+    "market_question": "LoL: FlyQuest vs Team Liquid (BO5) - LCS Playoffs",
+    "opened_at": "2026-06-06T21:17:39.848964"
   }
 ]
