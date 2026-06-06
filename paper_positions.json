@@ -25,5 +25,14 @@
     "usdc_spent": 3.0,
     "market_question": "Knicks vs. Spurs",
     "opened_at": "2026-06-06T01:35:42.079066"
+  },
+  {
+    "token_id": "37229909521106048755554279232998742109645583439013239028160238913808396371293",
+    "action": "BUY_NO",
+    "entry_price": 0.835,
+    "size": 3.59,
+    "usdc_spent": 3.0,
+    "market_question": "Connecticut Sun vs. Chicago Sky",
+    "opened_at": "2026-06-06T01:35:44.288435"
   }
 ]
