@@ -557,5 +557,18 @@
     "paper": true,
     "opened_at": "2026-06-06T15:57:59.857626",
     "closed_at": "2026-06-06T15:58:03.252391"
+  },
+  {
+    "market_question": "LoL: Movistar KOI vs Karmine Corp (BO5) - LEC Playoffs",
+    "action": "BUY_NO",
+    "entry_price": 0.635,
+    "exit_price": 0.735,
+    "size": 15.75,
+    "usdc_spent": 10.0,
+    "pnl": 1.575,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-06T15:57:59.857626",
+    "closed_at": "2026-06-06T15:58:04.448986"
   }
 ]
