@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Chicago White Sox vs. Philadelphia Phillies",
     "opened_at": "2026-06-07T17:06:53.043156"
+  },
+  {
+    "token_id": "6906679986281276796890482358704039103851229370525273881895199287853064804635",
+    "action": "BUY_NO",
+    "entry_price": 0.56,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "market_question": "Washington Nationals vs. Arizona Diamondbacks",
+    "opened_at": "2026-06-07T17:42:07.813201"
   }
 ]
