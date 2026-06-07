@@ -141,5 +141,18 @@
     "paper": false,
     "opened_at": "2026-06-07T17:06:50.221856",
     "closed_at": "2026-06-07T17:36:40.198310"
+  },
+  {
+    "market_question": "Chicago White Sox vs. Philadelphia Phillies",
+    "action": "BUY_NO",
+    "entry_price": 0.59,
+    "exit_price": 0.655,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "pnl": 0.52,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T17:06:53.043156",
+    "closed_at": "2026-06-07T17:44:44.949844"
   }
 ]
