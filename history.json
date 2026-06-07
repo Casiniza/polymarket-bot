@@ -154,5 +154,18 @@
     "paper": false,
     "opened_at": "2026-06-07T17:06:53.043156",
     "closed_at": "2026-06-07T17:44:44.949844"
+  },
+  {
+    "market_question": "Washington Nationals vs. Arizona Diamondbacks",
+    "action": "BUY_NO",
+    "entry_price": 0.56,
+    "exit_price": 0.64,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "pnl": 0.64,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-07T17:42:07.813201",
+    "closed_at": "2026-06-07T19:25:15.655854"
   }
 ]
