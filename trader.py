@@ -84,8 +84,10 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         return True
 
     try:
+        # Polymarket limita precio entre 0.01 y 0.99
+        sell_price = min(max(round(current_price, 2), 0.01), 0.99)
         resp = client.create_and_post_order(
-            order_args=OrderArgs(token_id=position.token_id, price=current_price,
+            order_args=OrderArgs(token_id=position.token_id, price=sell_price,
                                  size=position.size, side=Side.SELL),
             options=_options(market) if market else PartialCreateOrderOptions(tick_size="0.01"),
             order_type=OrderType.GTC,
