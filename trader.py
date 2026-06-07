@@ -37,30 +37,25 @@ def _options(market: dict) -> PartialCreateOrderOptions:
 
 
 def _snap_price(price: float, tick: float) -> float:
-    """Redondea el precio al tick válido del mercado (ej. 0.815 → 0.82 si tick=0.01)."""
-    snapped = round(round(price / tick) * tick, 10)
-    # Número de decimales del tick
-    decimals = len(f"{tick:.10f}".rstrip("0").split(".")[-1])
-    return round(snapped, decimals)
+    """
+    Redondea el precio al tick del mercado, pero siempre con máx 2 decimales.
+    Con tick=0.001 usamos 0.01 como mínimo porque Polymarket exige que
+    maker_amount (price × size) tenga ≤ 2 decimales — imposible con 3.
+    """
+    effective_tick = max(tick, 0.01)   # nunca más fino que 0.01 para garantizar maker limpio
+    snapped = round(round(price / effective_tick) * effective_tick, 10)
+    return round(snapped, 2)
 
 
 def _calc_size(bet_usdc: float, price: float) -> float:
     """
-    Calcula el size en shares tal que price * size tenga exactamente 2 decimales.
-    Polymarket exige que el maker amount (USDC = price * size) no supere 2 decimales.
+    Calcula size (shares enteros) tal que price × size tenga exactamente 2 decimales.
+    Con price redondeado a 2 decimales, un size entero siempre produce maker limpio.
     """
     if price <= 0:
         return 0
-    # Calculamos cuántas shares entran con floor a 2 decimales del importe USDC
-    # Iteramos desde 2 decimales hasta 0 hasta que price*size sea limpio
-    for decimals in (2, 1, 0):
-        size = round(bet_usdc / price, decimals)
-        maker = price * size
-        # Acepta si maker tiene ≤ 2 decimales (sin float noise)
-        if abs(maker - round(maker, 2)) < 1e-9:
-            return size
-    # Fallback: tamaño entero
-    return max(1, math.floor(bet_usdc / price))
+    size = math.floor(bet_usdc / price)   # entero, garantiza maker = price(2dec) × int → 2dec
+    return max(1, size)
 
 
 def execute_signal(client: ClobClient, signal: Signal, market_question: str,
@@ -87,6 +82,19 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         add_position(signal.token_id, signal.action, order_price, size,
                      bet_usdc, market_question, paper=paper)
         return True
+
+    # Verificar balance disponible antes de intentar la compra
+    try:
+        from bot import get_real_balance
+        available = get_real_balance(client)
+        if available is not None and available < bet_usdc:
+            logger.warning(
+                f"Balance insuficiente (${available:.2f} disponible, necesita ${bet_usdc:.2f}): "
+                f"{market_question[:55]} — apuesta omitida."
+            )
+            return False
+    except Exception:
+        pass  # Si falla la consulta de balance, intentamos igualmente
 
     try:
         resp = client.create_and_post_order(
