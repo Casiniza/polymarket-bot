@@ -1,4 +1,5 @@
 """Ejecuta órdenes de compra y venta en Polymarket via py-clob-client-v2."""
+import math
 from loguru import logger
 from py_clob_client_v2 import ClobClient, ApiCreds, OrderArgs, OrderType, PartialCreateOrderOptions, Side
 from py_clob_client_v2.constants import POLYGON
@@ -23,11 +24,43 @@ def build_client() -> ClobClient:
     )
 
 
+def _get_tick(market: dict) -> float:
+    tick_str = str(market.get("orderPriceMinTickSize", "0.01")) if market else "0.01"
+    if tick_str not in {"0.1", "0.01", "0.001", "0.0001"}:
+        tick_str = "0.01"
+    return float(tick_str)
+
+
 def _options(market: dict) -> PartialCreateOrderOptions:
-    tick = str(market.get("orderPriceMinTickSize", "0.01"))
-    if tick not in {"0.1", "0.01", "0.001", "0.0001"}:
-        tick = "0.01"
-    return PartialCreateOrderOptions(tick_size=tick)
+    tick = _get_tick(market)
+    return PartialCreateOrderOptions(tick_size=str(tick))
+
+
+def _snap_price(price: float, tick: float) -> float:
+    """Redondea el precio al tick válido del mercado (ej. 0.815 → 0.82 si tick=0.01)."""
+    snapped = round(round(price / tick) * tick, 10)
+    # Número de decimales del tick
+    decimals = len(f"{tick:.10f}".rstrip("0").split(".")[-1])
+    return round(snapped, decimals)
+
+
+def _calc_size(bet_usdc: float, price: float) -> float:
+    """
+    Calcula el size en shares tal que price * size tenga exactamente 2 decimales.
+    Polymarket exige que el maker amount (USDC = price * size) no supere 2 decimales.
+    """
+    if price <= 0:
+        return 0
+    # Calculamos cuántas shares entran con floor a 2 decimales del importe USDC
+    # Iteramos desde 2 decimales hasta 0 hasta que price*size sea limpio
+    for decimals in (2, 1, 0):
+        size = round(bet_usdc / price, decimals)
+        maker = price * size
+        # Acepta si maker tiene ≤ 2 decimales (sin float noise)
+        if abs(maker - round(maker, 2)) < 1e-9:
+            return size
+    # Fallback: tamaño entero
+    return max(1, math.floor(bet_usdc / price))
 
 
 def execute_signal(client: ClobClient, signal: Signal, market_question: str,
@@ -36,34 +69,37 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         return False
 
     bet_usdc = get_bet_size(market, paper=paper, price=signal.price) if market else (config.PAPER_BET_USDC if paper else config.MAX_BET_USDC)
-    size = round(bet_usdc / signal.price, 2) if signal.price > 0 else 0
+
+    tick = _get_tick(market)
+    order_price = _snap_price(signal.price, tick)
+    size = _calc_size(bet_usdc, order_price)
+
     label = "[PAPER] " if paper else ("[DRY RUN] " if config.DRY_RUN else "")
 
     logger.info(
         f"{label}COMPRA [{signal.strategy}]: {signal.action} | "
         f"Mercado: {market_question[:55]} | "
-        f"Precio: {signal.price:.3f} | Tamaño: {size} shares | ${bet_usdc} | {signal.reason}"
+        f"Precio: {order_price:.4f} (tick {tick}) | Tamaño: {size} shares | "
+        f"${round(order_price * size, 2)} | {signal.reason}"
     )
 
     if paper or config.DRY_RUN:
-        add_position(signal.token_id, signal.action, signal.price, size,
+        add_position(signal.token_id, signal.action, order_price, size,
                      bet_usdc, market_question, paper=paper)
         return True
 
     try:
-        # FOK: si no hay liquidez al precio pedido, cancela en vez de quedar en el libro
         resp = client.create_and_post_order(
-            order_args=OrderArgs(token_id=signal.token_id, price=signal.price, size=size, side=Side.BUY),
+            order_args=OrderArgs(token_id=signal.token_id, price=order_price, size=size, side=Side.BUY),
             options=_options(market) if market else None,
             order_type=OrderType.FOK,
         )
-        # Verifica que la orden se ejecutó realmente (no cancelada)
         resp_str = str(resp)
         if "canceled" in resp_str.lower() or "cancelled" in resp_str.lower():
-            logger.warning(f"Compra cancelada (sin liquidez al precio {signal.price:.3f}): {market_question[:55]}")
+            logger.warning(f"Compra cancelada (sin liquidez al precio {order_price:.4f}): {market_question[:55]}")
             return False
         logger.success(f"Compra ejecutada: {resp}")
-        add_position(signal.token_id, signal.action, signal.price, size,
+        add_position(signal.token_id, signal.action, order_price, size,
                      bet_usdc, market_question, paper=False)
         return True
     except Exception as e:
@@ -90,11 +126,13 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         return True
 
     try:
-        # Polymarket limita precio entre 0.01 y 0.99
-        sell_price = min(max(round(current_price, 2), 0.01), 0.99)
+        tick = _get_tick(market)
+        sell_price = _snap_price(min(max(current_price, 0.01), 0.99), tick)
+        sell_size = _calc_size(position.usdc_spent, sell_price)
+
         resp = client.create_and_post_order(
             order_args=OrderArgs(token_id=position.token_id, price=sell_price,
-                                 size=position.size, side=Side.SELL),
+                                 size=sell_size, side=Side.SELL),
             options=_options(market) if market else PartialCreateOrderOptions(tick_size="0.01"),
             order_type=OrderType.GTC,
         )
@@ -103,11 +141,9 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         return True
     except Exception as e:
         err_str = str(e)
-        # Si no tenemos los tokens (la compra GTC nunca se ejecutó), limpiamos la posición fantasma
         if "not enough balance" in err_str or "balance is not enough" in err_str:
             logger.warning(
-                f"Posición fantasma — compra nunca ejecutada en Polymarket: "
-                f"{position.market_question[:55]} — eliminando del registro."
+                f"Posición fantasma detectada: {position.market_question[:55]} — eliminando del registro."
             )
             remove_position(position.token_id, current_price, "GHOST", paper=False)
         else:
