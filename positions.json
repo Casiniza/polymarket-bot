@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Counter-Strike: Monte vs Legacy (BO1) - IEM Cologne Major Stage 2",
     "opened_at": "2026-06-07T12:06:52.514558"
+  },
+  {
+    "token_id": "32113956590504382638811631788145724904940827912112275742691865237227049243037",
+    "action": "BUY_NO",
+    "entry_price": 0.82,
+    "size": 6.0,
+    "usdc_spent": 5.0,
+    "market_question": "Roland Garros ATP: Flavio Cobolli vs Alexander Zverev",
+    "opened_at": "2026-06-07T12:25:12.379049"
   }
 ]
