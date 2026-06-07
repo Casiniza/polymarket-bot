@@ -193,5 +193,18 @@
     "paper": false,
     "opened_at": "2026-06-07T19:27:48.977530",
     "closed_at": "2026-06-07T20:38:14.047265"
+  },
+  {
+    "market_question": "LoL: Cloud9 vs LYON (BO5) - LCS Playoffs",
+    "action": "BUY_NO",
+    "entry_price": 0.82,
+    "exit_price": 0.905,
+    "size": 6,
+    "usdc_spent": 5.0,
+    "pnl": 0.51,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-07T22:16:38.352211",
+    "closed_at": "2026-06-07T22:26:23.876198"
   }
 ]
