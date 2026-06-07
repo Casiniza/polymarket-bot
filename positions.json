@@ -16,5 +16,14 @@
     "usdc_spent": 5.0,
     "market_question": "LoL: Top Esports vs Team WE (BO5) - LPL Playoffs",
     "opened_at": "2026-06-07T10:53:18.381978"
+  },
+  {
+    "token_id": "96836228201794844622945838043146844817568481033220546312063092006402562136679",
+    "action": "BUY_NO",
+    "entry_price": 0.605,
+    "size": 8.26,
+    "usdc_spent": 5.0,
+    "market_question": "Boston Red Sox vs. New York Yankees",
+    "opened_at": "2026-06-07T10:53:20.779134"
   }
 ]
