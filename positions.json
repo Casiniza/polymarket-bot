@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Roland Garros ATP: Flavio Cobolli vs Alexander Zverev",
     "opened_at": "2026-06-07T10:53:15.897384"
+  },
+  {
+    "token_id": "14972540342356519437937377998518571519829168003704946153069002275992367318390",
+    "action": "BUY_YES",
+    "entry_price": 0.95,
+    "size": 5.26,
+    "usdc_spent": 5.0,
+    "market_question": "LoL: Top Esports vs Team WE (BO5) - LPL Playoffs",
+    "opened_at": "2026-06-07T10:53:18.381978"
   }
 ]
