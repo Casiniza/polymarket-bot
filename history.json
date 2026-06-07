@@ -37,5 +37,18 @@
     "paper": false,
     "opened_at": "2026-06-07T11:41:35.881221",
     "closed_at": "2026-06-07T12:20:28.951012"
+  },
+  {
+    "market_question": "Counter-Strike: Monte vs Legacy (BO1) - IEM Cologne Major Stage 2",
+    "action": "BUY_NO",
+    "entry_price": 0.635,
+    "exit_price": 0.55,
+    "size": 7.87,
+    "usdc_spent": 5.0,
+    "pnl": -0.6689,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T12:06:52.514558",
+    "closed_at": "2026-06-07T12:31:14.243387"
   }
 ]
