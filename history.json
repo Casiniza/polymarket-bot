@@ -167,5 +167,18 @@
     "paper": false,
     "opened_at": "2026-06-07T17:42:07.813201",
     "closed_at": "2026-06-07T19:25:15.655854"
+  },
+  {
+    "market_question": "Cleveland Guardians vs. Texas Rangers",
+    "action": "BUY_NO",
+    "entry_price": 0.74,
+    "exit_price": 0.965,
+    "size": 6,
+    "usdc_spent": 5.0,
+    "pnl": 1.35,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T19:32:49.373383",
+    "closed_at": "2026-06-07T19:32:56.294417"
   }
 ]
