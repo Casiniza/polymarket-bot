@@ -50,5 +50,18 @@
     "paper": false,
     "opened_at": "2026-06-07T12:06:52.514558",
     "closed_at": "2026-06-07T12:31:14.243387"
+  },
+  {
+    "market_question": "Set Handicap: Zverev (-2.5) vs Cobolli (+2.5)",
+    "action": "BUY_NO",
+    "entry_price": 0.66,
+    "exit_price": 0.56,
+    "size": 8.0,
+    "usdc_spent": 5.0,
+    "pnl": -0.8,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-07T12:25:15.239312",
+    "closed_at": "2026-06-07T13:27:28.667136"
   }
 ]
