@@ -104,20 +104,29 @@ def get_midpoint(token_id: str) -> float | None:
 
 def get_bid_ask_spread(token_id: str) -> float | None:
     """
-    Devuelve el spread bid-ask como porcentaje del midpoint.
-    Un spread alto (> 5%) indica mercado ilíquido — precio de entrada caro.
-    Devuelve None si no hay datos de orderbook.
+    Devuelve el spread bid-ask ABSOLUTO (puntos de probabilidad, escala 0.0–1.0).
+    Para mercados de predicción el spread relativo ((ask-bid)/bid) infla el número:
+      bid=0.57, ask=0.60 → relativo=5.3% (rechazaría!) vs absoluto=0.03 (3¢, OK)
+    Umbral recomendado: 0.05 (5 puntos porcentuales = 5 centavos).
+    Devuelve None si no hay datos → se asume líquido y se permite entrar.
+    Devuelve 1.0 si solo hay un lado del libro → ilíquido, rechazar.
     """
     try:
         resp = requests.get(f"{CLOB_HOST}/book", params={"token_id": token_id}, timeout=8)
         if not resp.ok:
             return None
         book = resp.json()
-        best_bid = float(book["bids"][0]["price"]) if book.get("bids") else None
-        best_ask = float(book["asks"][0]["price"]) if book.get("asks") else None
-        if best_bid and best_ask and best_bid > 0:
-            spread = (best_ask - best_bid) / best_bid
-            return spread
+        bids = book.get("bids", [])
+        asks = book.get("asks", [])
+        # Un lado del libro vacío = mercado sin contraparte real → ilíquido
+        if not bids or not asks:
+            return 1.0
+        best_bid = float(bids[0]["price"])
+        best_ask = float(asks[0]["price"])
+        if best_bid <= 0 or best_ask <= 0:
+            return None
+        # Spread absoluto: bid=0.57 ask=0.60 → 0.03 (3 centavos) ✓
+        return best_ask - best_bid
     except Exception:
         pass
     return None

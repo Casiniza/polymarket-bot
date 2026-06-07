@@ -97,20 +97,21 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         return True
 
     # ── Verificar spread bid-ask antes de entrar ──────────────────────────────
-    # Un spread > 5% significa que el mercado es ilíquido: pagas demasiado cara la entrada
-    # y dificulta cerrar en TP. Mejor esperar un mercado más líquido.
+    # Spread ABSOLUTO en puntos de probabilidad (0.03 = 3 centavos).
+    # En mercados de predicción el spread relativo infla el número: usar absoluto.
+    # Umbral 0.06 (6¢): bid=0.57 ask=0.63 → rechaza | bid=0.57 ask=0.62 → permite.
     try:
         from markets import get_bid_ask_spread
         spread = get_bid_ask_spread(signal.token_id)
-        MAX_SPREAD = 0.05  # 5% máximo
+        MAX_SPREAD = 0.06  # 6 centavos absolutos
         if spread is not None and spread > MAX_SPREAD:
             logger.warning(
-                f"Mercado ilíquido (spread={spread*100:.1f}% > {MAX_SPREAD*100:.0f}%): "
-                f"{market_question[:55]} — apuesta omitida. Esperar a que haya más liquidez."
+                f"Mercado ilíquido (spread={spread*100:.1f}¢ > {MAX_SPREAD*100:.0f}¢ absoluto): "
+                f"{market_question[:55]} — apuesta omitida."
             )
             return False
         if spread is not None:
-            logger.debug(f"Spread OK: {spread*100:.1f}% (< {MAX_SPREAD*100:.0f}%)")
+            logger.debug(f"Spread OK: {spread*100:.1f}¢ absoluto (< {MAX_SPREAD*100:.0f}¢)")
     except Exception:
         pass  # Si falla el check de spread, continuamos (mejor entrar que no hacer nada)
 
