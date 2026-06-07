@@ -375,5 +375,18 @@
     "paper": true,
     "opened_at": "2026-06-07T18:02:21.741691",
     "closed_at": "2026-06-07T18:02:28.673779"
+  },
+  {
+    "market_question": "Chicago Sky vs. Toronto Tempo",
+    "action": "BUY_NO",
+    "entry_price": 0.59,
+    "exit_price": 0.655,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "pnl": 0.52,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-07T17:52:13.204627",
+    "closed_at": "2026-06-07T19:05:06.570827"
   }
 ]
