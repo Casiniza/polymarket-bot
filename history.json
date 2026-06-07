@@ -63,5 +63,18 @@
     "paper": false,
     "opened_at": "2026-06-07T12:25:15.239312",
     "closed_at": "2026-06-07T13:27:28.667136"
+  },
+  {
+    "market_question": "Birmingham: Alexandra Eala vs Nikola Bartunkova",
+    "action": "BUY_YES",
+    "entry_price": 0.7,
+    "exit_price": 0.815,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "pnl": 0.805,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T13:42:46.018801",
+    "closed_at": "2026-06-07T13:42:54.751482"
   }
 ]
