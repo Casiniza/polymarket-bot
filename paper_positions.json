@@ -7,14 +7,5 @@
     "usdc_spent": 10.0,
     "market_question": "Washington Mystics vs. Atlanta Dream",
     "opened_at": "2026-06-06T23:22:32.126260"
-  },
-  {
-    "token_id": "26654101287349265721254086118599316212221936691088962860149455150579108152824",
-    "action": "BUY_NO",
-    "entry_price": 0.59,
-    "size": 8,
-    "usdc_spent": 5.0,
-    "market_question": "Chicago Sky vs. Toronto Tempo",
-    "opened_at": "2026-06-07T17:52:13.204627"
   }
 ]
