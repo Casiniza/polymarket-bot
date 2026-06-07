@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Flavio Cobolli win the 2026 Men's French Open?",
     "opened_at": "2026-06-07T04:38:42.313098"
+  },
+  {
+    "token_id": "65432603600596576406054787213766415143158147084409643063297790826849084158088",
+    "action": "BUY_NO",
+    "entry_price": 0.635,
+    "size": 7.87,
+    "usdc_spent": 5.0,
+    "market_question": "Counter-Strike: Monte vs Legacy (BO1) - IEM Cologne Major Stage 2",
+    "opened_at": "2026-06-07T12:06:55.626552"
   }
 ]
