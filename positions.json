@@ -16,5 +16,14 @@
     "usdc_spent": 5.0,
     "market_question": "Birmingham: Alexandra Eala vs Nikola Bartunkova",
     "opened_at": "2026-06-07T13:42:46.018801"
+  },
+  {
+    "token_id": "66393489832207840268871489816986495954171777084600153701153761050390173773230",
+    "action": "BUY_YES",
+    "entry_price": 0.88,
+    "size": 5,
+    "usdc_spent": 5.0,
+    "market_question": "Will Kimi Antonelli win the 2026 F1 Monaco Grand Prix?",
+    "opened_at": "2026-06-07T13:42:48.452101"
   }
 ]
