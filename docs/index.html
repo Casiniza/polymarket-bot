@@ -418,6 +418,13 @@
         statusEl.textContent = `Bot inactivo (${Math.round(ageMin)} min sin scan)`;
         statusEl.style.color = "#f85149";
       }
+
+      // Balance real desde heartbeat
+      if (d.balance_usdc !== null && d.balance_usdc !== undefined) {
+        const capEl = document.getElementById("stat-capital");
+        capEl.textContent = "$" + d.balance_usdc.toFixed(2);
+        capEl.className = "value blue";
+      }
     } catch {
       document.getElementById("dot").style.background = "#8b949e";
       document.getElementById("bot-status").textContent = "Bot desconectado";
@@ -427,7 +434,7 @@
 
   // --- Balance real ---
   async function loadRealBalance() {
-    // El balance se obtiene del heartbeat o queda en — si no hay trades reales aún
+    // Balance se lee del heartbeat en checkHeartbeat()
   }
 
   // --- Real tab ---

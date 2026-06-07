@@ -423,11 +423,25 @@ def _rebuild_match_keys_from_history(paper: bool) -> set:
     return keys
 
 
-def _write_heartbeat():
+def _write_heartbeat(client=None):
     """Escribe heartbeat.json y lo sube a GitHub. El dashboard lo lee para saber si el bot está vivo."""
     try:
+        balance_usdc = get_real_balance(client) if client else None
+        open_real    = len(load_positions(paper=False))
+        open_paper   = len(load_positions(paper=True))
+        realized_real = sum(h.get("pnl", 0) for h in load_history(paper=False))
+        realized_paper = sum(h.get("pnl", 0) for h in load_history(paper=True))
+        data = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "interval_s": SCAN_MARKETS_S,
+            "balance_usdc": round(balance_usdc, 2) if balance_usdc is not None else None,
+            "open_real": open_real,
+            "open_paper": open_paper,
+            "realized_pnl_real": round(realized_real, 4),
+            "realized_pnl_paper": round(realized_paper, 4),
+        }
         with open("heartbeat.json", "w", encoding="utf-8", newline="\n") as f:
-            json.dump({"ts": datetime.now(timezone.utc).isoformat(), "interval_s": SCAN_MARKETS_S}, f)
+            json.dump(data, f)
         from positions import _push_to_github
         _push_to_github(["heartbeat.json"])
     except Exception as e:
@@ -492,7 +506,7 @@ def main():
                 paper_bet_ids, paper_match_keys = scan_markets(
                     None, paper_bet_ids, paper_match_keys, price_history, paper=True
                 )
-            _write_heartbeat()
+            _write_heartbeat(client)
             last_market_scan = now
 
         # TP/SL continuo cada 3 segundos
