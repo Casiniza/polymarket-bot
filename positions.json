@@ -7,14 +7,5 @@
     "usdc_spent": 5.0,
     "market_question": "Los Angeles Angels vs. Los Angeles Dodgers",
     "opened_at": "2026-06-07T19:27:48.977530"
-  },
-  {
-    "token_id": "3735908361916499129227562393481983880840480222563737855159742430910129602358",
-    "action": "BUY_NO",
-    "entry_price": 0.74,
-    "size": 6,
-    "usdc_spent": 5.0,
-    "market_question": "Cleveland Guardians vs. Texas Rangers",
-    "opened_at": "2026-06-07T19:32:49.373383"
   }
 ]
