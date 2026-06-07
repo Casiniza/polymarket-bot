@@ -24,5 +24,18 @@
     "paper": false,
     "opened_at": "2026-06-07T11:19:18.450835",
     "closed_at": "2026-06-07T11:23:50.995893"
+  },
+  {
+    "market_question": "HSBC Championships, Qualification: Priscilla Hon vs Polina Kudermetova",
+    "action": "BUY_NO",
+    "entry_price": 0.735,
+    "exit_price": 0.9995,
+    "size": 6.8,
+    "usdc_spent": 5.0,
+    "pnl": 1.7986,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T11:41:35.881221",
+    "closed_at": "2026-06-07T12:20:28.951012"
   }
 ]
