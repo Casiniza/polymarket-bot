@@ -258,5 +258,18 @@
     "paper": true,
     "opened_at": "2026-06-06T21:33:02.511959",
     "closed_at": "2026-06-06T21:33:04.351126"
+  },
+  {
+    "market_question": "Indiana Fever vs. New York Liberty",
+    "action": "BUY_YES",
+    "entry_price": 0.575,
+    "exit_price": 0.635,
+    "size": 8.7,
+    "usdc_spent": 5.0,
+    "pnl": 0.522,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-07T00:48:00.953530",
+    "closed_at": "2026-06-07T00:48:06.064063"
   }
 ]
