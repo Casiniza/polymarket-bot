@@ -349,6 +349,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         yes_price, no_price = get_prices_from_market(market)
         if yes_price is None: continue
 
+        # Descarta mercados ya resueltos o a punto de resolver (precio extremo)
+        if yes_price >= 0.97 or yes_price <= 0.03:
+            logger.debug(f"Descartado (resuelto YES={yes_price:.2f}): {market.get('question','')[:50]}")
+            continue
+
         # Filtro de estabilidad de precio
         if not is_price_stable(market_id, yes_price, price_history): continue
 
