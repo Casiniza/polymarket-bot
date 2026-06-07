@@ -349,5 +349,18 @@
     "paper": true,
     "opened_at": "2026-06-07T04:38:42.313098",
     "closed_at": "2026-06-07T13:29:36.259556"
+  },
+  {
+    "market_question": "Map Handicap: TS (-1.5) vs 9z (+1.5)",
+    "action": "BUY_YES",
+    "entry_price": 0.66,
+    "exit_price": 0.745,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "pnl": 0.595,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-07T17:11:52.984378",
+    "closed_at": "2026-06-07T17:11:59.555228"
   }
 ]
