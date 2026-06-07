@@ -24,7 +24,6 @@ TAKE_PROFIT      = 0.10
 STOP_LOSS        = 0.10
 SCAN_POSITIONS_S = 3      # TP/SL cada 3 segundos — continuo
 SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
-MAX_RUNTIME_S    = 23 * 3600  # 23h — el .bat reinicia automáticamente, no necesitamos parar
 LOG_PORT         = 7373
 MAX_LOG_LINES    = 200
 
@@ -517,13 +516,13 @@ def main():
     )
 
     price_history: dict = {}  # {market_id: [(timestamp, price), ...]}
-    start_time = time.time()
     last_market_scan = 0
 
     if config.PAPER_TRADING:
         logger.info("📝 Paper trading activado — simulación paralela en paper_positions.json")
 
-    while time.time() - start_time < MAX_RUNTIME_S:
+    logger.info("Bot corriendo en modo 24/7 — sin límite de tiempo. Usa Ctrl+C para detener.")
+    while True:
         now = time.time()
 
         if now - last_market_scan >= SCAN_MARKETS_S:
@@ -548,8 +547,6 @@ def main():
             get_real_balance(client)
 
         time.sleep(SCAN_POSITIONS_S)
-
-    logger.info("Bot detenido — límite de tiempo alcanzado.")
 
 
 if __name__ == "__main__":
