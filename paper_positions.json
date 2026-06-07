@@ -25,5 +25,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Flavio Cobolli win the 2026 Men's French Open?",
     "opened_at": "2026-06-07T04:38:42.313098"
+  },
+  {
+    "token_id": "19145331348895258915081917431795892168255487830018377073313765476427186038128",
+    "action": "BUY_NO",
+    "entry_price": 0.775,
+    "size": 6.45,
+    "usdc_spent": 5.0,
+    "market_question": "LoL: KT Rolster vs Dplus KIA (BO5) - LCK Road to MSI",
+    "opened_at": "2026-06-07T10:42:53.348225"
   }
 ]
