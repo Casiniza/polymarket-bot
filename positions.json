@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "token_id": "115259565230340488752829539798594464058371211765181621978428825324607974616548",
+    "action": "BUY_YES",
+    "entry_price": 0.82,
+    "size": 6,
+    "usdc_spent": 5.0,
+    "market_question": "Will Alexander Zverev win the 2026 Men's French Open?",
+    "opened_at": "2026-06-07T16:23:40.329725"
+  }
+]
