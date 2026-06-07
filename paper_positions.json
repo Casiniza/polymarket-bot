@@ -7,14 +7,5 @@
     "usdc_spent": 10.0,
     "market_question": "Washington Mystics vs. Atlanta Dream",
     "opened_at": "2026-06-06T23:22:32.126260"
-  },
-  {
-    "token_id": "72034199679685605777746108880436699468836661260225341006687916047384310465181",
-    "action": "BUY_NO",
-    "entry_price": 0.9405,
-    "size": 10.63,
-    "usdc_spent": 10.0,
-    "market_question": "Hurricanes vs. Golden Knights",
-    "opened_at": "2026-06-07T02:42:37.323688"
   }
 ]
