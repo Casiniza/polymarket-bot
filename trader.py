@@ -51,11 +51,17 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         return True
 
     try:
+        # FOK: si no hay liquidez al precio pedido, cancela en vez de quedar en el libro
         resp = client.create_and_post_order(
             order_args=OrderArgs(token_id=signal.token_id, price=signal.price, size=size, side=Side.BUY),
             options=_options(market) if market else None,
-            order_type=OrderType.GTC,
+            order_type=OrderType.FOK,
         )
+        # Verifica que la orden se ejecutó realmente (no cancelada)
+        resp_str = str(resp)
+        if "canceled" in resp_str.lower() or "cancelled" in resp_str.lower():
+            logger.warning(f"Compra cancelada (sin liquidez al precio {signal.price:.3f}): {market_question[:55]}")
+            return False
         logger.success(f"Compra ejecutada: {resp}")
         add_position(signal.token_id, signal.action, signal.price, size,
                      bet_usdc, market_question, paper=False)
@@ -96,5 +102,14 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         remove_position(position.token_id, current_price, result, paper=False)
         return True
     except Exception as e:
-        logger.error(f"Error ejecutando venta: {e}")
+        err_str = str(e)
+        # Si no tenemos los tokens (la compra GTC nunca se ejecutó), limpiamos la posición fantasma
+        if "not enough balance" in err_str or "balance is not enough" in err_str:
+            logger.warning(
+                f"Posición fantasma — compra nunca ejecutada en Polymarket: "
+                f"{position.market_question[:55]} — eliminando del registro."
+            )
+            remove_position(position.token_id, current_price, "GHOST", paper=False)
+        else:
+            logger.error(f"Error ejecutando venta: {e}")
         return False
