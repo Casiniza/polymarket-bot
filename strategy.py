@@ -226,7 +226,10 @@ STRATEGIES = {
 
 
 def evaluate(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
-    """Evalúa todas las estrategias activas y devuelve la señal de mayor confianza."""
+    """
+    Evalúa todas las estrategias activas y devuelve la señal de mayor confianza.
+    Aplica ajuste de confianza por deporte (_sport_boost inyectado por scan_markets).
+    """
     best = Signal("HOLD", 0.0, "Sin señal", "", yes_price or 0.0)
 
     for name in config.STRATEGIES_ACTIVE:
@@ -237,11 +240,24 @@ def evaluate(market: dict, yes_price: float | None, no_price: float | None) -> S
         if signal.action != "HOLD" and signal.confidence > best.confidence:
             best = signal
 
+    # Ajuste de confianza por deporte
+    sport_boost = market.get("_sport_boost", 0.0)
+    if best.action != "HOLD" and sport_boost != 0.0:
+        sport = market.get("_sport", "")
+        original_conf = best.confidence
+        best = Signal(
+            best.action,
+            min(1.0, max(0.0, best.confidence + sport_boost)),
+            best.reason + f" [deporte={sport} boost={sport_boost:+.2f}]",
+            best.token_id, best.price, best.strategy
+        )
+        logger.debug(f"Ajuste por deporte [{sport}]: confianza {original_conf:.3f} → {best.confidence:.3f}")
+
     if best.action != "HOLD" and best.confidence < config.MIN_CONFIDENCE:
         logger.debug(f"Señal descartada (confianza {best.confidence:.2f} < {config.MIN_CONFIDENCE}): {best.reason}")
         best = Signal("HOLD", 0.0, best.reason, best.token_id, best.price, best.strategy)
     elif best.action != "HOLD":
-        logger.debug(f"Señal [{best.strategy}] conf={best.confidence:.2f}: {best.reason}")
+        logger.info(f"✅ Señal [{best.strategy}] conf={best.confidence:.2f}: {best.reason}")
 
     return best
 

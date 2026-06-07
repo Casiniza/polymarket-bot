@@ -39,6 +39,12 @@ MAX_LOG_LINES    = 200
 # Seguimiento del precio pico por posición — para trailing stop
 _peak_prices: dict = {}   # {token_id: precio_pico}
 
+# Fecha de cierre de mercado por token_id — para TP/SL adaptativo
+_market_end_dates: dict = {}  # {token_id: "2026-06-08T20:00:00Z"}
+
+# Ventana máxima de entrada — no apostar en mercados que cierran en >MAX_ENTRY_WINDOW_H horas
+MAX_ENTRY_WINDOW_H = 36.0  # sweet spot: 2.5h–36h antes del cierre
+
 # Buffer circular de logs para el dashboard
 _log_buffer: collections.deque = collections.deque(maxlen=MAX_LOG_LINES)
 
@@ -125,11 +131,18 @@ def start_log_server():
         logger.warning(f"No se pudo arrancar el servidor de logs: {e}")
 
 
-WINNER_KEYWORDS = [
-    " vs ", "vs.", "win the", "winner", "world cup", "champions league",
+# ── KEYWORDS DE FILTRADO ─────────────────────────────────────────────────────
+# Solo mercados "X vs Y" — partido único, resultado claro en horas
+MATCH_VS_KEYWORDS = [" vs ", "vs.", " vs\t"]
+
+# Mercados de torneo/campeonato — EXCLUIDOS para real money
+# "Will X win the [tournament]?" → semanas de incertidumbre, cambia con cada ronda
+TOURNAMENT_KEYWORDS = [
+    "win the ", "win the\t", "world cup", "champions league",
     "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
-    "super bowl", "playoffs", "finals", "semifinal", "quarterfinal",
-    "nba finals", "ufc", "boxing",
+    "super bowl", "stanley cup", "world series", "championship",
+    "open winner", "grand prix winner", "grand slam",
+    "will win the", "will be the",
 ]
 
 # Mercados que NO son de ganador directo — los excluimos
@@ -137,6 +150,7 @@ NON_WINNER_KEYWORDS = [
     "over/under", "o/u", "spread", "total", "points", "goals",
     "score", "half", "quarter", "first", "last", "both teams",
     "clean sheet", "anytime", "assist", "card", "corner",
+    "game 1", "game 2", "game 3", "map 1", "map 2",  # series individuales
 ]
 
 POLITICS_KEYWORDS = [
@@ -149,14 +163,92 @@ POLITICS_KEYWORDS = [
     "trump", "biden", "macron", "zelensky", "putin",
 ]
 
-# Mercados de crypto — demasiado volátiles para TP/SL de 10%
+# Mercados de crypto — demasiado volátiles para TP/SL de 7-8%
 CRYPTO_KEYWORDS = [
     "bitcoin", "btc", "ethereum", "eth", "crypto", "solana", "sol",
     "xrp", "doge", "dogecoin", "bnb", "price of", "above $", "below $",
     "up or down", "coin", "token", "defi", "nft",
 ]
 
+# ── ESPORTS — PROHIBIDO para dinero real ─────────────────────────────────────
+# Se resuelven en 30-45 minutos, precios caen en vertical al primer kill
+ESPORTS_KEYWORDS = [
+    "dota", "league of legends", "lol:", "counter-strike", "cs:", "csgo", "csg",
+    "valorant", "overwatch", "starcraft", "hearthstone", "rocket league",
+    "fortnite", "pubg", "apex legends", "esport", "e-sport",
+    "lcs ", "lec ", "lcq ", "lpl ", "lck ", "worlds ", " msi ",
+    "iem ", "esl ", "blast ", "pgl ", "dreamhack",
+    "bo1)", "bo3)", "bo5)", "(bo1", "(bo3", "(bo5",
+    "cloud9", "fnatic", "navi", "g2 esports", "faze clan", "team liquid esports",
+    "game winner", "game 2 winner", "game 3 winner",
+]
+
 LIVE_KEYWORDS = ["live", "in-play", "in play", "currently", "right now"]
+
+# ── Tabla de ajuste de confianza por deporte ─────────────────────────────────
+# Basada en estadísticas históricas de win rate de favoritos por categoría
+SPORT_CONF_BOOST: dict[str, float] = {
+    # Deportes donde los favoritos son muy fiables → boost positivo
+    "tennis":   +0.07,  # ATP/WTA top players ganan ~80-85% vs wildcards
+    "nba":      +0.04,  # NBA favoritos ganan ~62% de partidos
+    "wnba":     +0.04,
+    "soccer":   +0.02,  # Fútbol: favoritos ganan ~55-60%
+    # Deportes con alta varianza → penalización
+    "mlb":      -0.02,  # Béisbol: alta varianza (55% favoritos)
+    "nfl":      -0.03,  # NFL: alta varianza, cualquier equipo puede ganar
+    "nhl":      -0.02,  # Hockey: similar a fútbol pero más varianza
+    "ufc":      -0.06,  # MMA: altísima varianza, knock-outs inesperados
+    "mma":      -0.06,
+    "boxing":   -0.05,
+}
+
+def _detect_sport(market: dict) -> str | None:
+    """Detecta el deporte del mercado desde el título y categoría."""
+    q = (market.get("question") or "").lower()
+    cat = (market.get("category") or "").lower()
+    tags = " ".join(t.get("label","").lower() for t in (market.get("tags") or []) if isinstance(t,dict))
+    text = q + " " + cat + " " + tags
+    if any(kw in text for kw in ["tennis","atp","wta","roland garros","wimbledon","us open","australian open","french open","birmingham","eastbourne","queen's"]):
+        return "tennis"
+    if any(kw in text for kw in ["nba","basketball","lakers","celtics","warriors","bulls","heat","knicks","76ers","bucks","spurs"]):
+        return "nba"
+    if any(kw in text for kw in ["wnba","valkyries","aces","dream","mystics","fever","sky","liberty"]):
+        return "wnba"
+    if any(kw in text for kw in ["mlb","baseball","yankees","red sox","dodgers","cubs","mets","braves","astros","cardinals","giants","phillies","pirates","nationals","guardians","rangers","angels","padres","mariners","twins","rays","orioles"]):
+        return "mlb"
+    if any(kw in text for kw in ["nfl","american football","super bowl","patriots","chiefs","cowboys","eagles","49ers","packers","bills","rams","bengals"]):
+        return "nfl"
+    if any(kw in text for kw in ["nhl","hockey","maple leafs","bruins","penguins","blackhawks","rangers","capitals","oilers"]):
+        return "nhl"
+    if any(kw in text for kw in ["ufc","mma","bellator","pfl","fight night","ko","submission"]):
+        return "ufc"
+    if any(kw in text for kw in ["boxing","bout","heavyweight","middleweight"]):
+        return "boxing"
+    if any(kw in text for kw in ["soccer","football","premier league","la liga","bundesliga","serie a","ligue 1","champions","europa league","mls","copa"]):
+        return "soccer"
+    return None
+
+
+def is_esports_market(market: dict) -> bool:
+    """True si el mercado es de esports — prohibido para dinero real."""
+    question = (market.get("question") or "").lower()
+    category = (market.get("category") or "").lower()
+    text = question + " " + category
+    return any(kw in text for kw in ESPORTS_KEYWORDS)
+
+
+def is_tournament_winner_market(market: dict) -> bool:
+    """
+    True si el mercado es 'Will X win the [tournament]?' en vez de un partido directo.
+    Estos mercados tienen semanas de incertidumbre — muchos más factores que un partido.
+    Solo permitimos mercados de partido único: 'X vs Y'.
+    """
+    question = (market.get("question") or "").lower()
+    # Si tiene "vs" es partido directo — OK
+    if any(kw in question for kw in MATCH_VS_KEYWORDS):
+        return False  # es partido directo, no torneo
+    # Si contiene keywords de torneo → es torneo → excluir
+    return any(kw in question for kw in TOURNAMENT_KEYWORDS)
 
 
 def is_crypto_market(market: dict) -> bool:
@@ -167,7 +259,7 @@ def is_crypto_market(market: dict) -> bool:
     return any(kw in text for kw in CRYPTO_KEYWORDS)
 
 def is_winner_sports_market(market: dict) -> bool:
-    """True solo si es un mercado de ganador directo de un partido deportivo o esports."""
+    """True solo si es un mercado de ganador de partido deportivo (no esports, no torneo)."""
     question = market.get("question", "").lower()
     tags = [t.get("label", "").lower() for t in (market.get("tags") or []) if isinstance(t, dict)]
     category = (market.get("category") or "").lower()
@@ -181,7 +273,15 @@ def is_winner_sports_market(market: dict) -> bool:
         return False
     if any(kw in text for kw in NON_WINNER_KEYWORDS):
         return False
-    return any(kw in text for kw in WINNER_KEYWORDS)
+    if any(kw in text for kw in ESPORTS_KEYWORDS):
+        return False   # esports filtrado aquí también
+    # Necesita "vs" para ser partido directo, o keywords deportivos específicos
+    has_vs = any(kw in text for kw in MATCH_VS_KEYWORDS)
+    has_sport = any(kw in text for kw in [
+        "ufc", "boxing", "nba finals", "super bowl",  # excepciones sin "vs"
+        "playoffs", "championship game",
+    ])
+    return has_vs or has_sport
 
 
 def get_match_key(market: dict) -> str:
@@ -294,6 +394,28 @@ def check_positions(client, paper: bool = False):
         change    = (current_price - pos.entry_price) / pos.entry_price
         peak_gain = (peak - pos.entry_price) / pos.entry_price
 
+        # ── TP/SL adaptativo según tiempo restante hasta resolución ────────────
+        # Cerca de la resolución el precio converge naturalmente a 0 o 1.
+        # Un TP menor es más fácil de alcanzar — y el SL más justo.
+        tp, sl = TAKE_PROFIT, STOP_LOSS
+        if not paper:
+            end_date_str = _market_end_dates.get(pos.token_id, "")
+            if end_date_str:
+                try:
+                    end_dt = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
+                    if end_dt.tzinfo is None:
+                        end_dt = end_dt.replace(tzinfo=timezone.utc)
+                    hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
+                    if hours_left < 3:
+                        tp, sl = 0.03, 0.04  # muy cerca: TP 3%, SL 4%
+                    elif hours_left < 8:
+                        tp, sl = 0.05, 0.06  # cerca: TP 5%, SL 6%
+                    # >8h: valores estándar (7%/8%)
+                    if hours_left < 8:
+                        logger.debug(f"TP/SL adaptativo: {hours_left:.1f}h restantes → TP={tp*100:.0f}% SL={sl*100:.0f}%")
+                except Exception:
+                    pass
+
         # ── Salida forzada por tiempo (posición atascada) ──────────────────────
         if not paper:
             try:
@@ -311,10 +433,11 @@ def check_positions(client, paper: bool = False):
                 pass
 
         # ── Take profit ────────────────────────────────────────────────────────
-        if change >= TAKE_PROFIT:
-            execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}%", paper=paper)
+        if change >= tp:
+            execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}% (TP={tp*100:.0f}%)", paper=paper)
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
+                _market_end_dates.pop(pos.token_id, None)
 
         # ── Trailing stop (solo real, activo tras ganar TRAILING_START%) ───────
         elif not paper and peak_gain >= TRAILING_START:
@@ -326,6 +449,7 @@ def check_positions(client, paper: bool = False):
                     paper=False
                 )
                 _peak_prices.pop(pos.token_id, None)
+                _market_end_dates.pop(pos.token_id, None)
             else:
                 logger.info(
                     f"Manteniendo | {pos.market_question[:50]} | "
@@ -334,10 +458,11 @@ def check_positions(client, paper: bool = False):
                 )
 
         # ── Stop loss ─────────────────────────────────────────────────────────
-        elif change <= -STOP_LOSS:
-            execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}%", paper=paper)
+        elif change <= -sl:
+            execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}% (SL={sl*100:.0f}%)", paper=paper)
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
+                _market_end_dates.pop(pos.token_id, None)
 
         # ── Mantener ──────────────────────────────────────────────────────────
         else:
@@ -455,12 +580,27 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             vol = float(market.get("volume24hr") or 0)
             if vol < 1000: continue
         else:
-            # Real: mismos mercados que paper pero con filtros de calidad
+            # Real: filtros de calidad en cascada
             if not market_ends_by_tomorrow(market): continue
-            if not market_has_time_left(market): continue   # no entrar si cierra en < 2h
+            if not market_has_time_left(market): continue       # < 2.5h → posiblemente en juego
             if is_crypto_market(market): continue
+            if is_esports_market(market): continue              # esports → prohibido real money
+            if is_tournament_winner_market(market): continue    # torneos → demasiada incertidumbre
             if not is_winner_sports_market(market): continue
             if not has_enough_liquidity(market): continue
+            # Ventana máxima de entrada — no entrar en mercados muy lejanos
+            end_str = market.get("endDateIso") or market.get("endDate", "")
+            if end_str:
+                try:
+                    end_dt = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+                    if end_dt.tzinfo is None:
+                        end_dt = end_dt.replace(tzinfo=timezone.utc)
+                    hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
+                    if hours_left > MAX_ENTRY_WINDOW_H:
+                        logger.debug(f"Descartado (cierra en {hours_left:.0f}h > {MAX_ENTRY_WINDOW_H:.0f}h): {market.get('question','')[:50]}")
+                        continue
+                except Exception:
+                    pass
 
         market_id = get_market_id(market)
         if market_id in bet_market_ids: continue
@@ -493,9 +633,15 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         market["_price_history"] = hist_prices
         market["_paper"] = paper
 
+        # Ajuste de confianza por deporte (solo para real, no paper)
+        sport = _detect_sport(market) if not paper else None
+        market["_sport"] = sport
+        market["_sport_boost"] = SPORT_CONF_BOOST.get(sport, 0.0) if sport else 0.0
+
         q = market.get("question", "")
         no_str = f"{no_price:.3f}" if no_price else "?"
-        logger.debug(f"{'[PAPER] ' if paper else '[REAL]  '}Candidato: {q[:55]} | YES={yes_price:.3f} NO={no_str}")
+        sport_tag = f" [{sport}]" if sport else ""
+        logger.debug(f"{'[PAPER] ' if paper else '[REAL]  '}Candidato{sport_tag}: {q[:50]} | YES={yes_price:.3f} NO={no_str}")
 
         # En paper: prueba ALWAYS_NO también en mercados no deportivos
         if paper and not is_winner_sports_market(market):
@@ -510,7 +656,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             continue
 
         # Verificar que el TP es matemáticamente alcanzable PARA EL TOKEN específico
-        MAX_ENTRY = round(0.97 / (1 + TAKE_PROFIT), 2)  # = 0.88 con TP=10%
+        MAX_ENTRY = round(0.97 / (1 + TAKE_PROFIT), 2)  # = 0.90 con TP=7%
         if signal.price > MAX_ENTRY:
             logger.debug(f"Descartado (TP inalcanzable — señal a {signal.price:.3f} > {MAX_ENTRY}): {q[:50]}")
             continue
@@ -526,6 +672,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
                 bet_match_keys.add(match_key)
                 open_token_ids.add(signal.token_id)
                 new_bets += 1
+                # Guardar fecha de cierre para TP/SL adaptativo
+                if not paper:
+                    end_str = market.get("endDateIso") or market.get("endDate", "")
+                    if end_str:
+                        _market_end_dates[signal.token_id] = end_str
 
     winner_markets = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_winner_sports_market(m))
     daily_loss = get_daily_loss()
