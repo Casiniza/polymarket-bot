@@ -43,5 +43,14 @@
     "usdc_spent": 5.0,
     "market_question": "Birmingham: Arthur Fery vs Yunchaokete Bu",
     "opened_at": "2026-06-07T10:53:25.585634"
+  },
+  {
+    "token_id": "57388230542554532081092902480733556416011761654906059054286796401148911659304",
+    "action": "BUY_NO",
+    "entry_price": 0.799,
+    "size": 6.26,
+    "usdc_spent": 5.0,
+    "market_question": "Will Flavio Cobolli win the 2026 Men's French Open?",
+    "opened_at": "2026-06-07T10:53:27.950079"
   }
 ]
