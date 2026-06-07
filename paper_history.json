@@ -297,5 +297,18 @@
     "paper": true,
     "opened_at": "2026-06-07T10:42:53.348225",
     "closed_at": "2026-06-07T11:14:05.903433"
+  },
+  {
+    "market_question": "Dota 2: BetBoom Team vs LGD Gaming - Game 2 Winner",
+    "action": "BUY_YES",
+    "entry_price": 0.805,
+    "exit_price": 0.985,
+    "size": 6.21,
+    "usdc_spent": 5.0,
+    "pnl": 1.1178,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-07T11:19:21.474397",
+    "closed_at": "2026-06-07T11:19:30.755107"
   }
 ]
