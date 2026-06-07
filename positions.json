@@ -1,14 +1,5 @@
 [
   {
-    "token_id": "46435996069118396822183316891213057706521869752084707395916032091566643779546",
-    "action": "BUY_NO",
-    "entry_price": 0.735,
-    "size": 6.8,
-    "usdc_spent": 5.0,
-    "market_question": "HSBC Championships, Qualification: Priscilla Hon vs Polina Kudermetova",
-    "opened_at": "2026-06-07T11:41:35.881221"
-  },
-  {
     "token_id": "65432603600596576406054787213766415143158147084409643063297790826849084158088",
     "action": "BUY_NO",
     "entry_price": 0.635,
