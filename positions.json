@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "token_id": "38146399496763115786871940487019050816320253319289719327994591725975200222438",
+    "action": "BUY_NO",
+    "entry_price": 0.56,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "market_question": "Pittsburgh Pirates vs. Atlanta Braves",
+    "opened_at": "2026-06-07T17:06:50.221856"
+  }
+]
