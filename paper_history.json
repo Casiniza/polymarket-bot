@@ -336,5 +336,18 @@
     "paper": true,
     "opened_at": "2026-06-07T03:12:43.835373",
     "closed_at": "2026-06-07T12:43:19.278296"
+  },
+  {
+    "market_question": "Will Flavio Cobolli win the 2026 Men's French Open?",
+    "action": "BUY_NO",
+    "entry_price": 0.784,
+    "exit_price": 0.8635,
+    "size": 6.38,
+    "usdc_spent": 5.0,
+    "pnl": 0.5072,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-07T04:38:42.313098",
+    "closed_at": "2026-06-07T13:29:36.259556"
   }
 ]
