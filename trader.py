@@ -96,7 +96,25 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
                      bet_usdc, market_question, paper=paper)
         return True
 
-    # Verificar balance disponible antes de intentar la compra
+    # ── Verificar spread bid-ask antes de entrar ──────────────────────────────
+    # Un spread > 5% significa que el mercado es ilíquido: pagas demasiado cara la entrada
+    # y dificulta cerrar en TP. Mejor esperar un mercado más líquido.
+    try:
+        from markets import get_bid_ask_spread
+        spread = get_bid_ask_spread(signal.token_id)
+        MAX_SPREAD = 0.05  # 5% máximo
+        if spread is not None and spread > MAX_SPREAD:
+            logger.warning(
+                f"Mercado ilíquido (spread={spread*100:.1f}% > {MAX_SPREAD*100:.0f}%): "
+                f"{market_question[:55]} — apuesta omitida. Esperar a que haya más liquidez."
+            )
+            return False
+        if spread is not None:
+            logger.debug(f"Spread OK: {spread*100:.1f}% (< {MAX_SPREAD*100:.0f}%)")
+    except Exception:
+        pass  # Si falla el check de spread, continuamos (mejor entrar que no hacer nada)
+
+    # ── Verificar balance disponible ──────────────────────────────────────────
     try:
         from bot import get_real_balance
         available = get_real_balance(client)

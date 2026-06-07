@@ -20,11 +20,17 @@ from trader import build_client, execute_signal, execute_sell
 from positions import load_positions, save_positions, load_history
 import config
 
-TAKE_PROFIT      = 0.10   # +10% TP fijo
-STOP_LOSS        = 0.10   # -10% SL fijo
-TRAILING_START   = 0.05   # activa trailing stop cuando la ganancia toca +5%
-TRAILING_STOP    = 0.03   # vende si cae 3% desde el pico (protege ganancias)
-MIN_HOURS_ENTRY  = 2.0    # no entrar si el mercado cierra en < 2h (evita in-game)
+# ── Parámetros de salida ─────────────────────────────────────────────────────
+# Asimétrico: TP más fácil de alcanzar, SL da más margen para recuperarse.
+# Break-even con SL/(TP+SL) = 8/(7+8) = 53.3% win rate — mucho más alcanzable que 50%
+TAKE_PROFIT      = 0.07   # +7% TP — objetivos pequeños pero frecuentes
+STOP_LOSS        = 0.08   # -8% SL asimétrico — más margen para rebotes
+TRAILING_START   = 0.04   # trailing activo cuando la ganancia toca +4%
+TRAILING_STOP    = 0.025  # vende si cae 2.5% desde el pico (más agresivo que antes)
+MAX_HOLD_HOURS   = 20     # salida forzada si la posición lleva >20h abierta
+MAX_CONCURRENT   = 2      # máximo 2 posiciones reales simultáneas — calidad > cantidad
+MIN_HOURS_ENTRY  = 2.5    # no entrar si el mercado cierra en < 2.5h (evita in-game)
+# ── Parámetros de ciclo ───────────────────────────────────────────────────────
 SCAN_POSITIONS_S = 3      # TP/SL cada 3 segundos — continuo
 SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
 LOG_PORT         = 7373
@@ -265,39 +271,56 @@ def check_positions(client, paper: bool = False):
         change    = (current_price - pos.entry_price) / pos.entry_price
         peak_gain = (peak - pos.entry_price) / pos.entry_price
 
+        # ── Salida forzada por tiempo (posición atascada) ──────────────────────
+        if not paper:
+            try:
+                opened = datetime.fromisoformat(pos.opened_at).replace(tzinfo=timezone.utc)
+                hold_hours = (datetime.now(timezone.utc) - opened).total_seconds() / 3600
+                if hold_hours >= MAX_HOLD_HOURS:
+                    execute_sell(
+                        client, pos, current_price,
+                        f"TIEMPO AGOTADO ({hold_hours:.1f}h > {MAX_HOLD_HOURS}h) {change*100:+.1f}%",
+                        paper=False
+                    )
+                    _peak_prices.pop(pos.token_id, None)
+                    continue
+            except Exception:
+                pass
+
+        # ── Take profit ────────────────────────────────────────────────────────
         if change >= TAKE_PROFIT:
-            # Take profit clásico
             execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}%", paper=paper)
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
 
+        # ── Trailing stop (solo real, activo tras ganar TRAILING_START%) ───────
         elif not paper and peak_gain >= TRAILING_START:
-            # Trailing stop: activo cuando alguna vez ganamos TRAILING_START%
             trail_drop = (peak - current_price) / peak
             if trail_drop >= TRAILING_STOP:
                 execute_sell(
                     client, pos, current_price,
-                    f"TRAILING STOP (pico {peak:.3f} → actual {current_price:.3f}, caída {trail_drop*100:.1f}%)",
-                    paper=paper
+                    f"TRAILING STOP (pico {peak:.3f} → {current_price:.3f}, -{trail_drop*100:.1f}% del pico)",
+                    paper=False
                 )
                 _peak_prices.pop(pos.token_id, None)
             else:
                 logger.info(
-                    f"{label}Manteniendo | {pos.market_question[:50]} | "
-                    f"{pos.entry_price:.3f} → {current_price:.3f} ({change*100:+.1f}%) "
-                    f"[TRAIL pico={peak:.3f} drop={trail_drop*100:.1f}%]"
+                    f"Manteniendo | {pos.market_question[:50]} | "
+                    f"{pos.entry_price:.3f}→{current_price:.3f} ({change*100:+.1f}%) "
+                    f"[🔒 TRAIL pico={peak:.3f} margen={trail_drop*100:.1f}%/{TRAILING_STOP*100:.1f}%]"
                 )
 
+        # ── Stop loss ─────────────────────────────────────────────────────────
         elif change <= -STOP_LOSS:
-            # Stop loss clásico
             execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}%", paper=paper)
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
 
+        # ── Mantener ──────────────────────────────────────────────────────────
         else:
             logger.info(
                 f"{label}Manteniendo | {pos.market_question[:50]} | "
-                f"{pos.entry_price:.3f} → {current_price:.3f} ({change*100:+.1f}%)"
+                f"{pos.entry_price:.3f}→{current_price:.3f} ({change*100:+.1f}%)"
             )
 
 
@@ -337,10 +360,10 @@ def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bo
     # Mantiene solo los últimos 30 minutos
     price_history[market_id] = [(t, p) for t, p in history if now - t < 1800]
     prices = [p for _, p in price_history[market_id]]
-    if len(prices) < 2:
-        # Primera observación — registra el precio pero no apuesta aún.
-        # En el siguiente scan (5 min) ya habrá datos para validar estabilidad.
-        logger.debug(f"Primera observación — esperando confirmación de precio en 5min: {market_id[:25]}")
+    if len(prices) < 3:
+        # Menos de 3 observaciones = menos de 15 min de datos.
+        # Necesitamos 15 min de precio estable antes de apostar.
+        logger.debug(f"Esperando datos ({len(prices)}/3 obs, ~{(3-len(prices))*5}min más): {market_id[:25]}")
         return False
     volatility = max(prices) - min(prices)
     if volatility > config.MAX_PRICE_VOLATILITY:
@@ -384,9 +407,18 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         return bet_market_ids, bet_match_keys
 
     label = "[PAPER] " if paper else ""
-    markets = get_active_markets(limit=100)
-    open_token_ids = {p.token_id for p in load_positions(paper)}
+    markets = get_active_markets(limit=150)  # más mercados para más oportunidades
+    open_positions = load_positions(paper)
+    open_token_ids = {p.token_id for p in open_positions}
     new_bets = 0
+
+    # Límite de posiciones concurrentes (solo real) — calidad > cantidad
+    if not paper and len(open_positions) >= MAX_CONCURRENT:
+        logger.info(
+            f"Máx posiciones concurrentes alcanzado ({len(open_positions)}/{MAX_CONCURRENT}) "
+            f"— scan omitido hasta que cierre alguna."
+        )
+        return bet_market_ids, bet_match_keys
 
     for market in markets:
         if paper:

@@ -100,3 +100,24 @@ def get_midpoint(token_id: str) -> float | None:
     except Exception:
         pass
     return None
+
+
+def get_bid_ask_spread(token_id: str) -> float | None:
+    """
+    Devuelve el spread bid-ask como porcentaje del midpoint.
+    Un spread alto (> 5%) indica mercado ilíquido — precio de entrada caro.
+    Devuelve None si no hay datos de orderbook.
+    """
+    try:
+        resp = requests.get(f"{CLOB_HOST}/book", params={"token_id": token_id}, timeout=8)
+        if not resp.ok:
+            return None
+        book = resp.json()
+        best_bid = float(book["bids"][0]["price"]) if book.get("bids") else None
+        best_ask = float(book["asks"][0]["price"]) if book.get("asks") else None
+        if best_bid and best_ask and best_bid > 0:
+            spread = (best_ask - best_bid) / best_bid
+            return spread
+    except Exception:
+        pass
+    return None

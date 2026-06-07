@@ -152,16 +152,20 @@ def always_no_strategy(market: dict, yes_price: float | None, no_price: float | 
     if not token_id_no or no_price is None:
         return Signal("HOLD", 0.0, "Sin token NO", "", 0.0, "ALWAYS_NO")
 
-    NO_MIN, NO_MAX = 0.55, 0.75
+    # Rango 0.55-0.70: aquí el edge de ALWAYS_NO (73.4% base rate) es positivo.
+    # Por encima de 0.70, el EV es marginal o negativo — el mercado ya lo ha descontado.
+    # EV a NO=0.65: 73.4% × (1/0.65-1) - 26.6% = +12.9% — fuerte ventaja.
+    # EV a NO=0.70: 73.4% × (1/0.70-1) - 26.6% = +3.9% — débil, no merece el riesgo.
+    NO_MIN, NO_MAX = 0.55, 0.70
 
     if NO_MIN <= no_price <= NO_MAX:
-        # Mayor confianza cuanto más bajo el precio (más subvalorado)
-        confidence = 0.70 + 0.15 * (NO_MAX - no_price) / (NO_MAX - NO_MIN)
+        # Mayor confianza cuanto más bajo el precio (más subvalorado, mejor EV)
+        confidence = 0.72 + 0.15 * (NO_MAX - no_price) / (NO_MAX - NO_MIN)
         return Signal("BUY_NO", confidence,
-                      f"Always NO: {no_price:.3f} en rango {NO_MIN}-{NO_MAX} (base rate 73.4%)",
+                      f"Always NO: {no_price:.3f} en rango {NO_MIN}-{NO_MAX} (EV estimado +{((0.734*(1/no_price-1)-0.266)*100):.1f}%)",
                       token_id_no, no_price, "ALWAYS_NO")
 
-    return Signal("HOLD", 0.0, "NO fuera del rango base rate", "", no_price or 0.0, "ALWAYS_NO")
+    return Signal("HOLD", 0.0, "NO fuera del rango de edge real (0.55-0.70)", "", no_price or 0.0, "ALWAYS_NO")
 
 
 def momentum_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
