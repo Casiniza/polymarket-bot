@@ -162,13 +162,14 @@ def get_match_key(market: dict) -> str:
 
 
 def get_daily_loss() -> float:
-    """Calcula la pérdida realizada de hoy (negativo = pérdida)."""
+    """Calcula la pérdida realizada de hoy. Excluye GHOSTs (nunca fueron apuestas reales)."""
     today = datetime.now(timezone.utc).date()
     history = load_history()
     daily_pnl = sum(
         h.get("pnl", 0) for h in history
-        if h.get("pnl", 0) < 0 and
-        datetime.fromisoformat(h.get("closed_at", "2000-01-01")).date() == today
+        if h.get("pnl", 0) < 0
+        and h.get("result") != "GHOST"
+        and datetime.fromisoformat(h.get("closed_at", "2000-01-01")).date() == today
     )
     return abs(daily_pnl)
 
@@ -349,17 +350,9 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         yes_price, no_price = get_prices_from_market(market)
         if yes_price is None: continue
 
-        # Descarta mercados ya resueltos o casi resueltos
+        # Descarta mercados ya resueltos o casi resueltos (zona peligrosa > 92% / < 8%)
         if yes_price >= 0.92 or yes_price <= 0.08:
             logger.debug(f"Descartado (casi resuelto YES={yes_price:.2f}): {market.get('question','')[:50]}")
-            continue
-
-        # Descarta si el TP (+10%) es matemáticamente inalcanzable (precio entrada > 0.88)
-        # Razon: precio_max_polymarket=0.99, y 0.88*1.10=0.968 < 0.99 pero 0.90*1.10=0.99 justo al limite
-        TP_THRESHOLD = 0.10
-        MAX_ENTRY = round(0.97 / (1 + TP_THRESHOLD), 2)  # = 0.88
-        if yes_price > MAX_ENTRY and (no_price is None or no_price > MAX_ENTRY):
-            logger.debug(f"Descartado (TP inalcanzable — precios {yes_price:.2f}/{no_price:.2f} > {MAX_ENTRY}): {market.get('question','')[:50]}")
             continue
 
         # Filtro de estabilidad de precio
@@ -377,11 +370,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         market["_price_history"] = hist_prices
         market["_paper"] = paper
 
-        label_pre = "[PAPER] " if paper else "[REAL]  "
+        q = market.get("question", "")
         no_str = f"{no_price:.3f}" if no_price else "?"
-        logger.debug(f"{label_pre}Candidato: {market.get('question','')[:55]} | YES={yes_price:.3f} NO={no_str}")
+        logger.debug(f"{'[PAPER] ' if paper else '[REAL]  '}Candidato: {q[:55]} | YES={yes_price:.3f} NO={no_str}")
 
-        # En paper: también prueba ALWAYS_NO en mercados no deportivos
+        # En paper: prueba ALWAYS_NO también en mercados no deportivos
         if paper and not is_winner_sports_market(market):
             from strategy import always_no_strategy
             signal = always_no_strategy(market, yes_price, no_price)
@@ -390,7 +383,16 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         else:
             signal = evaluate(market, yes_price, no_price)
 
-        if signal.action != "HOLD" and signal.token_id not in open_token_ids:
+        if signal.action == "HOLD":
+            continue
+
+        # Verificar que el TP es matemáticamente alcanzable PARA EL TOKEN específico
+        MAX_ENTRY = round(0.97 / (1 + TAKE_PROFIT), 2)  # = 0.88 con TP=10%
+        if signal.price > MAX_ENTRY:
+            logger.debug(f"Descartado (TP inalcanzable — señal a {signal.price:.3f} > {MAX_ENTRY}): {q[:50]}")
+            continue
+
+        if signal.token_id not in open_token_ids:
             question = market.get("question", "")
             wc = is_world_cup(market)
             if wc:
@@ -404,8 +406,26 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
 
     winner_markets = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_winner_sports_market(m))
     daily_loss = get_daily_loss()
+
+    # Diagnóstico: muestra los mejores candidatos con sus precios aunque no se apostara
+    if new_bets == 0 and not paper:
+        candidates = []
+        for m in markets:
+            if not market_ends_by_tomorrow(m): continue
+            if is_crypto_market(m): continue
+            if not is_winner_sports_market(m): continue
+            yp, np_ = get_prices_from_market(m)
+            if yp and 0.08 < yp < 0.92:
+                candidates.append((m.get("question","")[:50], yp, np_))
+        if candidates:
+            top = sorted(candidates, key=lambda x: abs(x[1] - 0.72))[:5]  # más cercanos al centro
+            lines = " | ".join(f"{q}(Y={y:.2f})" for q, y, _ in top)
+            logger.info(f"Sin señal — candidatos más cercanos al rango: {lines}")
+        else:
+            logger.info("Sin señal — ningún mercado deportivo en rango de precio (0.08-0.92)")
+
     logger.info(
-        f"{label}Scan completado | {winner_markets} elegibles | {new_bets} apuestas | "
+        f"{label}Scan completado | {winner_markets} deportes elegibles | {new_bets} apuestas | "
         f"Estrategias: {','.join(config.STRATEGIES_ACTIVE)} | "
         f"Pérdida diaria: -${daily_loss:.2f}/-${config.MAX_DAILY_LOSS_USDC:.2f}"
     )
@@ -480,7 +500,8 @@ def main():
                 f"TP/SL continuo cada {SCAN_POSITIONS_S}s | Scan mercados cada {SCAN_MARKETS_S}s")
 
     existing = load_positions()
-    bet_market_ids:  set = {p.token_id for p in existing}
+    # bet_market_ids usa conditionId (no token_id) para deduplicar correctamente
+    bet_market_ids:  set = set()   # se rellena progresivamente en scan_markets
     # Reconstruye desde historial para no re-apostar mercados ya cerrados tras reinicio
     bet_match_keys:  set = (
         {get_match_key({"question": p.market_question}) for p in existing}
