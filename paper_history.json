@@ -284,5 +284,18 @@
     "paper": true,
     "opened_at": "2026-06-07T02:42:37.323688",
     "closed_at": "2026-06-07T02:42:42.981719"
+  },
+  {
+    "market_question": "LoL: KT Rolster vs Dplus KIA (BO5) - LCK Road to MSI",
+    "action": "BUY_NO",
+    "entry_price": 0.775,
+    "exit_price": 0.855,
+    "size": 6.45,
+    "usdc_spent": 5.0,
+    "pnl": 0.516,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-07T10:42:53.348225",
+    "closed_at": "2026-06-07T11:14:05.903433"
   }
 ]
