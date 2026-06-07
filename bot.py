@@ -24,7 +24,7 @@ TAKE_PROFIT      = 0.10
 STOP_LOSS        = 0.10
 SCAN_POSITIONS_S = 3      # TP/SL cada 3 segundos — continuo
 SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
-MAX_RUNTIME_S    = 4 * 3600
+MAX_RUNTIME_S    = 23 * 3600  # 23h — el .bat reinicia automáticamente, no necesitamos parar
 LOG_PORT         = 7373
 MAX_LOG_LINES    = 200
 

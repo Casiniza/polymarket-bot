@@ -9,7 +9,7 @@ CLOB_API_KEY     = os.getenv("CLOB_API_KEY", "")
 CLOB_API_SECRET  = os.getenv("CLOB_API_SECRET", "")
 CLOB_API_PASSPHRASE = os.getenv("CLOB_API_PASSPHRASE", "")
 
-MAX_BET_USDC         = float(os.getenv("MAX_BET_USDC", "5.0"))
+MAX_BET_USDC         = float(os.getenv("MAX_BET_USDC", "3.0"))  # reducido — balance bajo
 MIN_CONFIDENCE       = float(os.getenv("MIN_CONFIDENCE", "0.65"))
 DRY_RUN              = os.getenv("DRY_RUN", "true").lower() == "true"
 MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "15.0"))
