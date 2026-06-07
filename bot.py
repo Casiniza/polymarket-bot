@@ -75,16 +75,39 @@ def get_real_balance(client) -> float | None:
 
 
 class LogHandler(BaseHTTPRequestHandler):
+    """Servidor HTTP local — el dashboard lo usa para datos en tiempo real."""
+    _FILE_MAP = {
+        "/positions":       "positions.json",
+        "/paper_positions": "paper_positions.json",
+        "/history":         "history.json",
+        "/paper_history":   "paper_history.json",
+        "/heartbeat":       "heartbeat.json",
+    }
+    _EMPTY = {
+        "/positions": "[]", "/paper_positions": "[]",
+        "/history": "[]",   "/paper_history": "[]",
+        "/heartbeat": "{}",
+    }
+
     def do_GET(self):
         path = self.path.split("?")[0]
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
+
         if path == "/balance":
             bal = _balance_cache.get("usdc")
             self.wfile.write(json.dumps({"usdc": bal}).encode())
-        else:
+        elif path in self._FILE_MAP:
+            fname = self._FILE_MAP[path]
+            try:
+                with open(fname, "r", encoding="utf-8-sig") as f:
+                    self.wfile.write(f.read().encode("utf-8"))
+            except Exception:
+                self.wfile.write(self._EMPTY.get(path, "{}").encode())
+        else:  # /logs o cualquier otra ruta
             self.wfile.write(json.dumps(list(_log_buffer)).encode())
 
     def log_message(self, *args):
