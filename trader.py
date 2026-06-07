@@ -100,12 +100,18 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         resp = client.create_and_post_order(
             order_args=OrderArgs(token_id=signal.token_id, price=order_price, size=size, side=Side.BUY),
             options=_options(market) if market else None,
-            order_type=OrderType.FOK,
+            order_type=OrderType.GTC,
         )
         resp_str = str(resp)
-        if "canceled" in resp_str.lower() or "cancelled" in resp_str.lower():
-            logger.warning(f"Compra cancelada (sin liquidez al precio {order_price:.4f}): {market_question[:55]}")
-            return False
+        # GTC: verificar que la orden se llenó (status matched), no solo que se aceptó
+        status = ""
+        if isinstance(resp, dict):
+            status = resp.get("status", "")
+        elif hasattr(resp, "status"):
+            status = resp.status or ""
+        if status and status.lower() not in ("matched", "filled", "mined"):
+            logger.warning(f"Orden GTC no llenada inmediatamente (status={status}): {market_question[:55]} — esperando fill")
+            # Aun así registramos la posición, la verificación de midpoint abajo la descartará si está lejos
 
         # Verificar que el precio real del CLOB no está ya en zona de SL
         # Evita registrar posiciones cuando el midpoint ya está 8%+ por debajo del precio pagado
