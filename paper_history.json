@@ -362,5 +362,18 @@
     "paper": true,
     "opened_at": "2026-06-07T17:11:52.984378",
     "closed_at": "2026-06-07T17:11:59.555228"
+  },
+  {
+    "market_question": "Valorant: Leviat\u00e1n Esports vs Global Esports (BO3) - VCT Masters London Group Stage",
+    "action": "BUY_YES",
+    "entry_price": 0.68,
+    "exit_price": 0.435,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "pnl": -1.715,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-07T18:02:21.741691",
+    "closed_at": "2026-06-07T18:02:28.673779"
   }
 ]
