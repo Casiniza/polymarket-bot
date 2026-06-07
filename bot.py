@@ -443,7 +443,7 @@ def main():
         msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
     except OSError:
         logger.error("Ya hay una instancia del bot corriendo. Saliendo.")
-        sys.exit(0)
+        sys.exit(2)  # Código 2 = duplicado, el .bat no reinicia
 
     if not config.PRIVATE_KEY and not config.DRY_RUN:
         logger.error("PRIVATE_KEY no configurada y DRY_RUN=false. Abortando.")
