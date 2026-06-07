@@ -349,9 +349,17 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         yes_price, no_price = get_prices_from_market(market)
         if yes_price is None: continue
 
-        # Descarta mercados ya resueltos o a punto de resolver (precio extremo)
-        if yes_price >= 0.97 or yes_price <= 0.03:
-            logger.debug(f"Descartado (resuelto YES={yes_price:.2f}): {market.get('question','')[:50]}")
+        # Descarta mercados ya resueltos o casi resueltos
+        if yes_price >= 0.92 or yes_price <= 0.08:
+            logger.debug(f"Descartado (casi resuelto YES={yes_price:.2f}): {market.get('question','')[:50]}")
+            continue
+
+        # Descarta si el TP (+10%) es matemáticamente inalcanzable (precio entrada > 0.88)
+        # Razon: precio_max_polymarket=0.99, y 0.88*1.10=0.968 < 0.99 pero 0.90*1.10=0.99 justo al limite
+        TP_THRESHOLD = 0.10
+        MAX_ENTRY = round(0.97 / (1 + TP_THRESHOLD), 2)  # = 0.88
+        if yes_price > MAX_ENTRY and (no_price is None or no_price > MAX_ENTRY):
+            logger.debug(f"Descartado (TP inalcanzable — precios {yes_price:.2f}/{no_price:.2f} > {MAX_ENTRY}): {market.get('question','')[:50]}")
             continue
 
         # Filtro de estabilidad de precio

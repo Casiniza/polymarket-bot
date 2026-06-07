@@ -19,7 +19,7 @@ MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "25000.0"))
 STRATEGIES_ACTIVE    = [s.strip() for s in os.getenv("STRATEGIES_ACTIVE", "SAFE_BET,ALWAYS_NO,MOMENTUM").split(",")]
 # Rango ampliado: captura favoritos claros (0.65+) pre-partido en esports y deportes
 SAFE_BET_MIN         = float(os.getenv("SAFE_BET_MIN", "0.65"))
-SAFE_BET_MAX         = float(os.getenv("SAFE_BET_MAX", "0.92"))
+SAFE_BET_MAX         = float(os.getenv("SAFE_BET_MAX", "0.88"))  # máx matemático: 0.97/1.10
 THRESHOLD_BUY_YES    = float(os.getenv("THRESHOLD_BUY_YES", "0.30"))
 THRESHOLD_BUY_NO     = float(os.getenv("THRESHOLD_BUY_NO", "0.30"))
 
@@ -34,9 +34,9 @@ WC_SAFE_BET_MAX      = float(os.getenv("WC_SAFE_BET_MAX", "0.95"))
 # Paper trading (simulación paralela — más agresivo)
 PAPER_TRADING            = os.getenv("PAPER_TRADING", "true").lower() == "true"
 PAPER_SAFE_BET_MIN       = float(os.getenv("PAPER_SAFE_BET_MIN", "0.65"))
-PAPER_SAFE_BET_MAX       = float(os.getenv("PAPER_SAFE_BET_MAX", "0.93"))
+PAPER_SAFE_BET_MAX       = float(os.getenv("PAPER_SAFE_BET_MAX", "0.88"))  # máx matemático: 0.97/1.10
 PAPER_BET_USDC           = float(os.getenv("PAPER_BET_USDC", "5.0"))
-PAPER_HIGH_CONF_THRESHOLD = float(os.getenv("PAPER_HIGH_CONF_THRESHOLD", "0.88"))  # por encima de esto apuesta doble
+PAPER_HIGH_CONF_THRESHOLD = float(os.getenv("PAPER_HIGH_CONF_THRESHOLD", "0.85"))  # por encima de esto apuesta doble
 PAPER_HIGH_CONF_BET      = float(os.getenv("PAPER_HIGH_CONF_BET", "10.0"))         # apuesta doble en alta confianza
 
 CLOB_HOST  = "https://clob.polymarket.com"
