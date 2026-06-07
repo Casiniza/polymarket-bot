@@ -89,5 +89,18 @@
     "paper": false,
     "opened_at": "2026-06-07T12:25:12.379049",
     "closed_at": "2026-06-07T13:52:19.794619"
+  },
+  {
+    "market_question": "Will Kimi Antonelli win the 2026 F1 Monaco Grand Prix?",
+    "action": "BUY_YES",
+    "entry_price": 0.88,
+    "exit_price": 0.975,
+    "size": 5,
+    "usdc_spent": 5.0,
+    "pnl": 0.475,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T13:42:48.452101",
+    "closed_at": "2026-06-07T14:00:24.386391"
   }
 ]
