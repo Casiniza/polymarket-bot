@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "token_id": "32113956590504382638811631788145724904940827912112275742691865237227049243037",
+    "action": "BUY_NO",
+    "entry_price": 0.805,
+    "size": 6.21,
+    "usdc_spent": 5.0,
+    "market_question": "Roland Garros ATP: Flavio Cobolli vs Alexander Zverev",
+    "opened_at": "2026-06-07T10:53:15.897384"
+  }
+]
