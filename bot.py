@@ -372,6 +372,57 @@ def daily_loss_exceeded() -> bool:
     return False
 
 
+def get_weekly_loss() -> float:
+    """Pérdida realizada desde el lunes de esta semana (excluye GHOSTs)."""
+    today = datetime.now(timezone.utc).date()
+    week_start = today - timedelta(days=today.weekday())  # lunes
+    history = load_history()
+    weekly_pnl = sum(
+        h.get("pnl", 0) for h in history
+        if h.get("pnl", 0) < 0
+        and h.get("result") != "GHOST"
+        and datetime.fromisoformat(h.get("closed_at", "2000-01-01")).date() >= week_start
+    )
+    return abs(weekly_pnl)
+
+
+def weekly_loss_exceeded() -> bool:
+    """True si ya se alcanzó el límite de pérdida semanal."""
+    loss = get_weekly_loss()
+    if loss >= config.MAX_WEEKLY_LOSS_USDC:
+        logger.warning(
+            f"⛔ LÍMITE DE PÉRDIDA SEMANAL alcanzado: -${loss:.2f} / -${config.MAX_WEEKLY_LOSS_USDC:.2f}. "
+            f"No se abrirán apuestas reales hasta la próxima semana."
+        )
+        return True
+    return False
+
+
+def market_is_mature(market: dict) -> bool:
+    """
+    True si el mercado tiene al menos MIN_MARKET_AGE_MIN minutos de vida.
+    Los mercados recién creados tienen precios iniciales arbitrarios que se asientan
+    con el primer volumen real — entrar demasiado pronto es apostar contra el creador.
+    """
+    created_str = market.get("createdAt") or market.get("created_at") or ""
+    if not created_str:
+        return True  # sin fecha de creación → asumir maduro (conservador)
+    try:
+        created_dt = datetime.fromisoformat(created_str.replace("Z", "+00:00"))
+        if created_dt.tzinfo is None:
+            created_dt = created_dt.replace(tzinfo=timezone.utc)
+        age_min = (datetime.now(timezone.utc) - created_dt).total_seconds() / 60
+        if age_min < config.MIN_MARKET_AGE_MIN:
+            logger.debug(
+                f"Descartado (mercado nuevo, {age_min:.0f}min < {config.MIN_MARKET_AGE_MIN}min): "
+                f"{market.get('question','')[:50]}"
+            )
+            return False
+        return True
+    except (ValueError, TypeError):
+        return True
+
+
 def has_enough_liquidity(market: dict) -> bool:
     """True si el mercado tiene volumen 24h suficiente."""
     vol = float(market.get("volume24hr") or market.get("volume24hrClob") or 0)
@@ -605,8 +656,8 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
                  price_history: dict, paper: bool = False) -> tuple[set, set]:
     """Busca nuevas oportunidades. paper=True usa reglas más agresivas sin dinero real."""
 
-    if not paper and daily_loss_exceeded():
-        logger.info("Scan omitido — límite de pérdida diaria alcanzado.")
+    if not paper and (daily_loss_exceeded() or weekly_loss_exceeded()):
+        logger.info("Scan omitido — límite de pérdida diaria o semanal alcanzado.")
         return bet_market_ids, bet_match_keys
 
     label = "[PAPER] " if paper else ""
@@ -643,6 +694,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             if is_tournament_winner_market(market): continue    # torneos → demasiada incertidumbre
             if not is_winner_sports_market(market): continue
             if not has_enough_liquidity(market): continue
+            if not market_is_mature(market): continue       # < 60min → precio aún sin asentar
             # Ventana máxima de entrada — no entrar en mercados muy lejanos
             end_str = market.get("endDateIso") or market.get("endDate", "")
             if end_str:
@@ -709,6 +761,25 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
 
         if signal.action == "HOLD":
             continue
+
+        # ── Doble confirmación para dinero real ───────────────────────────────
+        # Solo entrar si al menos 2 estrategias activas señalan la misma acción.
+        # Filtra señales débiles de una sola estrategia — solo el overlap es real edge.
+        # Ejemplo: NO a 0.62 → SAFE_BET dice BUY_NO + ALWAYS_NO dice BUY_NO → ✅ entrar
+        #          YES a 0.80 → solo SAFE_BET dice BUY_YES → ❌ sin suficiente confirmación
+        if not paper:
+            from strategy import STRATEGIES
+            confirmations = sum(
+                1 for name in config.STRATEGIES_ACTIVE
+                if (fn := STRATEGIES.get(name))
+                and fn(market, yes_price, no_price).action == signal.action
+            )
+            if confirmations < 2:
+                logger.debug(
+                    f"Sin doble confirmación ({confirmations}/2 estrategias → {signal.action}): "
+                    f"{market.get('question','')[:50]}"
+                )
+                continue
 
         # Verificar que el TP es matemáticamente alcanzable PARA EL TOKEN específico
         MAX_ENTRY = round(0.97 / (1 + TAKE_PROFIT), 2)  # = 0.90 con TP=7%
@@ -792,7 +863,11 @@ def _write_heartbeat(client=None):
         open_real    = len(load_positions(paper=False))
         open_paper   = len(load_positions(paper=True))
         realized_real = sum(h.get("pnl", 0) for h in load_history(paper=False))
-        realized_paper = sum(h.get("pnl", 0) for h in load_history(paper=True))
+        paper_history  = [h for h in load_history(paper=True) if h.get("result") != "GHOST"]
+        realized_paper = sum(h.get("pnl", 0) for h in paper_history)
+        paper_balance  = round(config.PAPER_STARTING_BALANCE + realized_paper, 2)
+        paper_roi      = round(realized_paper / config.PAPER_STARTING_BALANCE * 100, 2)
+        weekly_loss    = get_weekly_loss()
         data = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "interval_s": SCAN_MARKETS_S,
@@ -801,6 +876,11 @@ def _write_heartbeat(client=None):
             "open_paper": open_paper,
             "realized_pnl_real": round(realized_real, 4),
             "realized_pnl_paper": round(realized_paper, 4),
+            "paper_balance": paper_balance,
+            "paper_roi_pct": paper_roi,
+            "paper_starting_balance": config.PAPER_STARTING_BALANCE,
+            "weekly_loss_usdc": round(weekly_loss, 2),
+            "weekly_loss_limit": config.MAX_WEEKLY_LOSS_USDC,
         }
         with open("heartbeat.json", "w", encoding="utf-8", newline="\n") as f:
             json.dump(data, f)

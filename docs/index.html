@@ -258,6 +258,11 @@ tbody td { padding: 11px 14px; font-size: 0.82rem; vertical-align: middle; }
     <div class="stat-value c-red" id="s-avg-sl">—</div>
     <div class="stat-sub">por operación perdedora</div>
   </div>
+  <div class="stat-block">
+    <div class="stat-label">Pérd. Semanal</div>
+    <div class="stat-value c-green" id="s-weekly-loss">$0.00</div>
+    <div class="stat-sub" id="s-weekly-sub">límite $30.00</div>
+  </div>
 </div>
 
 <!-- ══ TABS ════════════════════════════════════════════════════ -->
@@ -304,7 +309,7 @@ tbody td { padding: 11px 14px; font-size: 0.82rem; vertical-align: middle; }
       <div class="stat-block">
         <div class="stat-label">Capital Simulado</div>
         <div class="stat-value c-yellow" id="p-capital">—</div>
-        <div class="stat-sub">inicio: $100.00</div>
+        <div class="stat-sub" id="p-roi">inicio: $100.00</div>
       </div>
       <div class="stat-block">
         <div class="stat-label">P&L Realizado Paper</div>
@@ -676,6 +681,28 @@ async function checkStatus() {
 
   if (data.balance_usdc != null) {
     document.getElementById('h-balance').textContent = '$' + data.balance_usdc.toFixed(2);
+  }
+
+  // Pérdida semanal
+  if (data.weekly_loss_usdc != null) {
+    const wl    = data.weekly_loss_usdc;
+    const limit = data.weekly_loss_limit || 30;
+    const pct   = wl / limit;
+    const wlEl  = document.getElementById('s-weekly-loss');
+    wlEl.textContent  = '-$' + wl.toFixed(2);
+    wlEl.className    = 'stat-value ' + (pct >= 0.8 ? 'c-red' : pct >= 0.5 ? 'c-yellow' : 'c-green');
+    document.getElementById('s-weekly-sub').textContent = `límite -$${limit.toFixed(0)} · ${(pct*100).toFixed(0)}% usado`;
+  }
+
+  // ROI paper
+  if (data.paper_roi_pct != null) {
+    const roi  = data.paper_roi_pct;
+    const sign = roi >= 0 ? '+' : '';
+    const roiEl = document.getElementById('p-roi');
+    if (roiEl) {
+      roiEl.textContent = `${sign}${roi.toFixed(2)}% ROI · inicio $${(data.paper_starting_balance||100).toFixed(0)}`;
+      roiEl.style.color = roi >= 0 ? 'var(--green)' : 'var(--red)';
+    }
   }
 
   lastScanTs = new Date(data.ts).getTime();
