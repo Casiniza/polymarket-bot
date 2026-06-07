@@ -236,8 +236,16 @@ def check_positions(client, paper: bool = False):
     if not positions:
         return
 
+    # Deduplicar por token_id por si quedaron duplicados de instancias anteriores
+    seen = set()
+    unique_positions = []
+    for p in positions:
+        if p.token_id not in seen:
+            seen.add(p.token_id)
+            unique_positions.append(p)
+
     label = "[PAPER] " if paper else ""
-    for pos in positions:
+    for pos in unique_positions:
         current_price = get_midpoint(pos.token_id)
         if current_price is None:
             continue
@@ -324,13 +332,10 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             vol = float(market.get("volume24hr") or 0)
             if vol < 1000: continue
         else:
-            # Real: filtros estrictos
+            # Real: mismos mercados que paper pero con filtros de calidad
             if not market_ends_by_tomorrow(market): continue
             if is_crypto_market(market): continue
             if not is_winner_sports_market(market): continue
-            if not market_not_started(market):
-                logger.debug(f"Descartado (en curso): {market.get('question','')[:55]}")
-                continue
             if not has_enough_liquidity(market): continue
 
         market_id = get_market_id(market)

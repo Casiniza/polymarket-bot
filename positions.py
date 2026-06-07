@@ -110,6 +110,10 @@ def _push_to_github(files: list[str]):
 def add_position(token_id: str, action: str, entry_price: float, size: float,
                  usdc_spent: float, market_question: str, paper: bool = False) -> Position:
     positions = load_positions(paper)
+    # Deduplicación final: nunca añadir un token_id que ya existe en el archivo
+    if any(p.token_id == token_id for p in positions):
+        logger.warning(f"Token ya registrado, ignorando apuesta duplicada: {market_question[:50]}")
+        return positions[0]  # devuelve la existente
     pos = Position(
         token_id=token_id, action=action, entry_price=entry_price,
         size=size, usdc_spent=usdc_spent, market_question=market_question,

@@ -13,11 +13,12 @@ MAX_BET_USDC         = float(os.getenv("MAX_BET_USDC", "5.0"))
 MIN_CONFIDENCE       = float(os.getenv("MIN_CONFIDENCE", "0.65"))
 DRY_RUN              = os.getenv("DRY_RUN", "true").lower() == "true"
 MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "15.0"))
-MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "10000.0"))
+MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "25000.0"))
 
-# Estrategias activas (separadas por coma): SAFE_BET,MOMENTUM
-STRATEGIES_ACTIVE    = [s.strip() for s in os.getenv("STRATEGIES_ACTIVE", "SAFE_BET,MOMENTUM").split(",")]
-SAFE_BET_MIN         = float(os.getenv("SAFE_BET_MIN", "0.78"))
+# Estrategias activas (separadas por coma)
+STRATEGIES_ACTIVE    = [s.strip() for s in os.getenv("STRATEGIES_ACTIVE", "SAFE_BET,ALWAYS_NO,MOMENTUM").split(",")]
+# Rango ampliado: captura favoritos claros (0.65+) pre-partido en esports y deportes
+SAFE_BET_MIN         = float(os.getenv("SAFE_BET_MIN", "0.65"))
 SAFE_BET_MAX         = float(os.getenv("SAFE_BET_MAX", "0.92"))
 THRESHOLD_BUY_YES    = float(os.getenv("THRESHOLD_BUY_YES", "0.30"))
 THRESHOLD_BUY_NO     = float(os.getenv("THRESHOLD_BUY_NO", "0.30"))
