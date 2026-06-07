@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "market_question": "Boston Red Sox vs. New York Yankees",
+    "action": "BUY_NO",
+    "entry_price": 0.605,
+    "exit_price": 0.49,
+    "size": 8.26,
+    "usdc_spent": 5.0,
+    "pnl": -0.9499,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-07T10:53:20.779134",
+    "closed_at": "2026-06-07T11:02:19.672786"
+  }
+]
