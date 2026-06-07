@@ -106,6 +106,23 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         if "canceled" in resp_str.lower() or "cancelled" in resp_str.lower():
             logger.warning(f"Compra cancelada (sin liquidez al precio {order_price:.4f}): {market_question[:55]}")
             return False
+
+        # Verificar que el precio real del CLOB no está ya en zona de SL
+        # Evita registrar posiciones cuando el midpoint ya está 8%+ por debajo del precio pagado
+        try:
+            from markets import get_midpoint
+            midpoint = get_midpoint(signal.token_id)
+            if midpoint is not None:
+                price_gap = (midpoint - order_price) / order_price
+                if price_gap <= -0.08:
+                    logger.warning(
+                        f"Compra descartada — midpoint real ({midpoint:.3f}) ya un {price_gap*100:.1f}% "
+                        f"por debajo del precio pagado ({order_price:.3f}): {market_question[:55]}"
+                    )
+                    return False
+        except Exception:
+            pass  # Si falla la verificación, registramos la posición igualmente
+
         logger.success(f"Compra ejecutada: {resp}")
         add_position(signal.token_id, signal.action, order_price, size,
                      bet_usdc, market_question, paper=False)
