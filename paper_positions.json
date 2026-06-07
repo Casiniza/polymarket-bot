@@ -7,14 +7,5 @@
     "usdc_spent": 10.0,
     "market_question": "Washington Mystics vs. Atlanta Dream",
     "opened_at": "2026-06-06T23:22:32.126260"
-  },
-  {
-    "token_id": "69542794130431027848307055696090832992425725138903961563345978041970039775544",
-    "action": "BUY_YES",
-    "entry_price": 0.575,
-    "size": 8.7,
-    "usdc_spent": 5.0,
-    "market_question": "Indiana Fever vs. New York Liberty",
-    "opened_at": "2026-06-07T00:48:00.953530"
   }
 ]
