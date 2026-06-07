@@ -34,5 +34,14 @@
     "usdc_spent": 5.0,
     "market_question": "Will Alexander Zverev win the 2026 Men's French Open?",
     "opened_at": "2026-06-07T10:53:23.099235"
+  },
+  {
+    "token_id": "76537531544142674079842577273850899731064939210534952563328864069596117958385",
+    "action": "BUY_NO",
+    "entry_price": 0.785,
+    "size": 6.37,
+    "usdc_spent": 5.0,
+    "market_question": "Birmingham: Arthur Fery vs Yunchaokete Bu",
+    "opened_at": "2026-06-07T10:53:25.585634"
   }
 ]
