@@ -16,14 +16,5 @@
     "usdc_spent": 5.0,
     "market_question": "Chicago Sky vs. Toronto Tempo",
     "opened_at": "2026-06-07T17:52:13.204627"
-  },
-  {
-    "token_id": "53538935878261757155685438104178266289021788810152588274931058594696257328412",
-    "action": "BUY_YES",
-    "entry_price": 0.68,
-    "size": 7,
-    "usdc_spent": 5.0,
-    "market_question": "Valorant: Leviat\u00e1n Esports vs Global Esports (BO3) - VCT Masters London Group Stage",
-    "opened_at": "2026-06-07T18:02:21.741691"
   }
 ]
