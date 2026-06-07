@@ -16,5 +16,14 @@
     "usdc_spent": 5.0,
     "market_question": "Roland Garros ATP: Flavio Cobolli vs Alexander Zverev",
     "opened_at": "2026-06-07T12:25:12.379049"
+  },
+  {
+    "token_id": "36005468932832484089665110441099088093745846482464512334384863594348572029804",
+    "action": "BUY_NO",
+    "entry_price": 0.66,
+    "size": 8.0,
+    "usdc_spent": 5.0,
+    "market_question": "Set Handicap: Zverev (-2.5) vs Cobolli (+2.5)",
+    "opened_at": "2026-06-07T12:25:15.239312"
   }
 ]
