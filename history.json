@@ -180,5 +180,18 @@
     "paper": false,
     "opened_at": "2026-06-07T19:32:49.373383",
     "closed_at": "2026-06-07T19:32:56.294417"
+  },
+  {
+    "market_question": "Los Angeles Angels vs. Los Angeles Dodgers",
+    "action": "BUY_NO",
+    "entry_price": 0.7,
+    "exit_price": 0.625,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "pnl": -0.525,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-07T19:27:48.977530",
+    "closed_at": "2026-06-07T20:38:14.047265"
   }
 ]
