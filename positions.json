@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Pittsburgh Pirates vs. Atlanta Braves",
     "opened_at": "2026-06-07T17:06:50.221856"
+  },
+  {
+    "token_id": "16752602420621719387127954005829409564405703932950437919382059693376403343605",
+    "action": "BUY_NO",
+    "entry_price": 0.59,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "market_question": "Chicago White Sox vs. Philadelphia Phillies",
+    "opened_at": "2026-06-07T17:06:53.043156"
   }
 ]
