@@ -20,12 +20,18 @@ from trader import build_client, execute_signal, execute_sell
 from positions import load_positions, save_positions, load_history
 import config
 
-TAKE_PROFIT      = 0.10
-STOP_LOSS        = 0.10
+TAKE_PROFIT      = 0.10   # +10% TP fijo
+STOP_LOSS        = 0.10   # -10% SL fijo
+TRAILING_START   = 0.05   # activa trailing stop cuando la ganancia toca +5%
+TRAILING_STOP    = 0.03   # vende si cae 3% desde el pico (protege ganancias)
+MIN_HOURS_ENTRY  = 2.0    # no entrar si el mercado cierra en < 2h (evita in-game)
 SCAN_POSITIONS_S = 3      # TP/SL cada 3 segundos — continuo
 SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos
 LOG_PORT         = 7373
 MAX_LOG_LINES    = 200
+
+# Seguimiento del precio pico por posición — para trailing stop
+_peak_prices: dict = {}   # {token_id: precio_pico}
 
 # Buffer circular de logs para el dashboard
 _log_buffer: collections.deque = collections.deque(maxlen=MAX_LOG_LINES)
@@ -231,7 +237,7 @@ def get_market_id(market: dict) -> str:
 
 
 def check_positions(client, paper: bool = False):
-    """Revisa posiciones abiertas y ejecuta TP/SL si corresponde."""
+    """Revisa posiciones abiertas y ejecuta TP/SL/TrailingStop si corresponde."""
     positions = load_positions(paper)
     if not positions:
         return
@@ -249,11 +255,45 @@ def check_positions(client, paper: bool = False):
         current_price = get_midpoint(pos.token_id)
         if current_price is None:
             continue
-        change = (current_price - pos.entry_price) / pos.entry_price
+
+        # Actualizar precio pico (solo para trailing stop)
+        if not paper:
+            if current_price > _peak_prices.get(pos.token_id, 0):
+                _peak_prices[pos.token_id] = current_price
+        peak = _peak_prices.get(pos.token_id, pos.entry_price) if not paper else current_price
+
+        change    = (current_price - pos.entry_price) / pos.entry_price
+        peak_gain = (peak - pos.entry_price) / pos.entry_price
+
         if change >= TAKE_PROFIT:
+            # Take profit clásico
             execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}%", paper=paper)
+            if not paper:
+                _peak_prices.pop(pos.token_id, None)
+
+        elif not paper and peak_gain >= TRAILING_START:
+            # Trailing stop: activo cuando alguna vez ganamos TRAILING_START%
+            trail_drop = (peak - current_price) / peak
+            if trail_drop >= TRAILING_STOP:
+                execute_sell(
+                    client, pos, current_price,
+                    f"TRAILING STOP (pico {peak:.3f} → actual {current_price:.3f}, caída {trail_drop*100:.1f}%)",
+                    paper=paper
+                )
+                _peak_prices.pop(pos.token_id, None)
+            else:
+                logger.info(
+                    f"{label}Manteniendo | {pos.market_question[:50]} | "
+                    f"{pos.entry_price:.3f} → {current_price:.3f} ({change*100:+.1f}%) "
+                    f"[TRAIL pico={peak:.3f} drop={trail_drop*100:.1f}%]"
+                )
+
         elif change <= -STOP_LOSS:
+            # Stop loss clásico
             execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}%", paper=paper)
+            if not paper:
+                _peak_prices.pop(pos.token_id, None)
+
         else:
             logger.info(
                 f"{label}Manteniendo | {pos.market_question[:50]} | "
@@ -261,10 +301,35 @@ def check_positions(client, paper: bool = False):
             )
 
 
+def market_has_time_left(market: dict) -> bool:
+    """
+    True si el mercado cierra en al menos MIN_HOURS_ENTRY horas.
+    Evita entrar en mercados ya en curso o a punto de terminar.
+    """
+    end_str = market.get("endDateIso") or market.get("endDate", "")
+    if not end_str:
+        return True
+    try:
+        end_dt = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+        if end_dt.tzinfo is None:
+            end_dt = end_dt.replace(tzinfo=timezone.utc)
+        hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
+        if hours_left < MIN_HOURS_ENTRY:
+            logger.debug(
+                f"Descartado (solo {hours_left:.1f}h hasta cierre — posible en-juego): "
+                f"{market.get('question','')[:50]}"
+            )
+            return False
+        return True
+    except (ValueError, TypeError):
+        return True
+
+
 def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bool:
     """
     True si el precio ha sido estable en los últimos scans.
-    Mantiene un historial en memoria y rechaza si la volatilidad supera MAX_PRICE_VOLATILITY.
+    Requiere al menos 2 observaciones para poder apostar (mínimo 5 min de datos).
+    Rechaza si la volatilidad supera MAX_PRICE_VOLATILITY.
     """
     now = time.time()
     history = price_history.setdefault(market_id, [])
@@ -273,7 +338,10 @@ def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bo
     price_history[market_id] = [(t, p) for t, p in history if now - t < 1800]
     prices = [p for _, p in price_history[market_id]]
     if len(prices) < 2:
-        return True  # sin historial suficiente, permite la apuesta
+        # Primera observación — registra el precio pero no apuesta aún.
+        # En el siguiente scan (5 min) ya habrá datos para validar estabilidad.
+        logger.debug(f"Primera observación — esperando confirmación de precio en 5min: {market_id[:25]}")
+        return False
     volatility = max(prices) - min(prices)
     if volatility > config.MAX_PRICE_VOLATILITY:
         logger.debug(f"Descartado (volatilidad {volatility:.3f} > {config.MAX_PRICE_VOLATILITY}): {market_id[:20]}")
@@ -334,6 +402,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         else:
             # Real: mismos mercados que paper pero con filtros de calidad
             if not market_ends_by_tomorrow(market): continue
+            if not market_has_time_left(market): continue   # no entrar si cierra en < 2h
             if is_crypto_market(market): continue
             if not is_winner_sports_market(market): continue
             if not has_enough_liquidity(market): continue
@@ -522,31 +591,43 @@ def main():
         logger.info("📝 Paper trading activado — simulación paralela en paper_positions.json")
 
     logger.info("Bot corriendo en modo 24/7 — sin límite de tiempo. Usa Ctrl+C para detener.")
-    while True:
-        now = time.time()
+    try:
+        while True:
+            now = time.time()
 
-        if now - last_market_scan >= SCAN_MARKETS_S:
-            logger.info("=== SCAN MERCADOS ===")
-            bet_market_ids, bet_match_keys = scan_markets(
-                client, bet_market_ids, bet_match_keys, price_history, paper=False
-            )
-            if config.PAPER_TRADING:
-                paper_bet_ids, paper_match_keys = scan_markets(
-                    None, paper_bet_ids, paper_match_keys, price_history, paper=True
+            if now - last_market_scan >= SCAN_MARKETS_S:
+                logger.info("=== SCAN MERCADOS ===")
+                bet_market_ids, bet_match_keys = scan_markets(
+                    client, bet_market_ids, bet_match_keys, price_history, paper=False
                 )
+                if config.PAPER_TRADING:
+                    paper_bet_ids, paper_match_keys = scan_markets(
+                        None, paper_bet_ids, paper_match_keys, price_history, paper=True
+                    )
+                _write_heartbeat(client)
+                last_market_scan = now
+
+            # TP/SL continuo cada 3 segundos
+            check_positions(client, paper=False)
+            if config.PAPER_TRADING:
+                check_positions(None, paper=True)
+
+            # Refresca balance cada ~60s
+            if client and int(time.time()) % 60 < SCAN_POSITIONS_S:
+                get_real_balance(client)
+
+            time.sleep(SCAN_POSITIONS_S)
+
+    except KeyboardInterrupt:
+        logger.info("Bot detenido por el usuario (Ctrl+C).")
+    except Exception as e:
+        # Captura cualquier error inesperado — escribe heartbeat de emergencia y re-lanza
+        logger.critical(f"ERROR CRÍTICO — bot va a reiniciarse: {e}", exc_info=True)
+        try:
             _write_heartbeat(client)
-            last_market_scan = now
-
-        # TP/SL continuo cada 3 segundos
-        check_positions(client, paper=False)
-        if config.PAPER_TRADING:
-            check_positions(None, paper=True)
-
-        # Refresca balance cada ~60s
-        if client and int(time.time()) % 60 < SCAN_POSITIONS_S:
-            get_real_balance(client)
-
-        time.sleep(SCAN_POSITIONS_S)
+        except Exception:
+            pass
+        raise  # el .bat lo reiniciará automáticamente
 
 
 if __name__ == "__main__":

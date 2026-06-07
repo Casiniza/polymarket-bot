@@ -9,10 +9,12 @@ CLOB_API_KEY     = os.getenv("CLOB_API_KEY", "")
 CLOB_API_SECRET  = os.getenv("CLOB_API_SECRET", "")
 CLOB_API_PASSPHRASE = os.getenv("CLOB_API_PASSPHRASE", "")
 
-MAX_BET_USDC         = float(os.getenv("MAX_BET_USDC", "3.0"))  # reducido — balance bajo
-MIN_CONFIDENCE       = float(os.getenv("MIN_CONFIDENCE", "0.65"))
+MAX_BET_USDC         = float(os.getenv("MAX_BET_USDC", "4.0"))     # techo máximo por apuesta
+MIN_BET_USDC         = float(os.getenv("MIN_BET_USDC", "1.5"))     # mínimo para que valga la pena
+BET_PCT_BALANCE      = float(os.getenv("BET_PCT_BALANCE", "0.25")) # apostar hasta el 25% del balance
+MIN_CONFIDENCE       = float(os.getenv("MIN_CONFIDENCE", "0.68"))   # umbral ligeramente más alto
 DRY_RUN              = os.getenv("DRY_RUN", "true").lower() == "true"
-MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "15.0"))
+MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "10.0"))  # límite diario más conservador
 # Volumen mínimo bajado a $5k — el umbral de $25k eliminaba demasiados mercados válidos
 MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "5000.0"))
 

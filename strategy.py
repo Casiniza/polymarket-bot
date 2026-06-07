@@ -75,12 +75,34 @@ def get_dynamic_paper_bet(price: float = 0.0) -> float:
     return config.PAPER_BET_USDC
 
 
-def get_bet_size(market: dict, paper: bool = False, price: float = 0.0) -> float:
+def get_bet_size(market: dict, paper: bool = False, price: float = 0.0,
+                 confidence: float = 0.0, balance: float = None) -> float:
+    """
+    Sizing dinámico basado en balance y confianza.
+    - Base: BET_PCT_BALANCE del balance disponible
+    - Ajuste por confianza: 0.8x (conf baja) → 1.2x (conf alta)
+    - Techo: MAX_BET_USDC | Suelo: MIN_BET_USDC
+    """
     if paper:
         return get_dynamic_paper_bet(price)
     if is_world_cup(market):
         logger.info(f"[Mundial] apuesta aumentada a ${config.WC_BET_USDC}")
         return config.WC_BET_USDC
+
+    # Sizing basado en balance cuando está disponible
+    if balance and balance > 0:
+        base = balance * config.BET_PCT_BALANCE
+        # Escalar por confianza: 0.8x → 1.2x según confianza 0.65 → 1.0
+        conf_factor = 0.8 + 0.4 * max(0.0, (confidence - 0.65) / 0.35)
+        conf_factor = min(conf_factor, 1.2)
+        bet = round(base * conf_factor, 2)
+        bet = max(config.MIN_BET_USDC, min(bet, config.MAX_BET_USDC))
+        logger.debug(
+            f"Sizing: balance=${balance:.2f} × {config.BET_PCT_BALANCE:.0%} × conf_factor={conf_factor:.2f} "
+            f"→ ${bet:.2f} (rango ${config.MIN_BET_USDC}-${config.MAX_BET_USDC})"
+        )
+        return bet
+
     return config.MAX_BET_USDC
 
 

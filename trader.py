@@ -63,7 +63,20 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
     if signal.action == "HOLD":
         return False
 
-    bet_usdc = get_bet_size(market, paper=paper, price=signal.price) if market else (config.PAPER_BET_USDC if paper else config.MAX_BET_USDC)
+    # Obtener balance real para sizing dinámico
+    real_balance = None
+    if not paper and not config.DRY_RUN and client:
+        try:
+            from bot import get_real_balance
+            real_balance = get_real_balance(client)
+        except Exception:
+            pass
+
+    bet_usdc = (
+        get_bet_size(market, paper=paper, price=signal.price,
+                     confidence=signal.confidence, balance=real_balance)
+        if market else (config.PAPER_BET_USDC if paper else config.MAX_BET_USDC)
+    )
 
     tick = _get_tick(market)
     order_price = _snap_price(signal.price, tick)
@@ -159,7 +172,11 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
     try:
         tick = _get_tick(market)
         sell_price = _snap_price(min(max(current_price, 0.01), 0.99), tick)
-        sell_size = _calc_size(position.usdc_spent, sell_price)
+        # IMPORTANTE: usar los shares REALES de la posición, NO recalcular con el precio actual.
+        # Recalcular con sell_price daría un tamaño incorrecto (ej: 5 en vez de 6 shares).
+        sell_size = int(position.size)
+        if sell_size <= 0:
+            sell_size = _calc_size(position.usdc_spent, sell_price)
 
         resp = client.create_and_post_order(
             order_args=OrderArgs(token_id=position.token_id, price=sell_price,
