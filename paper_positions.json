@@ -7,14 +7,5 @@
     "usdc_spent": 10.0,
     "market_question": "Washington Mystics vs. Atlanta Dream",
     "opened_at": "2026-06-06T23:22:32.126260"
-  },
-  {
-    "token_id": "65371761431783444705244923955032937157639318326135795697045932087130250810404",
-    "action": "BUY_YES",
-    "entry_price": 0.66,
-    "size": 7,
-    "usdc_spent": 5.0,
-    "market_question": "Map Handicap: TS (-1.5) vs 9z (+1.5)",
-    "opened_at": "2026-06-07T17:11:52.984378"
   }
 ]
