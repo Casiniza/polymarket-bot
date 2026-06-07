@@ -45,6 +45,11 @@ _market_end_dates: dict = {}  # {token_id: "2026-06-08T20:00:00Z"}
 # Ventana máxima de entrada — no apostar en mercados que cierran en >MAX_ENTRY_WINDOW_H horas
 MAX_ENTRY_WINDOW_H = 36.0  # sweet spot: 2.5h–36h antes del cierre
 
+# Cooldown de re-entrada — evita volver a apostar el mismo mercado tras un TP/SL
+# Persiste en disco para sobrevivir reinicios del bot
+REENTRY_COOLDOWN_H = 4.0   # 4h sin re-entrar tras cierre
+_closed_cooldown: dict = {} # {match_key: "2026-...iso..."} — cargado al arrancar
+
 # Buffer circular de logs para el dashboard
 _log_buffer: collections.deque = collections.deque(maxlen=MAX_LOG_LINES)
 
@@ -78,6 +83,53 @@ def get_real_balance(client) -> float | None:
         return usdc
     except Exception:
         return _balance_cache.get("usdc")
+
+
+def _load_closed_cooldown():
+    """Carga el cooldown de re-entrada desde disco al arrancar y filtra los expirados."""
+    global _closed_cooldown
+    try:
+        with open("closed_cooldown.json", "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=REENTRY_COOLDOWN_H)
+        _closed_cooldown = {}
+        for k, v in raw.items():
+            try:
+                dt = datetime.fromisoformat(v)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                if dt > cutoff:
+                    _closed_cooldown[k] = v
+            except Exception:
+                pass
+        logger.debug(f"Cooldown cargado: {len(_closed_cooldown)} mercados en cooldown")
+    except Exception:
+        _closed_cooldown = {}
+
+
+def _mark_closed(match_key: str):
+    """Marca un mercado como recientemente cerrado y lo persiste a disco."""
+    _closed_cooldown[match_key] = datetime.now(timezone.utc).isoformat()
+    try:
+        with open("closed_cooldown.json", "w", encoding="utf-8", newline="\n") as f:
+            json.dump(_closed_cooldown, f, indent=2)
+    except Exception:
+        pass
+
+
+def _is_in_cooldown(match_key: str) -> bool:
+    """True si el mercado cerró hace menos de REENTRY_COOLDOWN_H horas."""
+    ts = _closed_cooldown.get(match_key)
+    if not ts:
+        return False
+    try:
+        closed_dt = datetime.fromisoformat(ts)
+        if closed_dt.tzinfo is None:
+            closed_dt = closed_dt.replace(tzinfo=timezone.utc)
+        hours_ago = (datetime.now(timezone.utc) - closed_dt).total_seconds() / 3600
+        return hours_ago < REENTRY_COOLDOWN_H
+    except Exception:
+        return False
 
 
 class LogHandler(BaseHTTPRequestHandler):
@@ -435,6 +487,7 @@ def check_positions(client, paper: bool = False):
         # ── Take profit ────────────────────────────────────────────────────────
         if change >= tp:
             execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}% (TP={tp*100:.0f}%)", paper=paper)
+            _mark_closed(get_match_key({"question": pos.market_question}))
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
                 _market_end_dates.pop(pos.token_id, None)
@@ -448,6 +501,7 @@ def check_positions(client, paper: bool = False):
                     f"TRAILING STOP (pico {peak:.3f} → {current_price:.3f}, -{trail_drop*100:.1f}% del pico)",
                     paper=False
                 )
+                _mark_closed(get_match_key({"question": pos.market_question}))
                 _peak_prices.pop(pos.token_id, None)
                 _market_end_dates.pop(pos.token_id, None)
             else:
@@ -460,6 +514,7 @@ def check_positions(client, paper: bool = False):
         # ── Stop loss ─────────────────────────────────────────────────────────
         elif change <= -sl:
             execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}% (SL={sl*100:.0f}%)", paper=paper)
+            _mark_closed(get_match_key({"question": pos.market_question}))
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
                 _market_end_dates.pop(pos.token_id, None)
@@ -661,6 +716,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             logger.debug(f"Descartado (TP inalcanzable — señal a {signal.price:.3f} > {MAX_ENTRY}): {q[:50]}")
             continue
 
+        # Cooldown: no re-entrar al mismo mercado en las 4h tras un TP/SL
+        if _is_in_cooldown(match_key):
+            logger.debug(f"Cooldown activo (cerrado recientemente, <{REENTRY_COOLDOWN_H:.0f}h): {match_key[:55]}")
+            continue
+
         if signal.token_id not in open_token_ids:
             question = market.get("question", "")
             wc = is_world_cup(market)
@@ -765,6 +825,7 @@ def main():
         logger.error("PRIVATE_KEY no configurada y DRY_RUN=false. Abortando.")
         sys.exit(1)
 
+    _load_closed_cooldown()   # carga cooldown de re-entrada desde disco
     start_log_server()
     client = build_client() if not config.DRY_RUN else None
     if client:

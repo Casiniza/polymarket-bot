@@ -126,8 +126,10 @@ def add_position(token_id: str, action: str, entry_price: float, size: float,
 
 def remove_position(token_id: str, exit_price: float = None, result: str = None, paper: bool = False):
     positions = load_positions(paper)
+    # Solo registrar en historial la PRIMERA instancia (evita doble-registro si hay duplicados)
     closing = next((p for p in positions if p.token_id == token_id), None)
     if closing and exit_price and result:
         record_closed(closing, exit_price, result, paper)
+    # Eliminar TODAS las instancias del token (no solo la primera)
     positions = [p for p in positions if p.token_id != token_id]
     save_positions(positions, paper)
