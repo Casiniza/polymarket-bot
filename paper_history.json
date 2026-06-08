@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "market_question": "Game Handicap: BLG (-2.5) vs Anyone's Legend (+2.5)",
+    "action": "BUY_NO",
+    "entry_price": 0.7,
+    "exit_price": 0.755,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "pnl": 0.385,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-08T09:31:10.523577",
+    "closed_at": "2026-06-08T09:33:50.296183"
+  }
+]
