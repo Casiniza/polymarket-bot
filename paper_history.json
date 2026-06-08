@@ -24,5 +24,18 @@
     "paper": true,
     "opened_at": "2026-06-08T06:54:45.730453",
     "closed_at": "2026-06-08T12:01:31.999854"
+  },
+  {
+    "market_question": "Map Handicap: LGC (-1.5) vs M80 (+1.5)",
+    "action": "BUY_YES",
+    "entry_price": 0.56,
+    "exit_price": 0.505,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "pnl": -0.44,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-08T17:34:04.044765",
+    "closed_at": "2026-06-08T17:34:09.459496"
   }
 ]
