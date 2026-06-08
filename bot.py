@@ -762,25 +762,6 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         if signal.action == "HOLD":
             continue
 
-        # ── Doble confirmación para dinero real ───────────────────────────────
-        # Solo entrar si al menos 2 estrategias activas señalan la misma acción.
-        # Filtra señales débiles de una sola estrategia — solo el overlap es real edge.
-        # Ejemplo: NO a 0.62 → SAFE_BET dice BUY_NO + ALWAYS_NO dice BUY_NO → ✅ entrar
-        #          YES a 0.80 → solo SAFE_BET dice BUY_YES → ❌ sin suficiente confirmación
-        if not paper:
-            from strategy import STRATEGIES
-            confirmations = sum(
-                1 for name in config.STRATEGIES_ACTIVE
-                if (fn := STRATEGIES.get(name))
-                and fn(market, yes_price, no_price).action == signal.action
-            )
-            if confirmations < 2:
-                logger.debug(
-                    f"Sin doble confirmación ({confirmations}/2 estrategias → {signal.action}): "
-                    f"{market.get('question','')[:50]}"
-                )
-                continue
-
         # Verificar que el TP es matemáticamente alcanzable PARA EL TOKEN específico
         MAX_ENTRY = round(0.97 / (1 + TAKE_PROFIT), 2)  # = 0.90 con TP=7%
         if signal.price > MAX_ENTRY:

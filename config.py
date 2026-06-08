@@ -17,9 +17,9 @@ DRY_RUN              = os.getenv("DRY_RUN", "true").lower() == "true"
 MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "10.0"))   # límite diario
 MAX_WEEKLY_LOSS_USDC = float(os.getenv("MAX_WEEKLY_LOSS_USDC", "30.0"))  # límite semanal (lun→dom)
 # Volumen mínimo $8k — equilibrio entre liquidez y oportunidades
-MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "8000.0"))
-# Mercados con < 60 min de vida tienen precios aún ineficientes (alguien puso precio arbitrario)
-MIN_MARKET_AGE_MIN   = int(os.getenv("MIN_MARKET_AGE_MIN", "60"))
+MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "5000.0"))
+# Mercados con < 30 min de vida tienen precios aún ineficientes (alguien puso precio arbitrario)
+MIN_MARKET_AGE_MIN   = int(os.getenv("MIN_MARKET_AGE_MIN", "30"))
 # Balance virtual de inicio para paper trading
 PAPER_STARTING_BALANCE = float(os.getenv("PAPER_STARTING_BALANCE", "100.0"))
 
