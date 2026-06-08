@@ -762,15 +762,28 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         if signal.action == "HOLD":
             continue
 
+        # Log de señal real generada — diagnóstico clave
+        if not paper:
+            logger.info(
+                f"🎯 Señal real: [{signal.strategy}] {signal.action} | "
+                f"conf={signal.confidence:.2f} | precio={signal.price:.3f} | "
+                f"token={'OK' if signal.token_id else '⚠️ VACÍO'} | {q[:45]}"
+            )
+
         # Verificar que el TP es matemáticamente alcanzable PARA EL TOKEN específico
         MAX_ENTRY = round(0.97 / (1 + TAKE_PROFIT), 2)  # = 0.90 con TP=7%
         if signal.price > MAX_ENTRY:
-            logger.debug(f"Descartado (TP inalcanzable — señal a {signal.price:.3f} > {MAX_ENTRY}): {q[:50]}")
+            logger.info(f"❌ Descartado (TP inalcanzable {signal.price:.3f} > {MAX_ENTRY}): {q[:50]}")
+            continue
+
+        # Sin token_id no se puede operar
+        if not signal.token_id:
+            logger.warning(f"⚠️ Señal sin token_id — mercado sin clobTokenIds?: {q[:55]}")
             continue
 
         # Cooldown: no re-entrar al mismo mercado en las 4h tras un TP/SL
         if _is_in_cooldown(match_key):
-            logger.debug(f"Cooldown activo (cerrado recientemente, <{REENTRY_COOLDOWN_H:.0f}h): {match_key[:55]}")
+            logger.info(f"⏳ Cooldown activo (<{REENTRY_COOLDOWN_H:.0f}h desde cierre): {match_key[:55]}")
             continue
 
         if signal.token_id not in open_token_ids:
