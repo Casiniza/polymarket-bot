@@ -11,5 +11,18 @@
     "paper": true,
     "opened_at": "2026-06-08T09:31:10.523577",
     "closed_at": "2026-06-08T09:33:50.296183"
+  },
+  {
+    "market_question": "Counter-Strike: MIBR vs B8 (BO3) - IEM Cologne Major Stage 2",
+    "action": "BUY_NO",
+    "entry_price": 0.56,
+    "exit_price": 0.515,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "pnl": -0.36,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-08T06:54:45.730453",
+    "closed_at": "2026-06-08T12:01:31.999854"
   }
 ]
