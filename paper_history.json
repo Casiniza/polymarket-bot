@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "market_question": "Indiana Fever vs. Washington Mystics",
+    "action": "BUY_YES",
+    "entry_price": 0.72,
+    "exit_price": 0.795,
+    "size": 6,
+    "usdc_spent": 5.0,
+    "pnl": 0.45,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-08T23:28:04.407424",
+    "closed_at": "2026-06-08T23:28:09.916817"
+  }
+]
