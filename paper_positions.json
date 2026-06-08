@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Spurs vs. Knicks",
     "opened_at": "2026-06-08T21:14:04.000507"
+  },
+  {
+    "token_id": "69166319587818469367239432153858390710550613138297340474048595867699413571349",
+    "action": "BUY_YES",
+    "entry_price": 0.72,
+    "size": 6,
+    "usdc_spent": 5.0,
+    "market_question": "Indiana Fever vs. Washington Mystics",
+    "opened_at": "2026-06-08T23:28:04.407424"
   }
 ]
