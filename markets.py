@@ -107,9 +107,14 @@ def get_bid_ask_spread(token_id: str) -> float | None:
     Devuelve el spread bid-ask ABSOLUTO (puntos de probabilidad, escala 0.0–1.0).
     Para mercados de predicción el spread relativo ((ask-bid)/bid) infla el número:
       bid=0.57, ask=0.60 → relativo=5.3% (rechazaría!) vs absoluto=0.03 (3¢, OK)
-    Umbral recomendado: 0.05 (5 puntos porcentuales = 5 centavos).
-    Devuelve None si no hay datos → se asume líquido y se permite entrar.
-    Devuelve 1.0 si solo hay un lado del libro → ilíquido, rechazar.
+    Umbral recomendado: 0.06 (6 centavos absolutos).
+
+    Casos:
+    - CLOB sin libro propio (bids vacíos o asks vacíos): mercado usa AMM.
+      Polymarket siempre ofrece liquidez AMM al precio de outcomePrices.
+      → devuelve None (dejar pasar, el AMM llena la orden al precio cotizado).
+    - Ambos lados presentes: devuelve el spread absoluto para que caller decida.
+    - None en cualquier error → se asume líquido y se permite entrar.
     """
     try:
         resp = requests.get(f"{CLOB_HOST}/book", params={"token_id": token_id}, timeout=8)
@@ -118,9 +123,9 @@ def get_bid_ask_spread(token_id: str) -> float | None:
         book = resp.json()
         bids = book.get("bids", [])
         asks = book.get("asks", [])
-        # Un lado del libro vacío = mercado sin contraparte real → ilíquido
+        # Sin libro propio → mercado AMM, precio válido en outcomePrices → dejar pasar
         if not bids or not asks:
-            return 1.0
+            return None
         best_bid = float(bids[0]["price"])
         best_ask = float(asks[0]["price"])
         if best_bid <= 0 or best_ask <= 0:

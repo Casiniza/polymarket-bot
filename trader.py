@@ -110,7 +110,9 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
                 f"{market_question[:55]} — apuesta omitida."
             )
             return False
-        if spread is not None:
+        if spread is None:
+            logger.debug(f"Mercado AMM (sin libro CLOB) — precio outcomePrices válido, ejecutando orden.")
+        else:
             logger.debug(f"Spread OK: {spread*100:.1f}¢ absoluto (< {MAX_SPREAD*100:.0f}¢)")
     except Exception:
         pass  # Si falla el check de spread, continuamos (mejor entrar que no hacer nada)
