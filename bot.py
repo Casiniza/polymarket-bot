@@ -676,9 +676,13 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
 
     for market in markets:
         if paper:
-            # Paper: solo mercados que terminan hoy, cualquier categoría excepto política
+            # Paper: mismos filtros de calidad que real (esports, torneos, cripto bloqueados)
+            # Así los datos paper reflejan fielmente lo que haría el bot con dinero real
             if not market_ends_today(market): continue
             if not is_any_active_market(market): continue
+            if is_esports_market(market): continue           # esports → datos contaminados
+            if is_tournament_winner_market(market): continue # torneos → incertidumbre multi-semana
+            if is_crypto_market(market): continue
             # Descarta mercados ya resueltos (precio en 0.99+ o 0.01-)
             y_p, n_p = get_prices_from_market(market)
             if y_p is None: continue
