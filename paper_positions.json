@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Counter-Strike: MIBR vs B8 (BO3) - IEM Cologne Major Stage 2",
     "opened_at": "2026-06-08T06:54:45.730453"
+  },
+  {
+    "token_id": "60710344905455169505943146714247856518367517634358425175551307515491754125263",
+    "action": "BUY_NO",
+    "entry_price": 0.7,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "market_question": "Game Handicap: BLG (-2.5) vs Anyone's Legend (+2.5)",
+    "opened_at": "2026-06-08T09:31:10.523577"
   }
 ]
