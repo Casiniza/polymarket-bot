@@ -29,7 +29,7 @@ TRAILING_START   = 0.04   # trailing activo cuando la ganancia toca +4%
 TRAILING_STOP    = 0.025  # vende si cae 2.5% desde el pico (más agresivo que antes)
 MAX_HOLD_HOURS   = 20     # salida forzada si la posición lleva >20h abierta
 MAX_CONCURRENT   = 2      # máximo 2 posiciones reales simultáneas — calidad > cantidad
-MIN_HOURS_ENTRY  = 2.5    # no entrar si el mercado cierra en < 2.5h (evita in-game)
+MIN_HOURS_ENTRY  = 1.5    # no entrar si el mercado cierra en < 1.5h (permite 1er cuarto/entrada)
 # ── Parámetros de ciclo ───────────────────────────────────────────────────────
 SCAN_POSITIONS_S = 3      # TP/SL cada 3 segundos — continuo
 SCAN_MARKETS_S   = 300    # buscar mercados cada 5 minutos

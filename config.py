@@ -16,8 +16,8 @@ MIN_CONFIDENCE       = float(os.getenv("MIN_CONFIDENCE", "0.68"))   # umbral rel
 DRY_RUN              = os.getenv("DRY_RUN", "true").lower() == "true"
 MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "10.0"))   # límite diario
 MAX_WEEKLY_LOSS_USDC = float(os.getenv("MAX_WEEKLY_LOSS_USDC", "30.0"))  # límite semanal (lun→dom)
-# Volumen mínimo $8k — equilibrio entre liquidez y oportunidades
-MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "5000.0"))
+# Volumen mínimo: $3k — AMM siempre da liquidez, este filtro es de calidad de señal
+MIN_MARKET_VOLUME    = float(os.getenv("MIN_MARKET_VOLUME", "3000.0"))
 # Mercados con < 30 min de vida tienen precios aún ineficientes (alguien puso precio arbitrario)
 MIN_MARKET_AGE_MIN   = int(os.getenv("MIN_MARKET_AGE_MIN", "30"))
 # Balance virtual de inicio para paper trading
