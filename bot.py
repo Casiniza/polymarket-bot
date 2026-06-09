@@ -233,6 +233,12 @@ ESPORTS_KEYWORDS = [
     "bo1)", "bo3)", "bo5)", "(bo1", "(bo3", "(bo5",
     "cloud9", "fnatic", "navi", "g2 esports", "faze clan", "team liquid esports",
     "game winner", "game 2 winner", "game 3 winner",
+    # Mercados de handicap de mapas (CS2, Dota, etc.) — precio cae en vertical al resolverse
+    "map handicap", "map 1 winner", "map 2 winner", "map 3 winner",
+    # Equipos esports comunes no cubiertos antes
+    "tyloo", "natus vincere", "astralis", "team vitality", "heroic",
+    "eternal fire", "spirit", "big clan", "mouz", "complexity",
+    "round winner", "pistol round", "knife round",
 ]
 
 LIVE_KEYWORDS = ["live", "in-play", "in play", "currently", "right now"]
