@@ -37,5 +37,18 @@
     "paper": true,
     "opened_at": "2026-06-09T06:50:59.218135",
     "closed_at": "2026-06-09T06:51:06.094072"
+  },
+  {
+    "market_question": "Map Handicap: LGC (-1.5) vs TYLOO (+1.5)",
+    "action": "BUY_NO",
+    "entry_price": 0.54,
+    "exit_price": 0.345,
+    "size": 9,
+    "usdc_spent": 5.0,
+    "pnl": -1.755,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-09T14:24:14.750552",
+    "closed_at": "2026-06-09T14:30:02.706394"
   }
 ]
