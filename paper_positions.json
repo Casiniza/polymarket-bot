@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "token_id": "93905099346982610309176215370373523446793238444633744135984482325639161656037",
+    "action": "BUY_NO",
+    "entry_price": 0.64,
+    "size": 7,
+    "usdc_spent": 5.0,
+    "market_question": "Will Elon Musk post 200-219 tweets from June 2 to June 9, 2026?",
+    "opened_at": "2026-06-09T06:50:59.218135"
+  }
+]
