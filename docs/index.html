@@ -31,8 +31,14 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 13px; }
-body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+html { font-size: 13px; scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(1100px 500px at 85% -10%, #103a6028, transparent 60%),
+    radial-gradient(900px 480px at -15% 115%, #0d2c5224, transparent 60%),
+    var(--bg);
+  color: var(--text); font-family: var(--sans); min-height: 100vh;
+}
 
 /* ── HEADER ──────────────────────────────────────────────── */
 .header {
@@ -43,8 +49,13 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
   position: sticky; top: 0; z-index: 100;
 }
 .header-left { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.logo { font-family: var(--mono); font-size: 1rem; font-weight: 700; color: var(--primary); letter-spacing: -0.02em; }
-.logo span { color: var(--muted); font-weight: 400; }
+.logo {
+  font-family: var(--mono); font-size: 1rem; font-weight: 700; letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #38bdf8, #818cf8 65%, #c084fc);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+}
+.logo span { color: var(--muted); -webkit-text-fill-color: var(--muted); font-weight: 400; }
 .live-badge {
   display: flex; align-items: center; gap: 6px;
   padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
@@ -308,9 +319,79 @@ tbody td { padding: 10px 14px; font-size: 0.8rem; vertical-align: middle; white-
 .flash-up   { animation: flash-green .7s ease-out; }
 .flash-down { animation: flash-red   .7s ease-out; }
 
+/* ── INTERACTIVIDAD & TRANSICIONES ───────────────────────── */
+@keyframes fadeUp  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(48px) scale(.95); } to { opacity: 1; transform: none; } }
+@keyframes toastOut{ to { opacity: 0; transform: translateY(10px); } }
+@keyframes ringPulse { 0% { transform: scale(.55); opacity: .65; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes scanGlow { 0%,100% { box-shadow: 0 0 4px #38bdf870; } 50% { box-shadow: 0 0 16px #38bdf8; } }
+
+/* Transición al cambiar de pestaña */
+.tab-content.active { animation: fadeUp .35s ease; }
+
+/* Entrada escalonada de las tarjetas de métricas (solo al cargar) */
+.metric-row .metric-card { animation: fadeUp .5s ease both; }
+.metric-row .metric-card:nth-child(1) { animation-delay: 0ms; }
+.metric-row .metric-card:nth-child(2) { animation-delay: 80ms; }
+.metric-row .metric-card:nth-child(3) { animation-delay: 160ms; }
+.metric-row .metric-card:nth-child(4) { animation-delay: 240ms; }
+
+/* Micro-interacciones hover */
+.metric-card, .pos-card, .chart-card, .adv-card, .decision-card {
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.metric-card:hover, .pos-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px #00000048;
+  border-color: var(--border2);
+}
+.chart-card:hover, .adv-card:hover, .decision-card:hover { box-shadow: 0 6px 18px #00000035; border-color: var(--border2); }
+.period-btn, .log-filter, .tab { transition: all .15s ease; }
+.period-btn:active, .log-filter:active { transform: scale(.94); }
+.tab:hover { transform: translateY(-1px); }
+.metric-value { transition: color .3s ease; }
+tbody tr { transition: background .15s, transform .15s; }
+tbody tr:hover { transform: translateX(2px); }
+
+/* Anillo pulsante en el punto de la escalera */
+.ladder-dot::after {
+  content: ''; position: absolute; inset: -5px; border-radius: 50%;
+  border: 2px solid currentColor; animation: ringPulse 2s ease-out infinite;
+}
+/* Tramo coloreado entre entrada y precio actual */
+.ladder-gain {
+  position: absolute; top: 0; bottom: 0; opacity: .35; border-radius: 5px;
+  transition: left .8s ease, width .8s ease, background .4s;
+}
+
+/* Estado "escaneando" */
+.scanbar-fill.scanning { animation: scanGlow 1s ease-in-out infinite; }
+
+/* Toasts — notificaciones flotantes */
+.toasts {
+  position: fixed; right: 18px; bottom: 18px; z-index: 500;
+  display: flex; flex-direction: column; gap: 8px; max-width: 370px;
+}
+.toast {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 15px; border-radius: 10px;
+  background: #0f2035f2; border: 1px solid var(--border2);
+  font-size: .8rem; color: var(--text); line-height: 1.45;
+  box-shadow: 0 12px 32px #00000066;
+  animation: toastIn .35s cubic-bezier(.2, .9, .3, 1.15) both;
+  backdrop-filter: blur(8px);
+}
+.toast.out { animation: toastOut .4s ease both; }
+.toast-ico { font-size: 1.05rem; line-height: 1; }
+.toast-buy  { border-left: 3px solid var(--primary); }
+.toast-win  { border-left: 3px solid var(--green); }
+.toast-loss { border-left: 3px solid var(--red); }
+.toast-info { border-left: 3px solid var(--yellow); }
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--surface); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 </style>
 </head>
 <body>
@@ -518,6 +599,8 @@ tbody td { padding: 10px 14px; font-size: 0.8rem; vertical-align: middle; white-
   </div>
 </div>
 
+<div class="toasts" id="toasts"></div>
+
 <script>
 // ══ CONFIGURACIÓN ════════════════════════════════════════════════
 const CFG = {
@@ -612,9 +695,16 @@ function tickCountdown() {
   const age = (Date.now() - lastScanTs) / 1000;
   const left = Math.max(0, CFG.SCAN_S - (age % CFG.SCAN_S));
   const m = Math.floor(left / 60), s = Math.floor(left % 60);
-  document.getElementById('scan-label').textContent =
-    `Próximo scan: ${m}:${s.toString().padStart(2,'0')}`;
-  document.getElementById('scanbar').style.width = (left / CFG.SCAN_S * 100) + '%';
+  const bar = document.getElementById('scanbar');
+  const label = document.getElementById('scan-label');
+  if (left < 12) {
+    label.textContent = '🔍 Escaneando mercados…';
+    bar.classList.add('scanning');
+  } else {
+    label.textContent = `Próximo scan: ${m}:${s.toString().padStart(2,'0')}`;
+    bar.classList.remove('scanning');
+  }
+  bar.style.width = (left / CFG.SCAN_S * 100) + '%';
 }
 setInterval(tickCountdown, 1000);
 
@@ -644,15 +734,77 @@ function holdTime(openedAt, closedAt=null) {
   return `${Math.floor(h/24)}d ${h%24}h`;
 }
 
+// ── Números animados: el valor "rueda" suavemente hasta el nuevo ──
+const _numState = {};
+function fmtMoney(n, prefix='$', signed=true) {
+  const sign = signed ? (n >= 0.005 ? '+' : n <= -0.005 ? '−' : '+') : (n < 0 ? '−' : '');
+  return sign + prefix + Math.abs(n).toFixed(2);
+}
+function setMoney(id, value, { prefix='$', signed=true } = {}) {
+  const el = document.getElementById(id);
+  if (el == null || value == null || isNaN(value)) return;
+  const from = _numState[id];
+  _numState[id] = value;
+  if (from == null || Math.abs(from - value) < 0.005) {
+    el.textContent = fmtMoney(value, prefix, signed);
+    return;
+  }
+  const t0 = performance.now(), dur = 650;
+  (function frame(t) {
+    const k = Math.min(1, (t - t0) / dur);
+    const e = 1 - Math.pow(1 - k, 3);  // easeOutCubic
+    el.textContent = fmtMoney(from + (value - from) * e, prefix, signed);
+    if (k < 1) requestAnimationFrame(frame);
+  })(t0);
+}
+
+// ── Render sin parpadeo: solo toca el DOM si el HTML cambió ──
+function setHTML(el, html) {
+  if (typeof el === 'string') el = document.getElementById(el);
+  if (!el) return;
+  if (el._lastHTML !== html) { el._lastHTML = html; el.innerHTML = html; }
+}
+
+// ── Toasts: avisos flotantes de aperturas y cierres ──
+function toast(icon, text, kind='info') {
+  const box = document.getElementById('toasts');
+  if (!box) return;
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + kind;
+  el.innerHTML = `<span class="toast-ico">${icon}</span><span>${esc(text)}</span>`;
+  box.appendChild(el);
+  while (box.children.length > 4) box.removeChild(box.firstChild);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 420); }, 7000);
+}
+let _seen = { init: false, real: new Set(), paper: new Set(), rh: 0, ph: 0 };
+function diffAndToast(pricedPos, pricedPaper, history, paperHistory) {
+  if (_seen.init) {
+    pricedPos.forEach(p => { if (!_seen.real.has(p.token_id))
+      toast('💵', `Apuesta REAL abierta: ${p.market_question.slice(0,42)} · ${p.action==='BUY_YES'?'YES':'NO'} @ ${p.entry_price.toFixed(2)}`, 'buy'); });
+    pricedPaper.forEach(p => { if (!_seen.paper.has(p.token_id))
+      toast('📝', `Paper abierta: ${p.market_question.slice(0,42)} @ ${p.entry_price.toFixed(2)}`, 'info'); });
+    history.slice(_seen.rh).forEach(h =>
+      toast(h.pnl >= 0 ? '✅' : '🔴', `${h.pnl >= 0 ? 'GANADA' : 'PERDIDA'} real ${fmt(h.pnl)} · ${h.market_question.slice(0,40)}`, h.pnl >= 0 ? 'win' : 'loss'));
+    paperHistory.slice(_seen.ph).forEach(h =>
+      toast(h.pnl >= 0 ? '✅' : '🔴', `${h.pnl >= 0 ? 'Ganada' : 'Perdida'} paper ${fmt(h.pnl)} · ${h.market_question.slice(0,40)}`, h.pnl >= 0 ? 'win' : 'loss'));
+  }
+  _seen = {
+    init: true,
+    real: new Set(pricedPos.map(p => p.token_id)),
+    paper: new Set(pricedPaper.map(p => p.token_id)),
+    rh: history.length, ph: paperHistory.length,
+  };
+}
+
 // ══ POSITION CARDS (escalera SL ←→ TP) ═══════════════════════════
 function renderPositions(priced, wrapId, isPaper) {
   const wrap = document.getElementById(wrapId);
   if (!priced.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎯</div>
+    setHTML(wrap, `<div class="empty-state"><div class="empty-state-icon">🎯</div>
       <b>Sin apuestas abiertas ahora mismo.</b><br>
       Cuando el bot entre en una, verás aquí su progreso en vivo:<br>
       el punto se mueve hacia la <span style="color:var(--green)">derecha (ganando → vende a +7%)</span>
-      o hacia la <span style="color:var(--red)">izquierda (perdiendo → corta a −8%)</span>.</div>`;
+      o hacia la <span style="color:var(--red)">izquierda (perdiendo → corta a −8%)</span>.</div>`);
     return;
   }
   const cards = priced.map(p => {
@@ -694,6 +846,7 @@ function renderPositions(priced, wrapId, isPaper) {
       </div>
       <div class="ladder">
         <div class="ladder-track">
+          <div class="ladder-gain" style="left:${Math.min(53.3, dotPos)}%;width:${Math.abs(dotPos - 53.3)}%;background:${dotColor}"></div>
           <div class="ladder-entry" style="left:53.3%"></div>
           <div class="ladder-dot" style="left:${dotPos}%;background:${dotColor};color:${dotColor}"></div>
         </div>
@@ -705,7 +858,7 @@ function renderPositions(priced, wrapId, isPaper) {
       </div>
     </div>`;
   }).join('');
-  wrap.innerHTML = `<div class="pos-grid">${cards}</div>`;
+  setHTML(wrap, `<div class="pos-grid">${cards}</div>`);
 }
 
 // ══ HISTORY TABLE ════════════════════════════════════════════════
@@ -713,8 +866,8 @@ function renderHistory(history, wrapId) {
   const wrap = document.getElementById(wrapId);
   const recent = [...history].reverse().slice(0, 20);
   if (!recent.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div>
-      <b>Sin apuestas cerradas todavía.</b><br>Cada apuesta cerrada aparecerá aquí con su resultado.</div>`;
+    setHTML(wrap, `<div class="empty-state"><div class="empty-state-icon">📋</div>
+      <b>Sin apuestas cerradas todavía.</b><br>Cada apuesta cerrada aparecerá aquí con su resultado.</div>`);
     return;
   }
   const rows = recent.map(h => {
@@ -736,10 +889,10 @@ function renderHistory(history, wrapId) {
       <td class="c-muted" style="font-size:.72rem">${parseUTC(h.closed_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})} ${parseUTC(h.closed_at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</td>
     </tr>`;
   }).join('');
-  wrap.innerHTML = `<div class="table-wrap"><table>
+  setHTML(wrap, `<div class="table-wrap"><table>
     <thead><tr><th>Mercado</th><th>Dir</th><th>Resultado</th><th>Precio</th><th>P&amp;L</th><th>Duración</th><th>Cerrada</th></tr></thead>
     <tbody>${rows}</tbody>
-  </table></div>`;
+  </table></div>`);
 }
 
 // ══ CHART ════════════════════════════════════════════════════════
@@ -847,7 +1000,7 @@ function computeStats(history) {
 }
 
 function renderAdvanced(stats, elId) {
-  const el = document.getElementById(elId);
+  const el = { set innerHTML(h) { setHTML(elId, h); } };  // sin parpadeo
   const durStr = stats.avgDurMin == null ? '—'
     : stats.avgDurMin < 60 ? `${stats.avgDurMin.toFixed(0)} min`
     : `${(stats.avgDurMin/60).toFixed(1)} h`;
@@ -938,7 +1091,7 @@ async function checkStatus() {
     isAlive ? `Bot activo · ${timeAgo(data.ts)}` : `⚠ Bot inactivo · ${timeAgo(data.ts)}`;
 
   if (data.balance_usdc != null) {
-    document.getElementById('h-balance').textContent = '$' + data.balance_usdc.toFixed(2);
+    setMoney('h-balance', data.balance_usdc, { signed: false });
   }
 
   // Gauge semanal (el diario se calcula desde el historial en loadAll)
@@ -1005,10 +1158,10 @@ function renderLogs() {
   if (logFilter === 'scans')  lines = lines.filter(l => lineCategory(l.text) === 'scans');
   if (logFilter === 'alerts') lines = lines.filter(l => ['WARNING','ERROR','CRITICAL'].includes(l.level));
   if (!lines.length) {
-    box.innerHTML = '<div class="log-line"><span class="log-text c-muted">Nada que mostrar con este filtro…</span></div>';
+    setHTML(box, '<div class="log-line"><span class="log-text c-muted">Nada que mostrar con este filtro…</span></div>');
     return;
   }
-  box.innerHTML = [...lines].reverse().map(l => {
+  setHTML(box, [...lines].reverse().map(l => {
     const t = l.text || '';
     let hl = '';
     if (/COMPRA \[|Compra ejecutada/.test(t)) hl = 'hl-buy';
@@ -1020,7 +1173,7 @@ function renderLogs() {
       <span class="log-level log-${l.level}">${l.level}</span>
       <span class="log-text">${esc(t)}</span>
     </div>`;
-  }).join('');
+  }).join(''));
 }
 async function loadLogs() {
   if (!IS_LOCAL) return;
@@ -1064,14 +1217,17 @@ async function loadAll() {
   }));
   const [pricedPos, pricedPaper] = await Promise.all([priceAll(positions), priceAll(paperPos)]);
 
+  // Toasts: avisa de aperturas y cierres nuevos desde el último refresco
+  diffAndToast(pricedPos, pricedPaper, history, paperHistory);
+
   // ── REAL ──
   const rs = computeStats(history);
   const unrealized = pricedPos.reduce((s,p)=>s+(p.pnl||0),0);
   const total = rs.realized + unrealized;
 
   const mt = document.getElementById('m-total');
-  mt.textContent = (total>=0?'+':'−') + '$' + Math.abs(total).toFixed(2);
   mt.className = 'metric-value ' + cls(total);
+  setMoney('m-total', total);
   document.getElementById('m-total-sub').textContent =
     `${rs.n} cerrada${rs.n!==1?'s':''} (${fmt(rs.realized)}) · ${pricedPos.length} abierta${pricedPos.length!==1?'s':''} (${fmt(unrealized)})`;
 
@@ -1100,12 +1256,12 @@ async function loadAll() {
 
   const todayPnl = pnlToday(history.filter(h=>h.result!=='GHOST'));
   const todayEl = document.getElementById('h-today');
-  todayEl.textContent = fmt(todayPnl);
   todayEl.className = 'hstat-value ' + cls(todayPnl);
+  setMoney('h-today', todayPnl);
 
   // ── PAPER ──
   const ps = computeStats(paperHistory);
-  document.getElementById('p-capital').textContent = '$' + (CFG.PAPER_INIT + ps.realized).toFixed(2);
+  setMoney('p-capital', CFG.PAPER_INIT + ps.realized, { signed: false });
   setWinRateUI(ps, 'p-winrate', 'p-wr-fill', 'p-wr-verdict');
   const pexp = document.getElementById('p-expectancy');
   pexp.textContent = ps.expectancy != null ? fmt(ps.expectancy) : '—';

@@ -53,7 +53,7 @@ _closed_cooldown: dict = {} # {match_key: "2026-...iso..."} — cargado al arran
 # Watchdog anti-congelación: si el loop principal no da señales de vida en
 # WATCHDOG_MAX_S, el proceso se auto-mata y el .bat lo relanza limpio.
 # (El 10-jun una conexión HTTP sin timeout congeló el loop 21+ minutos.)
-WATCHDOG_MAX_S = 600       # 10 min sin tick = congelado
+WATCHDOG_MAX_S = 300       # 5 min sin tick = congelado (un scan normal tarda <60s)
 _last_tick: dict = {"t": 0.0}
 
 # Buffer circular de logs para el dashboard
@@ -1003,6 +1003,18 @@ def main():
     # Con esto, cualquier socket sin timeout explícito muere a los 20s.
     import socket
     socket.setdefaulttimeout(20)
+
+    # OJO: setdefaulttimeout NO basta para `requests` — pasa timeout=None
+    # explícito hasta socket.create_connection, que con None = bloqueo infinito.
+    # (Segundo cuelgue del 10-jun: congelado dentro del POST de una orden FOK.)
+    # Parche global: cualquier requests sin timeout recibe 20s.
+    import requests as _rq
+    _orig_request = _rq.Session.request
+    def _request_with_timeout(self, method, url, **kwargs):
+        if kwargs.get("timeout") is None:
+            kwargs["timeout"] = 20
+        return _orig_request(self, method, url, **kwargs)
+    _rq.Session.request = _request_with_timeout
 
     # Lock file — evita múltiples instancias simultáneas
     import msvcrt
