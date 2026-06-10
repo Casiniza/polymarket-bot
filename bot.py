@@ -913,6 +913,13 @@ def _write_heartbeat(client=None):
 
 
 def main():
+    # Timeout global de sockets: la librería del CLOB (py-clob-client) hace
+    # llamadas HTTP SIN timeout — una conexión muerta colgaba el loop entero
+    # para siempre (pasó el 10-jun: 20+ min congelado tras un scan).
+    # Con esto, cualquier socket sin timeout explícito muere a los 20s.
+    import socket
+    socket.setdefaulttimeout(20)
+
     # Lock file — evita múltiples instancias simultáneas
     import msvcrt
     lock_path = "bot.lock"

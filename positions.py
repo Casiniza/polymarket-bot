@@ -93,15 +93,17 @@ def record_closed(position: Position, exit_price: float, result: str, paper: boo
 
 
 def _push_to_github(files: list[str]):
+    # timeout=30 en cada paso: si git se cuelga (prompt de credenciales,
+    # red caída, index.lock), NO puede congelar el loop principal del bot
     try:
-        subprocess.run(["git", "add"] + files, check=True, capture_output=True)
-        result = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
+        subprocess.run(["git", "add"] + files, check=True, capture_output=True, timeout=30)
+        result = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True, timeout=30)
         if result.returncode != 0:
             subprocess.run(
                 ["git", "commit", "-m", "chore: update bot data [skip ci]"],
-                check=True, capture_output=True
+                check=True, capture_output=True, timeout=30
             )
-            subprocess.run(["git", "push"], check=True, capture_output=True)
+            subprocess.run(["git", "push"], check=True, capture_output=True, timeout=60)
             logger.debug("Datos sincronizados con GitHub")
     except Exception as e:
         logger.debug(f"Git push omitido: {e}")
