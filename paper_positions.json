@@ -7,5 +7,14 @@
     "usdc_spent": 5.0,
     "market_question": "Spurs vs. Knicks",
     "opened_at": "2026-06-10T00:01:43.013525"
+  },
+  {
+    "token_id": "3651101534259339222905968231656190849279115616624472283231941274709870304452",
+    "action": "BUY_YES",
+    "entry_price": 0.57,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "market_question": "Atlanta Dream vs. Chicago Sky",
+    "opened_at": "2026-06-10T00:26:51.989575"
   }
 ]
