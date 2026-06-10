@@ -18,7 +18,8 @@ from strategy import Signal, get_bet_size
 from positions import Position, add_position, remove_position
 from markets import get_best_bid_ask
 
-MAX_SPREAD    = 0.06   # 6¢ absolutos — libro más ancho = mercado de mala calidad
+MAX_SPREAD    = 0.03   # 3¢ absolutos — compramos el ask: cada ¢ de spread es coste directo
+                       # contra un TP de +7%; los deportes líquidos pre-partido van a 1-2¢
 MAX_STALE_GAP = 0.04   # si el ask real difiere >4¢ de la señal, la señal está desfasada
 
 
@@ -140,9 +141,18 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         f"Tamaño: {size} shares | ${round(order_price * size, 2)} | {signal.reason}"
     )
 
+    meta = dict(
+        strategy=signal.strategy,
+        sport=(market or {}).get("_sport") or "",
+        confidence=round(signal.confidence, 3),
+        signal_price=signal.price,
+        spread_cents=round(spread * 100, 1),
+        hours_to_start=(market or {}).get("_hours_to_start", 0.0),
+    )
+
     if paper or config.DRY_RUN:
         add_position(signal.token_id, signal.action, order_price, size,
-                     round(order_price * size, 2), market_question, paper=paper)
+                     round(order_price * size, 2), market_question, paper=paper, **meta)
         return True
 
     # ── Verificar balance disponible ──────────────────────────────────────────
@@ -181,7 +191,7 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
 
     logger.success(f"Compra ejecutada y llenada @ {order_price:.2f}: {resp}")
     add_position(signal.token_id, signal.action, order_price, size,
-                 round(order_price * size, 2), market_question, paper=False)
+                 round(order_price * size, 2), market_question, paper=False, **meta)
     return True
 
 

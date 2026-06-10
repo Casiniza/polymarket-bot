@@ -50,6 +50,12 @@ MAX_ENTRY_WINDOW_H = 36.0  # sweet spot: 2.5h–36h antes del cierre
 REENTRY_COOLDOWN_H = 4.0   # 4h sin re-entrar tras cierre
 _closed_cooldown: dict = {} # {match_key: "2026-...iso..."} — cargado al arrancar
 
+# Watchdog anti-congelación: si el loop principal no da señales de vida en
+# WATCHDOG_MAX_S, el proceso se auto-mata y el .bat lo relanza limpio.
+# (El 10-jun una conexión HTTP sin timeout congeló el loop 21+ minutos.)
+WATCHDOG_MAX_S = 600       # 10 min sin tick = congelado
+_last_tick: dict = {"t": 0.0}
+
 # Buffer circular de logs para el dashboard
 _log_buffer: collections.deque = collections.deque(maxlen=MAX_LOG_LINES)
 
@@ -213,6 +219,28 @@ def start_log_server():
         logger.info(f"Servidor de logs activo en http://localhost:{LOG_PORT}")
     except Exception as e:
         logger.warning(f"No se pudo arrancar el servidor de logs: {e}")
+
+
+def start_watchdog():
+    """
+    Hilo vigilante: si el loop principal lleva >WATCHDOG_MAX_S sin dar un tick
+    (colgado en una llamada bloqueante), mata el proceso entero. El .bat lo
+    relanza en 10s con estado limpio. Última red de seguridad para correr 24/7.
+    """
+    import os
+    def _watch():
+        while True:
+            time.sleep(60)
+            last = _last_tick["t"]
+            if last and time.time() - last > WATCHDOG_MAX_S:
+                logger.critical(
+                    f"WATCHDOG: loop congelado {time.time()-last:.0f}s (> {WATCHDOG_MAX_S}s) "
+                    f"— matando proceso para reinicio limpio."
+                )
+                os._exit(3)  # el .bat ve código ≠2 y relanza
+    t = threading.Thread(target=_watch, daemon=True)
+    t.start()
+    logger.info(f"Watchdog activo — reinicio automático si el loop se congela >{WATCHDOG_MAX_S//60} min")
 
 
 # ── KEYWORDS DE FILTRADO ─────────────────────────────────────────────────────
@@ -483,22 +511,48 @@ def market_ends_by_tomorrow(market: dict) -> bool:
         return False
 
 
-def market_not_started(market: dict) -> bool:
+def get_game_start(market: dict) -> datetime | None:
     """
-    True si el partido AÚN NO ha empezado.
-    Usa el startDate del mercado — si es en el futuro, el partido no ha comenzado.
-    Si no hay startDate o es ambiguo, permite la apuesta (conservador).
+    Hora de inicio REAL del partido desde gameStartTime.
+    OJO con los campos de fecha de Gamma (verificado contra la API 10-jun):
+    - startDate  = fecha de LISTADO del mercado (≈createdAt) — NO sirve
+    - endDate    = en MLB es el deadline de resolución (¡+7 días!) — NO es fin del juego
+    - gameStartTime = inicio real del partido — formato "2026-06-10 17:10:00+00"
     """
-    start_str = market.get("startDate") or market.get("startDateIso") or ""
-    if not start_str:
-        return True
+    raw = market.get("gameStartTime") or ""
+    if not raw:
+        return None
     try:
-        start_dt = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
-        now = datetime.now(timezone.utc)
-        # Permite hasta 30 minutos después del inicio (precio aún estable)
-        return start_dt > now - timedelta(minutes=30)
+        s = raw.strip().replace(" ", "T")
+        # Normaliza zona "+00" → "+00:00" (fromisoformat de versiones viejas no la acepta)
+        if len(s) >= 3 and (s[-3] == "+" or s[-3] == "-") and ":" not in s[-3:]:
+            s = s + ":00"
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
     except (ValueError, TypeError):
-        return True
+        return None
+
+
+def game_entry_window_ok(market: dict) -> bool:
+    """
+    Ventana de entrada pre-partido basada en gameStartTime:
+    - Partido empezó hace >10 min → EN JUEGO → fuera (swings matan el SL)
+    - Falta más de MAX_ENTRY_WINDOW_H para el partido → demasiado pronto
+    - Sin gameStartTime → se aplica el fallback con endDate en scan_markets
+    """
+    gs = get_game_start(market)
+    if gs is None:
+        return True  # sin dato → decide el fallback de endDate
+    mins_to_start = (gs - datetime.now(timezone.utc)).total_seconds() / 60
+    if mins_to_start < -10:
+        logger.debug(f"Descartado (partido empezó hace {-mins_to_start:.0f}min): {market.get('question','')[:50]}")
+        return False
+    if mins_to_start > MAX_ENTRY_WINDOW_H * 60:
+        logger.debug(f"Descartado (partido en {mins_to_start/60:.0f}h > {MAX_ENTRY_WINDOW_H:.0f}h): {market.get('question','')[:50]}")
+        return False
+    return True
 
 
 def get_market_id(market: dict) -> str:
@@ -535,25 +589,25 @@ def check_positions(client, paper: bool = False):
         change    = (current_price - pos.entry_price) / pos.entry_price
         peak_gain = (peak - pos.entry_price) / pos.entry_price
 
-        # ── TP/SL adaptativo según tiempo restante hasta resolución ────────────
-        # Cerca de la resolución el precio converge naturalmente a 0 o 1.
-        # Un TP menor es más fácil de alcanzar — y el SL más justo.
+        # ── TP adaptativo según cercanía del partido (SOLO el TP) ──────────────
+        # Cerca del partido tomamos beneficios algo antes. El SL NUNCA se aprieta:
+        # un SL de 4% durante el juego convertía el ruido normal de un cuarto
+        # (±5-10%) en pérdidas realizadas — el ajuste anterior era contraproducente.
         tp, sl = TAKE_PROFIT, STOP_LOSS
         if not paper:
-            end_date_str = _market_end_dates.get(pos.token_id, "")
-            if end_date_str:
+            ref_str = _market_end_dates.get(pos.token_id, "")
+            if ref_str:
                 try:
-                    end_dt = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
-                    if end_dt.tzinfo is None:
-                        end_dt = end_dt.replace(tzinfo=timezone.utc)
-                    hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
+                    ref_dt = datetime.fromisoformat(ref_str.replace("Z", "+00:00"))
+                    if ref_dt.tzinfo is None:
+                        ref_dt = ref_dt.replace(tzinfo=timezone.utc)
+                    hours_left = (ref_dt - datetime.now(timezone.utc)).total_seconds() / 3600
                     if hours_left < 3:
-                        tp, sl = 0.03, 0.04  # muy cerca: TP 3%, SL 4%
+                        tp = 0.05   # cerca del partido: asegura ganancias antes
                     elif hours_left < 8:
-                        tp, sl = 0.05, 0.06  # cerca: TP 5%, SL 6%
-                    # >8h: valores estándar (7%/8%)
+                        tp = 0.06
                     if hours_left < 8:
-                        logger.debug(f"TP/SL adaptativo: {hours_left:.1f}h restantes → TP={tp*100:.0f}% SL={sl*100:.0f}%")
+                        logger.debug(f"TP adaptativo: {hours_left:.1f}h → TP={tp*100:.0f}% (SL fijo {sl*100:.0f}%)")
                 except Exception:
                     pass
 
@@ -732,27 +786,29 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         else:
             # Real: filtros de calidad en cascada
             if not market_ends_by_tomorrow(market): continue
-            if not market_has_time_left(market): continue       # cierra en < 1.5h
-            if not market_not_started(market): continue          # partido en vivo → swings que matan el SL
+            if not market_has_time_left(market): continue       # endDate en < 1.5h (sanity)
             if is_crypto_market(market): continue
             if is_esports_market(market): continue              # esports → prohibido real money
             if is_tournament_winner_market(market): continue    # torneos → demasiada incertidumbre
             if not is_winner_sports_market(market): continue
             if not has_enough_liquidity(market): continue
-            if not market_is_mature(market): continue       # < 30min → precio aún sin asentar
-            # Ventana máxima de entrada — no entrar en mercados muy lejanos
-            end_str = market.get("endDateIso") or market.get("endDate", "")
-            if end_str:
-                try:
-                    end_dt = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
-                    if end_dt.tzinfo is None:
-                        end_dt = end_dt.replace(tzinfo=timezone.utc)
-                    hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
-                    if hours_left > MAX_ENTRY_WINDOW_H:
-                        logger.debug(f"Descartado (cierra en {hours_left:.0f}h > {MAX_ENTRY_WINDOW_H:.0f}h): {market.get('question','')[:50]}")
-                        continue
-                except Exception:
-                    pass
+            if not market_is_mature(market): continue       # < 30min de vida → precio sin asentar
+            # Ventana de entrada PRE-PARTIDO sobre gameStartTime (el dato fiable)
+            if not game_entry_window_ok(market): continue
+            # Fallback SOLO si no hay gameStartTime: ventana 36h sobre endDate
+            if get_game_start(market) is None:
+                end_str = market.get("endDateIso") or market.get("endDate", "")
+                if end_str:
+                    try:
+                        end_dt = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+                        if end_dt.tzinfo is None:
+                            end_dt = end_dt.replace(tzinfo=timezone.utc)
+                        hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
+                        if hours_left > MAX_ENTRY_WINDOW_H:
+                            logger.debug(f"Descartado (cierra en {hours_left:.0f}h > {MAX_ENTRY_WINDOW_H:.0f}h): {market.get('question','')[:50]}")
+                            continue
+                    except Exception:
+                        pass
 
         market_id = get_market_id(market)
         if market_id in bet_market_ids: continue
@@ -793,8 +849,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         sport = _detect_sport(market)
         is_sports = is_winner_sports_market(market) or (sport is not None)
         market["_is_sports"] = is_sports
-        market["_sport"] = sport if not paper else None
+        market["_sport"] = sport   # siempre registrado (metadato); el boost solo aplica en real
         market["_sport_boost"] = SPORT_CONF_BOOST.get(sport, 0.0) if (sport and not paper) else 0.0
+        # Horas hasta el partido — metadato para análisis de rendimiento
+        gs = get_game_start(market)
+        market["_hours_to_start"] = round((gs - datetime.now(timezone.utc)).total_seconds() / 3600, 2) if gs else 0.0
 
         q = market.get("question", "")
         no_str = f"{no_price:.3f}" if no_price else "?"
@@ -848,11 +907,13 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
                 bet_match_keys.add(match_key)
                 open_token_ids.add(signal.token_id)
                 new_bets += 1
-                # Guardar fecha de cierre para TP/SL adaptativo
+                # Referencia temporal para el TP adaptativo: inicio del partido
+                # (gameStartTime); endDate solo como fallback (en MLB es +7 días)
                 if not paper:
-                    end_str = market.get("endDateIso") or market.get("endDate", "")
-                    if end_str:
-                        _market_end_dates[signal.token_id] = end_str
+                    gs = get_game_start(market)
+                    ref = gs.isoformat() if gs else (market.get("endDateIso") or market.get("endDate", ""))
+                    if ref:
+                        _market_end_dates[signal.token_id] = ref
 
     winner_markets = sum(1 for m in markets if market_ends_by_tomorrow(m) and is_winner_sports_market(m))
     daily_loss = get_daily_loss()
@@ -990,9 +1051,11 @@ def main():
         logger.info("📝 Paper trading activado — simulación paralela en paper_positions.json")
 
     logger.info("Bot corriendo en modo 24/7 — sin límite de tiempo. Usa Ctrl+C para detener.")
+    start_watchdog()
     try:
         while True:
             now = time.time()
+            _last_tick["t"] = now   # señal de vida para el watchdog
 
             if now - last_market_scan >= SCAN_MARKETS_S:
                 logger.info("=== SCAN MERCADOS ===")

@@ -21,6 +21,13 @@ class Position:
     usdc_spent: float
     market_question: str
     opened_at: str
+    # Metadatos para análisis de rendimiento (opcionales — compatibles con JSON antiguo)
+    strategy: str = ""          # SAFE_BET | ALWAYS_NO | ...
+    sport: str = ""             # tennis | nba | mlb | ... ("" si no deportivo)
+    confidence: float = 0.0     # confianza de la señal al entrar
+    signal_price: float = 0.0   # precio de la señal (outcomePrices) vs entry real
+    spread_cents: float = 0.0   # spread del libro al entrar, en centavos
+    hours_to_start: float = 0.0 # horas hasta el inicio del partido al entrar
 
 
 def _positions_file(paper: bool) -> str:
@@ -82,6 +89,13 @@ def record_closed(position: Position, exit_price: float, result: str, paper: boo
         "paper": paper,
         "opened_at": position.opened_at,
         "closed_at": datetime.utcnow().isoformat(),
+        # Metadatos de la entrada — para saber DÓNDE está el edge al analizar
+        "strategy": position.strategy,
+        "sport": position.sport,
+        "confidence": position.confidence,
+        "signal_price": position.signal_price,
+        "spread_cents": position.spread_cents,
+        "hours_to_start": position.hours_to_start,
     })
     f = _history_file(paper)
     try:
@@ -110,7 +124,10 @@ def _push_to_github(files: list[str]):
 
 
 def add_position(token_id: str, action: str, entry_price: float, size: float,
-                 usdc_spent: float, market_question: str, paper: bool = False) -> Position:
+                 usdc_spent: float, market_question: str, paper: bool = False,
+                 strategy: str = "", sport: str = "", confidence: float = 0.0,
+                 signal_price: float = 0.0, spread_cents: float = 0.0,
+                 hours_to_start: float = 0.0) -> Position:
     positions = load_positions(paper)
     # Deduplicación final: nunca añadir un token_id que ya existe en el archivo
     existing = next((p for p in positions if p.token_id == token_id), None)
@@ -121,6 +138,9 @@ def add_position(token_id: str, action: str, entry_price: float, size: float,
         token_id=token_id, action=action, entry_price=entry_price,
         size=size, usdc_spent=usdc_spent, market_question=market_question,
         opened_at=datetime.utcnow().isoformat(),
+        strategy=strategy, sport=sport, confidence=confidence,
+        signal_price=signal_price, spread_cents=spread_cents,
+        hours_to_start=hours_to_start,
     )
     positions.append(pos)
     save_positions(positions, paper)
