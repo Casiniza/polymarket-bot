@@ -63,5 +63,18 @@
     "paper": true,
     "opened_at": "2026-06-10T00:11:45.771363",
     "closed_at": "2026-06-10T00:23:43.725585"
+  },
+  {
+    "market_question": "Atlanta Dream vs. Chicago Sky",
+    "action": "BUY_YES",
+    "entry_price": 0.57,
+    "exit_price": 0.69,
+    "size": 8,
+    "usdc_spent": 5.0,
+    "pnl": 0.96,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-10T00:26:51.989575",
+    "closed_at": "2026-06-10T00:26:57.243106"
   }
 ]
