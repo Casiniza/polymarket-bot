@@ -145,12 +145,19 @@ def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | N
 def always_no_strategy(market: dict, yes_price: float | None, no_price: float | None) -> Signal:
     """
     'Nothing Ever Happens' — el 73.4% de mercados Polymarket resuelven en NO.
-    Compra NO cuando su precio está entre 0.55 y 0.75.
+    SOLO para mercados de EVENTOS (noticias, hitos, récords) — NO deportes.
     Cuanto más bajo el precio del NO (menos creído), mejor valor esperado.
     """
     token_id_no = _get_token_id(market, "NO")
     if not token_id_no or no_price is None:
         return Signal("HOLD", 0.0, "Sin token NO", "", 0.0, "ALWAYS_NO")
+
+    # El 73.4% de base rate viene de mercados de eventos ("Will X happen?") donde
+    # el público minorista sobrecompra el YES del longshot. En un partido "X vs Y"
+    # NO HAY ese sesgo: comprar NO a 0.54 es una moneda al aire — sin edge.
+    if market.get("_is_sports", False):
+        return Signal("HOLD", 0.0, "ALWAYS_NO desactivado en deportes (sin edge estructural)",
+                      "", no_price or 0.0, "ALWAYS_NO")
 
     # Rango 0.52-0.70: el edge de ALWAYS_NO (73.4% base rate) es positivo en todo este rango.
     # EV a NO=0.52: 73.4% × (1/0.52-1) - 26.6% = +41% — mercado subestima fuertemente el NO.

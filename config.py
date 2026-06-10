@@ -26,10 +26,11 @@ PAPER_STARTING_BALANCE = float(os.getenv("PAPER_STARTING_BALANCE", "100.0"))
 # Estrategias activas (separadas por coma)
 STRATEGIES_ACTIVE    = [s.strip() for s in os.getenv("STRATEGIES_ACTIVE", "SAFE_BET,ALWAYS_NO").split(",")]
 
-# Rango SAFE_BET: 0.55-0.88
-# - Mín bajado a 0.55: captura favoritos moderados con margen de subida
+# Rango SAFE_BET: 0.60-0.88
+# - Mín 0.60: el sesgo favorito-longshot (favoritos sistemáticamente infravalorados)
+#   es débil en 0.55-0.60 (casi coin-flips); el edge real está en favoritos claros
 # - Máx 0.88: límite matemático para TP +10% (0.88*1.10=0.968 < 0.99) ✓
-SAFE_BET_MIN         = float(os.getenv("SAFE_BET_MIN", "0.55"))
+SAFE_BET_MIN         = float(os.getenv("SAFE_BET_MIN", "0.60"))
 SAFE_BET_MAX         = float(os.getenv("SAFE_BET_MAX", "0.88"))
 
 THRESHOLD_BUY_YES    = float(os.getenv("THRESHOLD_BUY_YES", "0.30"))

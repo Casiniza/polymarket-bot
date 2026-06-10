@@ -132,6 +132,15 @@ def _is_in_cooldown(match_key: str) -> bool:
         return False
 
 
+def _cooldown_key(market_question: str, paper: bool) -> str:
+    """
+    Clave de cooldown separada por modo: un SL en paper no debe bloquear
+    la entrada del bot real en ese mercado (y viceversa).
+    """
+    prefix = "paper:" if paper else "real:"
+    return prefix + get_match_key({"question": market_question})
+
+
 class LogHandler(BaseHTTPRequestHandler):
     """Servidor HTTP local — el dashboard lo usa para datos en tiempo real."""
     _FILE_MAP = {
@@ -525,26 +534,28 @@ def check_positions(client, paper: bool = False):
                 except Exception:
                     pass
 
-        # ── Salida forzada por tiempo (posición atascada) ──────────────────────
-        if not paper:
-            try:
-                opened = datetime.fromisoformat(pos.opened_at).replace(tzinfo=timezone.utc)
-                hold_hours = (datetime.now(timezone.utc) - opened).total_seconds() / 3600
-                if hold_hours >= MAX_HOLD_HOURS:
-                    execute_sell(
-                        client, pos, current_price,
-                        f"TIEMPO AGOTADO ({hold_hours:.1f}h > {MAX_HOLD_HOURS}h) {change*100:+.1f}%",
-                        paper=False
-                    )
+        # ── Salida forzada por tiempo (posición atascada) — real Y paper ───────
+        try:
+            opened = datetime.fromisoformat(pos.opened_at).replace(tzinfo=timezone.utc)
+            hold_hours = (datetime.now(timezone.utc) - opened).total_seconds() / 3600
+            if hold_hours >= MAX_HOLD_HOURS:
+                execute_sell(
+                    client, pos, current_price,
+                    f"TIEMPO AGOTADO ({hold_hours:.1f}h > {MAX_HOLD_HOURS}h) {change*100:+.1f}%",
+                    paper=paper
+                )
+                _mark_closed(_cooldown_key(pos.market_question, paper))
+                if not paper:
                     _peak_prices.pop(pos.token_id, None)
-                    continue
-            except Exception:
-                pass
+                    _market_end_dates.pop(pos.token_id, None)
+                continue
+        except Exception:
+            pass
 
         # ── Take profit ────────────────────────────────────────────────────────
         if change >= tp:
             execute_sell(client, pos, current_price, f"TAKE PROFIT +{change*100:.1f}% (TP={tp*100:.0f}%)", paper=paper)
-            _mark_closed(get_match_key({"question": pos.market_question}))
+            _mark_closed(_cooldown_key(pos.market_question, paper))
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
                 _market_end_dates.pop(pos.token_id, None)
@@ -558,7 +569,7 @@ def check_positions(client, paper: bool = False):
                     f"TRAILING STOP (pico {peak:.3f} → {current_price:.3f}, -{trail_drop*100:.1f}% del pico)",
                     paper=False
                 )
-                _mark_closed(get_match_key({"question": pos.market_question}))
+                _mark_closed(_cooldown_key(pos.market_question, paper=False))
                 _peak_prices.pop(pos.token_id, None)
                 _market_end_dates.pop(pos.token_id, None)
             else:
@@ -571,7 +582,7 @@ def check_positions(client, paper: bool = False):
         # ── Stop loss ─────────────────────────────────────────────────────────
         elif change <= -sl:
             execute_sell(client, pos, current_price, f"STOP LOSS {change*100:.1f}% (SL={sl*100:.0f}%)", paper=paper)
-            _mark_closed(get_match_key({"question": pos.market_question}))
+            _mark_closed(_cooldown_key(pos.market_question, paper))
             if not paper:
                 _peak_prices.pop(pos.token_id, None)
                 _market_end_dates.pop(pos.token_id, None)
@@ -698,13 +709,14 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         else:
             # Real: filtros de calidad en cascada
             if not market_ends_by_tomorrow(market): continue
-            if not market_has_time_left(market): continue       # < 2.5h → posiblemente en juego
+            if not market_has_time_left(market): continue       # cierra en < 1.5h
+            if not market_not_started(market): continue          # partido en vivo → swings que matan el SL
             if is_crypto_market(market): continue
             if is_esports_market(market): continue              # esports → prohibido real money
             if is_tournament_winner_market(market): continue    # torneos → demasiada incertidumbre
             if not is_winner_sports_market(market): continue
             if not has_enough_liquidity(market): continue
-            if not market_is_mature(market): continue       # < 60min → precio aún sin asentar
+            if not market_is_mature(market): continue       # < 30min → precio aún sin asentar
             # Ventana máxima de entrada — no entrar en mercados muy lejanos
             end_str = market.get("endDateIso") or market.get("endDate", "")
             if end_str:
@@ -735,8 +747,12 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             logger.debug(f"Descartado (casi resuelto YES={yes_price:.2f}): {market.get('question','')[:50]}")
             continue
 
-        # Filtro de estabilidad de precio
-        if not is_price_stable(market_id, yes_price, price_history): continue
+        # Filtro de estabilidad de precio — historial separado por modo:
+        # real y paper escanean el mismo mercado en el mismo ciclo; con clave
+        # compartida cada ciclo añadía 2 observaciones y el warm-up de 15 min
+        # se quedaba en 10. Con prefijo, cada modo acumula 1 obs/5min de verdad.
+        ph_key = f"{'p' if paper else 'r'}:{market_id}"
+        if not is_price_stable(ph_key, yes_price, price_history): continue
 
         clob_ids = market.get("clobTokenIds") or []
         if len(clob_ids) >= 2 and not market.get("tokens"):
@@ -746,22 +762,24 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             ]
 
         # Inyecta metadatos en el market para estrategias
-        hist_prices = [p for _, p in price_history.get(market_id, [])]
+        hist_prices = [p for _, p in price_history.get(ph_key, [])]
         market["_price_history"] = hist_prices
         market["_paper"] = paper
 
-        # Ajuste de confianza por deporte (solo para real, no paper)
-        sport = _detect_sport(market) if not paper else None
-        market["_sport"] = sport
-        market["_sport_boost"] = SPORT_CONF_BOOST.get(sport, 0.0) if sport else 0.0
+        # Deporte: detección + flag para estrategias (ALWAYS_NO se desactiva en deportes)
+        sport = _detect_sport(market)
+        is_sports = is_winner_sports_market(market) or (sport is not None)
+        market["_is_sports"] = is_sports
+        market["_sport"] = sport if not paper else None
+        market["_sport_boost"] = SPORT_CONF_BOOST.get(sport, 0.0) if (sport and not paper) else 0.0
 
         q = market.get("question", "")
         no_str = f"{no_price:.3f}" if no_price else "?"
         sport_tag = f" [{sport}]" if sport else ""
         logger.debug(f"{'[PAPER] ' if paper else '[REAL]  '}Candidato{sport_tag}: {q[:50]} | YES={yes_price:.3f} NO={no_str}")
 
-        # En paper: prueba ALWAYS_NO también en mercados no deportivos
-        if paper and not is_winner_sports_market(market):
+        # En paper: prueba ALWAYS_NO también en mercados de eventos no deportivos
+        if paper and not is_sports:
             from strategy import always_no_strategy
             signal = always_no_strategy(market, yes_price, no_price)
             if signal.action == "HOLD":
@@ -792,7 +810,7 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             continue
 
         # Cooldown: no re-entrar al mismo mercado en las 4h tras un TP/SL
-        if _is_in_cooldown(match_key):
+        if _is_in_cooldown(_cooldown_key(market.get("question", ""), paper)):
             logger.info(f"⏳ Cooldown activo (<{REENTRY_COOLDOWN_H:.0f}h desde cierre): {match_key[:55]}")
             continue
 

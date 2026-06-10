@@ -87,19 +87,54 @@ def get_midpoint(token_id: str) -> float | None:
             return float(resp.json().get("mid", 0)) or None
     except Exception:
         pass
-    # Segundo fallback: orderbook
+    # Segundo fallback: orderbook (mejor bid = max, mejor ask = min — el orden
+    # del array NO está garantizado, indexar [0] puede dar el peor precio)
     try:
-        resp = requests.get(f"{CLOB_HOST}/book", params={"token_id": token_id}, timeout=10)
+        bid, ask = get_best_bid_ask(token_id)
+        if bid and ask:
+            return (bid + ask) / 2
+        if bid or ask:
+            return bid or ask
+    except Exception:
+        pass
+    # Tercer fallback: último precio cruzado. Los mercados YA RESUELTOS suelen
+    # quedarse sin libro pero conservan el último trade (~0.99 o ~0.01) — esto
+    # permite que TP/SL cierre posiciones zombie en vez de mantenerlas para siempre.
+    try:
+        resp = requests.get(f"{CLOB_HOST}/last-trade-price", params={"token_id": token_id}, timeout=10)
         if resp.ok:
-            book = resp.json()
-            best_bid = float(book["bids"][0]["price"]) if book.get("bids") else None
-            best_ask = float(book["asks"][0]["price"]) if book.get("asks") else None
-            if best_bid and best_ask:
-                return (best_bid + best_ask) / 2
-            return best_bid or best_ask
+            price = float(resp.json().get("price", 0))
+            if price > 0:
+                return price
     except Exception:
         pass
     return None
+
+
+def get_best_bid_ask(token_id: str) -> tuple[float | None, float | None]:
+    """
+    Devuelve (mejor_bid, mejor_ask) del libro CLOB.
+    IMPORTANTE: usa max(bids)/min(asks) — la API no garantiza orden en los arrays.
+    Leer [0] directamente puede devolver el PEOR precio de cada lado (esto causó
+    el falso 'spread=98¢' en mercados perfectamente líquidos).
+    None en un lado = ese lado del libro está vacío.
+    """
+    try:
+        resp = requests.get(f"{CLOB_HOST}/book", params={"token_id": token_id}, timeout=8)
+        if not resp.ok:
+            return None, None
+        book = resp.json()
+        bids = book.get("bids", [])
+        asks = book.get("asks", [])
+        best_bid = max((float(b["price"]) for b in bids), default=None) if bids else None
+        best_ask = min((float(a["price"]) for a in asks), default=None) if asks else None
+        if best_bid is not None and best_bid <= 0:
+            best_bid = None
+        if best_ask is not None and best_ask <= 0:
+            best_ask = None
+        return best_bid, best_ask
+    except Exception:
+        return None, None
 
 
 def get_bid_ask_spread(token_id: str) -> float | None:

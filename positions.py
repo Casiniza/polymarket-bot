@@ -111,9 +111,10 @@ def add_position(token_id: str, action: str, entry_price: float, size: float,
                  usdc_spent: float, market_question: str, paper: bool = False) -> Position:
     positions = load_positions(paper)
     # Deduplicación final: nunca añadir un token_id que ya existe en el archivo
-    if any(p.token_id == token_id for p in positions):
+    existing = next((p for p in positions if p.token_id == token_id), None)
+    if existing:
         logger.warning(f"Token ya registrado, ignorando apuesta duplicada: {market_question[:50]}")
-        return positions[0]  # devuelve la existente
+        return existing
     pos = Position(
         token_id=token_id, action=action, entry_price=entry_price,
         size=size, usdc_spent=usdc_spent, market_question=market_question,

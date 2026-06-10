@@ -1,4 +1,13 @@
-"""Ejecuta órdenes de compra y venta en Polymarket via py-clob-client-v2."""
+"""Ejecuta órdenes de compra y venta en Polymarket via py-clob-client-v2.
+
+Principios de ejecución (dinero real Y paper):
+- El precio de la señal viene de outcomePrices (Gamma) que puede llevar MINUTOS
+  de retraso en partidos en vivo. El precio que de verdad pagas es el ask del CLOB.
+  Toda entrada se valida y registra contra el libro real, nunca contra Gamma.
+- Órdenes FOK (Fill-Or-Kill): o se llenan entera e inmediatamente, o el exchange
+  las cancela. Nunca quedan órdenes GTC huérfanas vivas en el libro, y nunca se
+  registra una posición que no se llenó de verdad.
+"""
 import math
 from loguru import logger
 from py_clob_client_v2 import ClobClient, ApiCreds, OrderArgs, OrderType, PartialCreateOrderOptions, Side
@@ -7,6 +16,10 @@ from py_clob_client_v2.constants import POLYGON
 import config
 from strategy import Signal, get_bet_size
 from positions import Position, add_position, remove_position
+from markets import get_best_bid_ask
+
+MAX_SPREAD    = 0.06   # 6¢ absolutos — libro más ancho = mercado de mala calidad
+MAX_STALE_GAP = 0.04   # si el ask real difiere >4¢ de la señal, la señal está desfasada
 
 
 def build_client() -> ClobClient:
@@ -36,26 +49,32 @@ def _options(market: dict) -> PartialCreateOrderOptions:
     return PartialCreateOrderOptions(tick_size=str(tick))
 
 
-def _snap_price(price: float, tick: float) -> float:
-    """
-    Redondea el precio al tick del mercado, pero siempre con máx 2 decimales.
-    Con tick=0.001 usamos 0.01 como mínimo porque Polymarket exige que
-    maker_amount (price × size) tenga ≤ 2 decimales — imposible con 3.
-    """
-    effective_tick = max(tick, 0.01)   # nunca más fino que 0.01 para garantizar maker limpio
-    snapped = round(round(price / effective_tick) * effective_tick, 10)
-    return round(snapped, 2)
+def _snap_up(price: float, tick: float) -> float:
+    """Redondea HACIA ARRIBA al tick (mín 0.01) — para compras marketables que crucen el ask."""
+    t = max(tick, 0.01)
+    snapped = round(math.ceil(round(price / t, 6)) * t, 10)
+    return round(min(snapped, 0.99), 2)
+
+
+def _snap_down(price: float, tick: float) -> float:
+    """Redondea HACIA ABAJO al tick (mín 0.01) — para ventas marketables que crucen el bid."""
+    t = max(tick, 0.01)
+    snapped = round(math.floor(round(price / t, 6)) * t, 10)
+    return round(max(snapped, 0.01), 2)
 
 
 def _calc_size(bet_usdc: float, price: float) -> float:
-    """
-    Calcula size (shares enteros) tal que price × size tenga exactamente 2 decimales.
-    Con price redondeado a 2 decimales, un size entero siempre produce maker limpio.
-    """
+    """Shares enteros: con precio a 2 decimales, size entero garantiza maker limpio."""
     if price <= 0:
         return 0
-    size = math.floor(bet_usdc / price)   # entero, garantiza maker = price(2dec) × int → 2dec
+    size = math.floor(bet_usdc / price)
     return max(1, size)
+
+
+def _order_status(resp) -> str:
+    if isinstance(resp, dict):
+        return (resp.get("status") or "").lower()
+    return (getattr(resp, "status", "") or "").lower()
 
 
 def execute_signal(client: ClobClient, signal: Signal, market_question: str,
@@ -63,7 +82,42 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
     if signal.action == "HOLD":
         return False
 
-    # Obtener balance real para sizing dinámico
+    label = "[PAPER] " if paper else ("[DRY RUN] " if config.DRY_RUN else "")
+
+    # ── Precio ejecutable real desde el libro CLOB ────────────────────────────
+    # Se aplica también a paper: así el simulador entra al precio que de verdad
+    # pagarías, no al outcomePrices retrasado (que generaba TPs falsos en segundos).
+    bid, ask = get_best_bid_ask(signal.token_id)
+    if ask is None:
+        logger.info(f"{label}Sin asks en el libro — nadie vende, mercado sin liquidez: {market_question[:55]}")
+        return False
+    if bid is None:
+        logger.info(f"{label}Sin bids en el libro — no habría salida para TP/SL: {market_question[:55]}")
+        return False
+    spread = ask - bid
+    if spread > MAX_SPREAD:
+        logger.warning(
+            f"{label}Mercado ilíquido (spread={spread*100:.1f}¢ > {MAX_SPREAD*100:.0f}¢): "
+            f"{market_question[:55]} — apuesta omitida."
+        )
+        return False
+    if abs(ask - signal.price) > MAX_STALE_GAP:
+        logger.warning(
+            f"{label}Señal desfasada (señal={signal.price:.3f} vs ask real={ask:.3f}): "
+            f"{market_question[:55]} — omitida. outcomePrices va retrasado respecto al CLOB."
+        )
+        return False
+
+    tick = _get_tick(market)
+    order_price = _snap_up(ask, tick)   # marketable: cruza el ask → fill inmediato
+
+    # TP +7% debe ser alcanzable desde el precio REAL pagado (no el de la señal)
+    MAX_ENTRY = 0.90
+    if order_price > MAX_ENTRY:
+        logger.info(f"{label}Descartado (precio ejecutable {order_price:.2f} > {MAX_ENTRY}, TP inalcanzable): {market_question[:55]}")
+        return False
+
+    # ── Sizing ────────────────────────────────────────────────────────────────
     real_balance = None
     if not paper and not config.DRY_RUN and client:
         try:
@@ -73,103 +127,62 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
             pass
 
     bet_usdc = (
-        get_bet_size(market, paper=paper, price=signal.price,
+        get_bet_size(market, paper=paper, price=order_price,
                      confidence=signal.confidence, balance=real_balance)
         if market else (config.PAPER_BET_USDC if paper else config.MAX_BET_USDC)
     )
-
-    tick = _get_tick(market)
-    order_price = _snap_price(signal.price, tick)
     size = _calc_size(bet_usdc, order_price)
-
-    label = "[PAPER] " if paper else ("[DRY RUN] " if config.DRY_RUN else "")
 
     logger.info(
         f"{label}COMPRA [{signal.strategy}]: {signal.action} | "
         f"Mercado: {market_question[:55]} | "
-        f"Precio: {order_price:.4f} (tick {tick}) | Tamaño: {size} shares | "
-        f"${round(order_price * size, 2)} | {signal.reason}"
+        f"Ask real: {order_price:.2f} (señal {signal.price:.3f}, spread {spread*100:.1f}¢) | "
+        f"Tamaño: {size} shares | ${round(order_price * size, 2)} | {signal.reason}"
     )
 
     if paper or config.DRY_RUN:
         add_position(signal.token_id, signal.action, order_price, size,
-                     bet_usdc, market_question, paper=paper)
+                     round(order_price * size, 2), market_question, paper=paper)
         return True
-
-    # ── Verificar spread bid-ask antes de entrar ──────────────────────────────
-    # Spread ABSOLUTO en puntos de probabilidad (0.03 = 3 centavos).
-    # En mercados de predicción el spread relativo infla el número: usar absoluto.
-    # Umbral 0.06 (6¢): bid=0.57 ask=0.63 → rechaza | bid=0.57 ask=0.62 → permite.
-    try:
-        from markets import get_bid_ask_spread
-        spread = get_bid_ask_spread(signal.token_id)
-        MAX_SPREAD = 0.06  # 6 centavos absolutos
-        if spread is not None and spread > MAX_SPREAD:
-            logger.warning(
-                f"Mercado ilíquido (spread={spread*100:.1f}¢ > {MAX_SPREAD*100:.0f}¢ absoluto): "
-                f"{market_question[:55]} — apuesta omitida."
-            )
-            return False
-        if spread is None:
-            logger.debug(f"Mercado AMM (sin libro CLOB) — precio outcomePrices válido, ejecutando orden.")
-        else:
-            logger.debug(f"Spread OK: {spread*100:.1f}¢ absoluto (< {MAX_SPREAD*100:.0f}¢)")
-    except Exception:
-        pass  # Si falla el check de spread, continuamos (mejor entrar que no hacer nada)
 
     # ── Verificar balance disponible ──────────────────────────────────────────
     try:
         from bot import get_real_balance
         available = get_real_balance(client)
-        if available is not None and available < bet_usdc:
+        if available is not None and available < order_price * size:
             logger.warning(
-                f"Balance insuficiente (${available:.2f} disponible, necesita ${bet_usdc:.2f}): "
+                f"Balance insuficiente (${available:.2f} disponible, necesita ${order_price*size:.2f}): "
                 f"{market_question[:55]} — apuesta omitida."
             )
             return False
     except Exception:
-        pass  # Si falla la consulta de balance, intentamos igualmente
+        pass
 
+    # ── Orden FOK: o se llena YA al precio del ask, o no existe ───────────────
     try:
         resp = client.create_and_post_order(
             order_args=OrderArgs(token_id=signal.token_id, price=order_price, size=size, side=Side.BUY),
             options=_options(market) if market else None,
-            order_type=OrderType.GTC,
+            order_type=OrderType.FOK,
         )
-        resp_str = str(resp)
-        # GTC: verificar que la orden se llenó (status matched), no solo que se aceptó
-        status = ""
-        if isinstance(resp, dict):
-            status = resp.get("status", "")
-        elif hasattr(resp, "status"):
-            status = resp.status or ""
-        if status and status.lower() not in ("matched", "filled", "mined"):
-            logger.warning(f"Orden GTC no llenada inmediatamente (status={status}): {market_question[:55]} — esperando fill")
-            # Aun así registramos la posición, la verificación de midpoint abajo la descartará si está lejos
-
-        # Verificar que el precio real del CLOB no está ya en zona de SL
-        # Evita registrar posiciones cuando el midpoint ya está 8%+ por debajo del precio pagado
-        try:
-            from markets import get_midpoint
-            midpoint = get_midpoint(signal.token_id)
-            if midpoint is not None:
-                price_gap = (midpoint - order_price) / order_price
-                if price_gap <= -0.08:
-                    logger.warning(
-                        f"Compra descartada — midpoint real ({midpoint:.3f}) ya un {price_gap*100:.1f}% "
-                        f"por debajo del precio pagado ({order_price:.3f}): {market_question[:55]}"
-                    )
-                    return False
-        except Exception:
-            pass  # Si falla la verificación, registramos la posición igualmente
-
-        logger.success(f"Compra ejecutada: {resp}")
-        add_position(signal.token_id, signal.action, order_price, size,
-                     bet_usdc, market_question, paper=False)
-        return True
     except Exception as e:
-        logger.error(f"Error ejecutando compra: {e}")
+        msg = str(e).lower()
+        if any(kw in msg for kw in ("fok", "fill", "match", "killed")):
+            logger.info(f"FOK no llenada (liquidez retirada al cruzar): {market_question[:55]} — sin posición.")
+        else:
+            logger.error(f"Error ejecutando compra: {e}")
         return False
+
+    status = _order_status(resp)
+    if status not in ("matched", "filled", "mined", "success"):
+        # FOK no llenada → el exchange la canceló: no hay orden viva ni posición
+        logger.info(f"FOK no llenada (status={status or 'desconocido'}): {market_question[:55]} — sin posición.")
+        return False
+
+    logger.success(f"Compra ejecutada y llenada @ {order_price:.2f}: {resp}")
+    add_position(signal.token_id, signal.action, order_price, size,
+                 round(order_price * size, 2), market_question, paper=False)
+    return True
 
 
 def execute_sell(client: ClobClient, position: Position, current_price: float,
@@ -177,7 +190,15 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
     pnl = (current_price - position.entry_price) * position.size
     pnl_pct = (current_price - position.entry_price) / position.entry_price * 100
     label = "[PAPER] " if paper else ("[DRY RUN] " if config.DRY_RUN else "")
-    result = "TP" if "TAKE PROFIT" in reason else "SL"
+
+    # Etiqueta del resultado: trailing/tiempo se clasifican por el signo del P&L
+    # (antes un trailing que cerraba con +4% quedaba registrado como "SL")
+    if "TAKE PROFIT" in reason:
+        result = "TP"
+    elif "STOP LOSS" in reason:
+        result = "SL"
+    else:
+        result = "TP" if pnl >= 0 else "SL"
 
     logger.info(
         f"{label}VENTA ({reason}): {position.action} | "
@@ -190,24 +211,28 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         remove_position(position.token_id, current_price, result, paper=paper)
         return True
 
-    try:
-        tick = _get_tick(market)
-        sell_price = _snap_price(min(max(current_price, 0.01), 0.99), tick)
-        # IMPORTANTE: usar los shares REALES de la posición, NO recalcular con el precio actual.
-        # Recalcular con sell_price daría un tamaño incorrecto (ej: 5 en vez de 6 shares).
-        sell_size = int(position.size)
-        if sell_size <= 0:
-            sell_size = _calc_size(position.usdc_spent, sell_price)
+    # ── Venta real: FOK cruzando el mejor bid ─────────────────────────────────
+    bid, _ask = get_best_bid_ask(position.token_id)
+    if bid is None:
+        logger.warning(
+            f"Sin bids para vender: {position.market_question[:45]} — reintento en el próximo ciclo. "
+            f"(Si el mercado ya resolvió, redime la posición manualmente en Polymarket)"
+        )
+        return False
 
+    tick = _get_tick(market)
+    sell_price = _snap_down(bid, tick)
+    sell_size = int(position.size)
+    if sell_size <= 0:
+        sell_size = _calc_size(position.usdc_spent, sell_price)
+
+    try:
         resp = client.create_and_post_order(
             order_args=OrderArgs(token_id=position.token_id, price=sell_price,
                                  size=sell_size, side=Side.SELL),
             options=_options(market) if market else PartialCreateOrderOptions(tick_size="0.01"),
-            order_type=OrderType.GTC,
+            order_type=OrderType.FOK,
         )
-        logger.success(f"Venta ejecutada: {resp}")
-        remove_position(position.token_id, current_price, result, paper=False)
-        return True
     except Exception as e:
         err_str = str(e)
         if "not enough balance" in err_str or "balance is not enough" in err_str:
@@ -215,6 +240,21 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
                 f"Posición fantasma detectada: {position.market_question[:55]} — eliminando del registro."
             )
             remove_position(position.token_id, current_price, "GHOST", paper=False)
+        elif any(kw in err_str.lower() for kw in ("fok", "fill", "match", "killed")):
+            logger.info(f"Venta FOK no llenada — reintento en el próximo ciclo: {position.market_question[:45]}")
         else:
             logger.error(f"Error ejecutando venta: {e}")
         return False
+
+    status = _order_status(resp)
+    if status not in ("matched", "filled", "mined", "success"):
+        logger.info(f"Venta FOK no llenada (status={status or 'desconocido'}) — reintento en el próximo ciclo.")
+        return False
+
+    # P&L real con el precio de venta REAL (el bid cruzado), no el midpoint
+    real_pnl = (sell_price - position.entry_price) * position.size
+    if "TAKE PROFIT" not in reason and "STOP LOSS" not in reason:
+        result = "TP" if real_pnl >= 0 else "SL"
+    logger.success(f"Venta ejecutada y llenada @ {sell_price:.2f}: {resp}")
+    remove_position(position.token_id, sell_price, result, paper=False)
+    return True
