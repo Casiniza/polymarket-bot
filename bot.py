@@ -11,7 +11,7 @@ import time
 import threading
 import collections
 import json
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from datetime import datetime, timezone, timedelta
 from loguru import logger
 from markets import get_active_markets, get_prices_from_market, get_midpoint
@@ -141,6 +141,11 @@ def _cooldown_key(market_question: str, paper: bool) -> str:
     return prefix + get_match_key({"question": market_question})
 
 
+# Errores de "el cliente colgó la conexión" — totalmente benignos:
+# el dashboard aborta peticiones lentas (timeout 4s) o recarga la página.
+_CLIENT_DISCONNECT = (ConnectionAbortedError, ConnectionResetError, BrokenPipeError)
+
+
 class LogHandler(BaseHTTPRequestHandler):
     """Servidor HTTP local — el dashboard lo usa para datos en tiempo real."""
     _FILE_MAP = {
@@ -157,34 +162,52 @@ class LogHandler(BaseHTTPRequestHandler):
     }
 
     def do_GET(self):
-        path = self.path.split("?")[0]
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Cache-Control", "no-cache")
-        self.end_headers()
+        try:
+            path = self.path.split("?")[0]
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-cache")
+            self.end_headers()
 
-        if path == "/balance":
-            bal = _balance_cache.get("usdc")
-            self.wfile.write(json.dumps({"usdc": bal}).encode())
-        elif path in self._FILE_MAP:
-            fname = self._FILE_MAP[path]
-            try:
-                with open(fname, "r", encoding="utf-8-sig") as f:
-                    self.wfile.write(f.read().encode("utf-8"))
-            except Exception:
-                self.wfile.write(self._EMPTY.get(path, "{}").encode())
-        else:  # /logs o cualquier otra ruta
-            self.wfile.write(json.dumps(list(_log_buffer)).encode())
+            if path == "/balance":
+                bal = _balance_cache.get("usdc")
+                self.wfile.write(json.dumps({"usdc": bal}).encode())
+            elif path in self._FILE_MAP:
+                fname = self._FILE_MAP[path]
+                try:
+                    with open(fname, "r", encoding="utf-8-sig") as f:
+                        self.wfile.write(f.read().encode("utf-8"))
+                except OSError:
+                    self.wfile.write(self._EMPTY.get(path, "{}").encode())
+            else:  # /logs o cualquier otra ruta
+                self.wfile.write(json.dumps(list(_log_buffer)).encode())
+        except _CLIENT_DISCONNECT:
+            pass  # el navegador cortó a mitad de respuesta — sin traceback
 
     def log_message(self, *args):
         pass
 
 
+class _QuietThreadingHTTPServer(ThreadingHTTPServer):
+    """
+    Threading: cada petición del dashboard va en su hilo — ya no se encolan
+    detrás de una lenta (causa de los abortos a 4s del dashboard).
+    handle_error silencia los tracebacks de desconexión del cliente.
+    """
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        exc = sys.exc_info()[1]
+        if isinstance(exc, _CLIENT_DISCONNECT):
+            return  # cliente desconectó — irrelevante, sin spam en la terminal
+        super().handle_error(request, client_address)
+
+
 def start_log_server():
     """Arranca el servidor de logs en un hilo separado."""
     try:
-        server = HTTPServer(("localhost", LOG_PORT), LogHandler)
+        server = _QuietThreadingHTTPServer(("localhost", LOG_PORT), LogHandler)
         t = threading.Thread(target=server.serve_forever, daemon=True)
         t.start()
         logger.info(f"Servidor de logs activo en http://localhost:{LOG_PORT}")
