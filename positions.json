@@ -13,5 +13,20 @@
     "signal_price": 0.7,
     "spread_cents": 2.0,
     "hours_to_start": 6.32
+  },
+  {
+    "token_id": "8799141502497878298913860108008773380765044442217517935680891445499519000258",
+    "action": "BUY_YES",
+    "entry_price": 0.81,
+    "size": 2,
+    "usdc_spent": 1.62,
+    "market_question": "Lyon: Marco Trungelliti vs Daniel Galan",
+    "opened_at": "2026-06-11T07:00:29.563025",
+    "strategy": "SAFE_BET",
+    "sport": "tennis",
+    "confidence": 0.945,
+    "signal_price": 0.805,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.49
   }
 ]
