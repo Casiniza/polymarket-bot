@@ -17,5 +17,24 @@
     "signal_price": 0.805,
     "spread_cents": 1.0,
     "hours_to_start": 3.49
+  },
+  {
+    "market_question": "Libema Open: Panna Udvardy vs Daria Snigur",
+    "action": "BUY_YES",
+    "entry_price": 0.7,
+    "exit_price": 0.68,
+    "size": 2,
+    "usdc_spent": 1.4,
+    "pnl": -0.04,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-11T04:10:51.453576",
+    "closed_at": "2026-06-11T11:25:34.621300",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.7,
+    "signal_price": 0.7,
+    "spread_cents": 2.0,
+    "hours_to_start": 6.32
   }
 ]
