@@ -326,7 +326,8 @@ def _detect_sport(market: dict) -> str | None:
     cat = (market.get("category") or "").lower()
     tags = " ".join(t.get("label","").lower() for t in (market.get("tags") or []) if isinstance(t,dict))
     text = q + " " + cat + " " + tags
-    if any(kw in text for kw in ["tennis","atp","wta","roland garros","wimbledon","us open","australian open","french open","birmingham","eastbourne","queen's"]):
+    if any(kw in text for kw in ["tennis","atp","wta","roland garros","wimbledon","us open","australian open","french open","birmingham","eastbourne","queen's",
+                                 "open:","championships:","lyon:","libema","stuttgart"]):
         return "tennis"
     if any(kw in text for kw in ["nba","basketball","lakers","celtics","warriors","bulls","heat","knicks","76ers","bucks","spurs"]):
         return "nba"
@@ -338,7 +339,8 @@ def _detect_sport(market: dict) -> str | None:
         return "nfl"
     if any(kw in text for kw in ["nhl","hockey","maple leafs","bruins","penguins","blackhawks","rangers","capitals","oilers"]):
         return "nhl"
-    if any(kw in text for kw in ["ufc","mma","bellator","pfl","fight night","ko","submission"]):
+    # "ko" eliminado: matcheaba como substring dentro de "KOrea" (fútbol → ufc)
+    if any(kw in text for kw in ["ufc","mma","bellator","pfl","fight night","submission"]):
         return "ufc"
     if any(kw in text for kw in ["boxing","bout","heavyweight","middleweight"]):
         return "boxing"

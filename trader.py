@@ -65,11 +65,17 @@ def _snap_down(price: float, tick: float) -> float:
 
 
 def _calc_size(bet_usdc: float, price: float) -> float:
-    """Shares enteros: con precio a 2 decimales, size entero garantiza maker limpio."""
+    """
+    Shares enteros: con precio a 2 decimales, size entero garantiza maker limpio.
+    Polymarket exige un valor mínimo de orden de ~$1: a precios altos floor()
+    daba 1 share (p.ej. $0.81) → 400 'invalid amount' en bucle (pasó el 11-jun
+    con Lyon: Trungelliti). Se sube al mínimo que garantice ≥$1.05 de valor.
+    """
     if price <= 0:
         return 0
     size = math.floor(bet_usdc / price)
-    return max(1, size)
+    min_size = math.ceil(1.05 / price)   # mínimo para superar el $1 de Polymarket
+    return max(min_size, size, 1)
 
 
 def _order_status(resp) -> str:
