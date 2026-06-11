@@ -1,17 +1,1 @@
-[
-  {
-    "token_id": "67177844542233396153684224562604683211305759326690636513725405031614333615015",
-    "action": "BUY_YES",
-    "entry_price": 0.7,
-    "size": 2,
-    "usdc_spent": 1.4,
-    "market_question": "Libema Open: Panna Udvardy vs Daria Snigur",
-    "opened_at": "2026-06-11T04:10:51.453576",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.7,
-    "signal_price": 0.7,
-    "spread_cents": 2.0,
-    "hours_to_start": 6.32
-  }
-]
+[]
