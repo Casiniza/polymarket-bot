@@ -84,6 +84,15 @@ def _order_status(resp) -> str:
     return (getattr(resp, "status", "") or "").lower()
 
 
+# Estados que cuentan como "la orden se ejecutó (o se ejecutará ya)":
+# - matched/filled/mined/success: fill inmediato confirmado
+# - delayed: Polymarket acepta la orden marketable pero la cruza con unos
+#   segundos de retraso. Tratarla como no-fill provocaba reintentos que
+#   chocaban con "not enough balance" y cierres GHOST falsos (pasó el 11-jun
+#   con Lyon y Udvardy: la 1ª venta 'delayed' SÍ se ejecutó).
+_FILLED_STATUSES = ("matched", "filled", "mined", "success", "delayed")
+
+
 def execute_signal(client: ClobClient, signal: Signal, market_question: str,
                    market: dict = None, paper: bool = False) -> bool:
     if signal.action == "HOLD":
@@ -190,12 +199,12 @@ def execute_signal(client: ClobClient, signal: Signal, market_question: str,
         return False
 
     status = _order_status(resp)
-    if status not in ("matched", "filled", "mined", "success"):
+    if status not in _FILLED_STATUSES:
         # FOK no llenada → el exchange la canceló: no hay orden viva ni posición
         logger.info(f"FOK no llenada (status={status or 'desconocido'}): {market_question[:55]} — sin posición.")
         return False
 
-    logger.success(f"Compra ejecutada y llenada @ {order_price:.2f}: {resp}")
+    logger.success(f"Compra ejecutada (status={status}) @ {order_price:.2f}: {resp}")
     add_position(signal.token_id, signal.action, order_price, size,
                  round(order_price * size, 2), market_question, paper=False, **meta)
     return True
@@ -263,7 +272,7 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         return False
 
     status = _order_status(resp)
-    if status not in ("matched", "filled", "mined", "success"):
+    if status not in _FILLED_STATUSES:
         logger.info(f"Venta FOK no llenada (status={status or 'desconocido'}) — reintento en el próximo ciclo.")
         return False
 
