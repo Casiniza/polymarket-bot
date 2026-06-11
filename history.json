@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "market_question": "Lyon: Marco Trungelliti vs Daniel Galan",
+    "action": "BUY_YES",
+    "entry_price": 0.81,
+    "exit_price": 0.735,
+    "size": 2,
+    "usdc_spent": 1.62,
+    "pnl": -0.15,
+    "result": "GHOST",
+    "paper": false,
+    "opened_at": "2026-06-11T07:00:29.563025",
+    "closed_at": "2026-06-11T10:45:41.095538",
+    "strategy": "SAFE_BET",
+    "sport": "tennis",
+    "confidence": 0.945,
+    "signal_price": 0.805,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.49
+  }
+]
