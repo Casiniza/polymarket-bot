@@ -13,5 +13,20 @@
     "signal_price": 0.635,
     "spread_cents": 1.0,
     "hours_to_start": 25.75
+  },
+  {
+    "token_id": "68484243328569428588255043277797425895965411073244027845565817022786363564052",
+    "action": "BUY_NO",
+    "entry_price": 0.67,
+    "size": 7,
+    "usdc_spent": 4.69,
+    "market_question": "Will Czechia win on 2026-06-11?",
+    "opened_at": "2026-06-11T00:14:56.012994",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.709,
+    "signal_price": 0.665,
+    "spread_cents": 1.0,
+    "hours_to_start": 25.75
   }
 ]
