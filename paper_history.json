@@ -36,5 +36,24 @@
     "signal_price": 0.635,
     "spread_cents": 1.0,
     "hours_to_start": 25.75
+  },
+  {
+    "market_question": "Will Czechia win on 2026-06-11?",
+    "action": "BUY_NO",
+    "entry_price": 0.67,
+    "exit_price": 0.675,
+    "size": 7,
+    "usdc_spent": 4.69,
+    "pnl": 0.035,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-11T00:14:56.012994",
+    "closed_at": "2026-06-11T20:15:05.994655",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.709,
+    "signal_price": 0.665,
+    "spread_cents": 1.0,
+    "hours_to_start": 25.75
   }
 ]
