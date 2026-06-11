@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "market_question": "Will Mexico vs. South Africa end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.79,
+    "exit_price": 0.885,
+    "size": 6,
+    "usdc_spent": 4.74,
+    "pnl": 0.57,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-11T18:54:22.843738",
+    "closed_at": "2026-06-11T19:14:28.893886",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.914,
+    "signal_price": 0.785,
+    "spread_cents": 1.0,
+    "hours_to_start": 0.09
+  }
+]
