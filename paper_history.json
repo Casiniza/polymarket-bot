@@ -17,5 +17,24 @@
     "signal_price": 0.785,
     "spread_cents": 1.0,
     "hours_to_start": 0.09
+  },
+  {
+    "market_question": "Will Korea Republic win on 2026-06-11?",
+    "action": "BUY_NO",
+    "entry_price": 0.64,
+    "exit_price": 0.635,
+    "size": 7,
+    "usdc_spent": 4.48,
+    "pnl": -0.035,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-11T00:14:52.381877",
+    "closed_at": "2026-06-11T20:15:00.023570",
+    "strategy": "SAFE_BET",
+    "sport": "ufc",
+    "confidence": 0.777,
+    "signal_price": 0.635,
+    "spread_cents": 1.0,
+    "hours_to_start": 25.75
   }
 ]
