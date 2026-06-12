@@ -36,5 +36,24 @@
     "signal_price": 0.7,
     "spread_cents": 2.0,
     "hours_to_start": 6.32
+  },
+  {
+    "market_question": "Libema Open: Nuno Borges vs Marin Cilic",
+    "action": "BUY_YES",
+    "entry_price": 0.82,
+    "exit_price": 0.9,
+    "size": 2,
+    "usdc_spent": 1.64,
+    "pnl": 0.16,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-11T23:50:40.790922",
+    "closed_at": "2026-06-12T11:56:42.759068",
+    "strategy": "SAFE_BET",
+    "sport": "tennis",
+    "confidence": 0.953,
+    "signal_price": 0.81,
+    "spread_cents": 1.0,
+    "hours_to_start": 10.66
   }
 ]
