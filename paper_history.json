@@ -74,5 +74,24 @@
     "signal_price": 0.585,
     "spread_cents": 1.0,
     "hours_to_start": 0.15
+  },
+  {
+    "market_question": "Will Korea Republic vs. Czechia end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.69,
+    "exit_price": 0.625,
+    "size": 7,
+    "usdc_spent": 4.83,
+    "pnl": -0.455,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-11T23:21:18.814699",
+    "closed_at": "2026-06-12T02:34:26.896747",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.823,
+    "signal_price": 0.685,
+    "spread_cents": 1.0,
+    "hours_to_start": 2.64
   }
 ]
