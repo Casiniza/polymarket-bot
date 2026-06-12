@@ -55,5 +55,24 @@
     "signal_price": 0.665,
     "spread_cents": 1.0,
     "hours_to_start": 25.75
+  },
+  {
+    "market_question": "Golden Knights vs. Hurricanes",
+    "action": "BUY_NO",
+    "entry_price": 0.59,
+    "exit_price": 0.46,
+    "size": 8,
+    "usdc_spent": 4.72,
+    "pnl": -1.04,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-11T23:50:45.091290",
+    "closed_at": "2026-06-12T00:33:12.909727",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.732,
+    "signal_price": 0.585,
+    "spread_cents": 1.0,
+    "hours_to_start": 0.15
   }
 ]
