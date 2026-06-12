@@ -779,6 +779,11 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             if is_esports_market(market): continue           # esports → datos contaminados
             if is_tournament_winner_market(market): continue # torneos → incertidumbre multi-semana
             if is_crypto_market(market): continue
+            # Filtros temporales IGUALES que real — sin esto paper entraba 9 min
+            # antes de un partido (Golden Knights 12-jun: −$1.04 por gap inicial)
+            # y sus datos no validaban lo que el bot real haría de verdad
+            if not market_has_time_left(market): continue    # ≥1.5h hasta endDate
+            if not game_entry_window_ok(market): continue    # pre-partido (gameStartTime)
             # Descarta mercados ya resueltos (precio en 0.99+ o 0.01-)
             y_p, n_p = get_prices_from_market(market)
             if y_p is None: continue
