@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "38710949738969937237131665710989124733085403390618497699561339405627024736550",
-    "action": "BUY_NO",
-    "entry_price": 0.71,
-    "size": 7,
-    "usdc_spent": 4.97,
-    "market_question": "Will United States vs. Paraguay end in a draw?",
-    "opened_at": "2026-06-12T18:11:34.463631",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.841,
-    "signal_price": 0.705,
-    "spread_cents": 1.0,
-    "hours_to_start": 6.81
-  },
-  {
     "token_id": "71785764076184626205908849503698513178149020682140821352707942313255784790169",
     "action": "BUY_NO",
     "entry_price": 0.65,
