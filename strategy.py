@@ -95,10 +95,15 @@ def get_bet_size(market: dict, paper: bool = False, price: float = 0.0,
         # Escalar por confianza: 0.8x → 1.2x según confianza 0.65 → 1.0
         conf_factor = 0.8 + 0.4 * max(0.0, (confidence - 0.65) / 0.35)
         conf_factor = min(conf_factor, 1.2)
-        bet = round(base * conf_factor, 2)
+        # Multiplicador de ventaja: concentra capital en las categorías que ganan
+        # (NO-empate, tenis pre-partido). El techo MAX_BET y el balance siguen
+        # acotando la exposición total, así que el riesgo global no se dispara.
+        edge_mult = market.get("_edge_size_mult", 1.0) if market else 1.0
+        bet = round(base * conf_factor * edge_mult, 2)
         bet = max(config.MIN_BET_USDC, min(bet, config.MAX_BET_USDC))
+        edge_str = f" × edge={edge_mult:.2f}" if edge_mult != 1.0 else ""
         logger.debug(
-            f"Sizing: balance=${balance:.2f} × {config.BET_PCT_BALANCE:.0%} × conf_factor={conf_factor:.2f} "
+            f"Sizing: balance=${balance:.2f} × {config.BET_PCT_BALANCE:.0%} × conf_factor={conf_factor:.2f}{edge_str} "
             f"→ ${bet:.2f} (rango ${config.MIN_BET_USDC}-${config.MAX_BET_USDC})"
         )
         return bet
@@ -248,18 +253,27 @@ def evaluate(market: dict, yes_price: float | None, no_price: float | None) -> S
         if signal.action != "HOLD" and signal.confidence > best.confidence:
             best = signal
 
-    # Ajuste de confianza por deporte
-    sport_boost = market.get("_sport_boost", 0.0)
-    if best.action != "HOLD" and sport_boost != 0.0:
-        sport = market.get("_sport", "")
-        original_conf = best.confidence
-        best = Signal(
-            best.action,
-            min(1.0, max(0.0, best.confidence + sport_boost)),
-            best.reason + f" [deporte={sport} boost={sport_boost:+.2f}]",
-            best.token_id, best.price, best.strategy
-        )
-        logger.debug(f"Ajuste por deporte [{sport}]: confianza {original_conf:.3f} → {best.confidence:.3f}")
+    # Ajustes de confianza acumulables (deporte + ventaja demostrada)
+    if best.action != "HOLD":
+        sport_boost = market.get("_sport_boost", 0.0)
+        # NO al empate en fútbol: nuestra mayor ventaja (sesgo del empate). Aplica
+        # en ambos modos — es una decisión de estrategia, no un ajuste solo-real.
+        draw_boost = 0.05 if (market.get("_is_draw_market") and best.action == "BUY_NO") else 0.0
+        total_boost = sport_boost + draw_boost
+        if total_boost != 0.0:
+            original_conf = best.confidence
+            tags = []
+            if sport_boost:
+                tags.append(f"deporte={market.get('_sport','')} {sport_boost:+.2f}")
+            if draw_boost:
+                tags.append(f"no-empate {draw_boost:+.2f}")
+            best = Signal(
+                best.action,
+                min(1.0, max(0.0, best.confidence + total_boost)),
+                best.reason + f" [{', '.join(tags)}]",
+                best.token_id, best.price, best.strategy
+            )
+            logger.debug(f"Boost confianza {original_conf:.3f} → {best.confidence:.3f}: {', '.join(tags)}")
 
     if best.action != "HOLD" and best.confidence < config.MIN_CONFIDENCE:
         logger.debug(f"Señal descartada (confianza {best.confidence:.2f} < {config.MIN_CONFIDENCE}): {best.reason}")

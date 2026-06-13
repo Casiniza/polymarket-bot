@@ -378,6 +378,18 @@ def is_crypto_market(market: dict) -> bool:
     text = question + " " + category
     return any(kw in text for kw in CRYPTO_KEYWORDS)
 
+
+def is_draw_market(market: dict) -> bool:
+    """
+    True si es un mercado '¿X vs Y acabará en empate?' (fútbol).
+    Comprar el NO aquí es nuestra MAYOR ventaja demostrada (3/4 ganados, mejores
+    P&L): el empate es un resultado minoritario (~20-25%) y el público minorista
+    lo sobrecompra como apuesta 'segura', dejando el NO infravalorado.
+    """
+    q = (market.get("question") or "").lower()
+    return ("draw" in q or "empate" in q) and any(kw in q for kw in MATCH_VS_KEYWORDS)
+
+
 def is_winner_sports_market(market: dict) -> bool:
     """True solo si es un mercado de ganador de partido deportivo (no esports, no torneo)."""
     question = market.get("question", "").lower()
@@ -858,6 +870,9 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         market["_is_sports"] = is_sports
         market["_sport"] = sport   # siempre registrado (metadato); el boost solo aplica en real
         market["_sport_boost"] = SPORT_CONF_BOOST.get(sport, 0.0) if (sport and not paper) else 0.0
+        # Mercado de empate (¿X vs Y acaba en empate?) — nuestra mayor ventaja al
+        # comprar el NO. Boost de confianza aplicado en evaluate() para ambos modos.
+        market["_is_draw_market"] = is_draw_market(market)
         # Horas hasta el partido — metadato para análisis de rendimiento
         gs = get_game_start(market)
         market["_hours_to_start"] = round((gs - datetime.now(timezone.utc)).total_seconds() / 3600, 2) if gs else 0.0
@@ -879,11 +894,23 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         if signal.action == "HOLD":
             continue
 
+        # Multiplicador de tamaño para categorías con ventaja DEMOSTRADA — concentra
+        # capital donde el bot gana, sin subir el riesgo global (límites intactos):
+        #   · NO al empate en fútbol  (3/4 ganados, mejores P&L)
+        #   · favorito de tenis pre-partido (tesis sólida + sin empates posibles)
+        edge_mult = 1.0
+        if signal.action == "BUY_NO" and market.get("_is_draw_market"):
+            edge_mult = 1.25
+        elif signal.action == "BUY_YES" and sport == "tennis":
+            edge_mult = 1.25
+        market["_edge_size_mult"] = edge_mult
+
         # Log de señal real generada — diagnóstico clave
         if not paper:
+            edge_tag = f" ⭐x{edge_mult}" if edge_mult > 1.0 else ""
             logger.info(
                 f"🎯 Señal real: [{signal.strategy}] {signal.action} | "
-                f"conf={signal.confidence:.2f} | precio={signal.price:.3f} | "
+                f"conf={signal.confidence:.2f} | precio={signal.price:.3f}{edge_tag} | "
                 f"token={'OK' if signal.token_id else '⚠️ VACÍO'} | {q[:45]}"
             )
 
