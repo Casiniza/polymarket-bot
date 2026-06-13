@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "103762070253474724327642675318359667052520958947231343630898390646099257156740",
-    "action": "BUY_NO",
-    "entry_price": 0.53,
-    "size": 9,
-    "usdc_spent": 4.77,
-    "market_question": "Will United States win on 2026-06-12?",
-    "opened_at": "2026-06-12T04:27:56.121695",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.826,
-    "signal_price": 0.525,
-    "spread_cents": 1.0,
-    "hours_to_start": 20.53
-  },
-  {
     "token_id": "38710949738969937237131665710989124733085403390618497699561339405627024736550",
     "action": "BUY_NO",
     "entry_price": 0.71,
