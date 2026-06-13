@@ -55,5 +55,24 @@
     "signal_price": 0.81,
     "spread_cents": 1.0,
     "hours_to_start": 10.66
+  },
+  {
+    "market_question": "Will United States vs. Paraguay end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.71,
+    "exit_price": 0.79,
+    "size": 2,
+    "usdc_spent": 1.42,
+    "pnl": 0.16,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-12T18:11:29.217187",
+    "closed_at": "2026-06-13T01:09:03.390654",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.708,
+    "signal_price": 0.705,
+    "spread_cents": 1.0,
+    "hours_to_start": 6.81
   }
 ]
