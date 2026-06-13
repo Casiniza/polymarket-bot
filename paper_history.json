@@ -93,5 +93,24 @@
     "signal_price": 0.685,
     "spread_cents": 1.0,
     "hours_to_start": 2.64
+  },
+  {
+    "market_question": "Will United States win on 2026-06-12?",
+    "action": "BUY_NO",
+    "entry_price": 0.53,
+    "exit_price": 0.535,
+    "size": 9,
+    "usdc_spent": 4.77,
+    "pnl": 0.045,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-12T04:27:56.121695",
+    "closed_at": "2026-06-13T00:27:57.490678",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.826,
+    "signal_price": 0.525,
+    "spread_cents": 1.0,
+    "hours_to_start": 20.53
   }
 ]
