@@ -27,7 +27,9 @@ TAKE_PROFIT      = 0.07   # +7% TP — objetivos pequeños pero frecuentes
 STOP_LOSS        = 0.08   # -8% SL asimétrico — más margen para rebotes
 TRAILING_START   = 0.04   # trailing activo cuando la ganancia toca +4%
 TRAILING_STOP    = 0.025  # vende si cae 2.5% desde el pico (más agresivo que antes)
-MAX_HOLD_HOURS   = 20     # salida forzada si la posición lleva >20h abierta
+MAX_HOLD_HOURS   = 20     # salida forzada base si la posición lleva >20h abierta
+GAME_OVER_BUFFER_H = 6     # margen tras el inicio del partido antes de cerrar por tiempo
+                          # (cubre prórroga/penaltis y partidos de tenis a 5 sets)
 MAX_CONCURRENT   = 2      # máximo 2 posiciones reales simultáneas — calidad > cantidad
 MIN_HOURS_ENTRY  = 1.5    # no entrar si el mercado cierra en < 1.5h (permite 1er cuarto/entrada)
 # ── Parámetros de ciclo ───────────────────────────────────────────────────────
@@ -626,13 +628,23 @@ def check_positions(client, paper: bool = False):
                     pass
 
         # ── Salida forzada por tiempo (posición atascada) — real Y paper ───────
+        # El cierre por tiempo NO debe disparar antes de que el partido juegue:
+        # una entrada 24-36h pre-partido salía en break-even sin ver la resolución
+        # (su propia ventaja). Si el partido aún no ha terminado, extendemos el
+        # deadline hasta GAME_OVER_BUFFER_H tras su inicio (reconstruido desde
+        # opened_at + hours_to_start, que se guarda en cada posición).
         try:
             opened = datetime.fromisoformat(pos.opened_at).replace(tzinfo=timezone.utc)
             hold_hours = (datetime.now(timezone.utc) - opened).total_seconds() / 3600
-            if hold_hours >= MAX_HOLD_HOURS:
+            deadline = MAX_HOLD_HOURS
+            hrs_to_start = getattr(pos, "hours_to_start", 0.0) or 0.0
+            if hrs_to_start > 0:
+                # mantener hasta 6h después del inicio del partido (cubre prórroga/5 sets)
+                deadline = max(MAX_HOLD_HOURS, hrs_to_start + GAME_OVER_BUFFER_H)
+            if hold_hours >= deadline:
                 execute_sell(
                     client, pos, current_price,
-                    f"TIEMPO AGOTADO ({hold_hours:.1f}h > {MAX_HOLD_HOURS}h) {change*100:+.1f}%",
+                    f"TIEMPO AGOTADO ({hold_hours:.1f}h > {deadline:.1f}h) {change*100:+.1f}%",
                     paper=paper
                 )
                 _mark_closed(_cooldown_key(pos.market_question, paper))
