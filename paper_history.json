@@ -188,5 +188,24 @@
     "signal_price": 0.725,
     "spread_cents": 1.0,
     "hours_to_start": 2.06
+  },
+  {
+    "market_question": "Will Ecuador win on 2026-06-14?",
+    "action": "BUY_NO",
+    "entry_price": 0.63,
+    "exit_price": 0.675,
+    "size": 7,
+    "usdc_spent": 4.41,
+    "pnl": 0.315,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-14T17:44:17.962385",
+    "closed_at": "2026-06-14T23:24:53.629725",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.743,
+    "signal_price": 0.625,
+    "spread_cents": 1.0,
+    "hours_to_start": 5.26
   }
 ]
