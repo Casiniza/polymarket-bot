@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "12239249230073108593853265047016452397635046603059734423159328031418185142103",
+    "action": "BUY_NO",
+    "entry_price": 0.63,
+    "size": 7,
+    "usdc_spent": 4.41,
+    "market_question": "Will Ecuador win on 2026-06-14?",
+    "opened_at": "2026-06-14T17:44:17.962385",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.743,
+    "signal_price": 0.625,
+    "spread_cents": 1.0,
+    "hours_to_start": 5.26
+  }
+]
