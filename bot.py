@@ -6,6 +6,7 @@ Polymarket Trading Bot — modo continuo
 - Nunca apuesta dos veces en el mismo mercado
 - Servidor HTTP local en puerto 7373 para logs en vivo en el dashboard
 """
+import re
 import sys
 import time
 import threading
@@ -283,11 +284,16 @@ POLITICS_KEYWORDS = [
 ]
 
 # Mercados de crypto — demasiado volátiles para TP/SL de 7-8%
+# Frases largas e inequívocas → match por substring (seguro).
 CRYPTO_KEYWORDS = [
-    "bitcoin", "btc", "ethereum", "eth", "crypto", "solana", "sol",
-    "xrp", "doge", "dogecoin", "bnb", "price of", "above $", "below $",
-    "up or down", "coin", "token", "defi", "nft",
+    "bitcoin", "ethereum", "crypto", "solana", "dogecoin",
+    "price of", "above $", "below $", "up or down", "defi",
 ]
+# Tickers/palabras CORTAS → SOLO palabra completa. "eth" como substring matchea
+# "nETHerlands", "sol" matchea "conSOLe/SOLomon", "coin" matchea "coincide"...
+# (bug real: Netherlands vs Japan se rechazaba como mercado de Ethereum).
+CRYPTO_WORDS = {"btc", "eth", "sol", "xrp", "bnb", "doge", "nft", "coin", "token"}
+_CRYPTO_WORD_RE = re.compile(r"\b(" + "|".join(CRYPTO_WORDS) + r")\b")
 
 # ── ESPORTS — PROHIBIDO para dinero real ─────────────────────────────────────
 # Se resuelven en 30-45 minutos, precios caen en vertical al primer kill
@@ -383,7 +389,9 @@ def is_crypto_market(market: dict) -> bool:
     question = market.get("question", "").lower()
     category = (market.get("category") or "").lower()
     text = question + " " + category
-    return any(kw in text for kw in CRYPTO_KEYWORDS)
+    if any(kw in text for kw in CRYPTO_KEYWORDS):
+        return True
+    return bool(_CRYPTO_WORD_RE.search(text))   # tickers cortos: palabra completa
 
 
 def is_draw_market(market: dict) -> bool:
@@ -406,7 +414,7 @@ def is_winner_sports_market(market: dict) -> bool:
 
     if any(kw in text for kw in POLITICS_KEYWORDS):
         return False
-    if any(kw in text for kw in CRYPTO_KEYWORDS):
+    if is_crypto_market(market):   # usa match por palabra para tickers cortos (eth, sol…)
         return False
     if any(kw in text for kw in LIVE_KEYWORDS):
         return False
