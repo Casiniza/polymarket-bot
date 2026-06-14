@@ -707,24 +707,31 @@ def market_has_time_left(market: dict) -> bool:
     """
     True si el mercado cierra en al menos MIN_HOURS_ENTRY horas.
     Evita entrar en mercados ya en curso o a punto de terminar.
+
+    CLAVE: la referencia es gameStartTime (hora real del partido). NUNCA usar
+    endDateIso: es SOLO la fecha (medianoche), así que un partido de tarde/noche
+    parecía 'cerrado hace 17h' y se rechazaba — bug que estranguló el flujo de
+    trades del Mundial. Fallback: endDate (lleva hora completa).
     """
-    end_str = market.get("endDateIso") or market.get("endDate", "")
-    if not end_str:
-        return True
-    try:
-        end_dt = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
-        if end_dt.tzinfo is None:
-            end_dt = end_dt.replace(tzinfo=timezone.utc)
-        hours_left = (end_dt - datetime.now(timezone.utc)).total_seconds() / 3600
-        if hours_left < MIN_HOURS_ENTRY:
-            logger.debug(
-                f"Descartado (solo {hours_left:.1f}h hasta cierre — posible en-juego): "
-                f"{market.get('question','')[:50]}"
-            )
-            return False
-        return True
-    except (ValueError, TypeError):
-        return True
+    ref = get_game_start(market)
+    if ref is None:
+        end_str = market.get("endDate") or market.get("endDateIso") or ""
+        if not end_str:
+            return True
+        try:
+            ref = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+            if ref.tzinfo is None:
+                ref = ref.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            return True
+    hours_left = (ref - datetime.now(timezone.utc)).total_seconds() / 3600
+    if hours_left < MIN_HOURS_ENTRY:
+        logger.debug(
+            f"Descartado (solo {hours_left:.1f}h hasta el partido — posible en-juego): "
+            f"{market.get('question','')[:50]}"
+        )
+        return False
+    return True
 
 
 MIN_STABILITY_OBS = 2   # 2 obs = ~5-10 min de datos. Bajado de 3 para capturar más
@@ -834,9 +841,10 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
             if not market_is_mature(market): continue       # < 30min de vida → precio sin asentar
             # Ventana de entrada PRE-PARTIDO sobre gameStartTime (el dato fiable)
             if not game_entry_window_ok(market): continue
-            # Fallback SOLO si no hay gameStartTime: ventana 36h sobre endDate
+            # Fallback SOLO si no hay gameStartTime: ventana 36h sobre endDate.
+            # endDate (con hora) primero — endDateIso es solo fecha (medianoche).
             if get_game_start(market) is None:
-                end_str = market.get("endDateIso") or market.get("endDate", "")
+                end_str = market.get("endDate") or market.get("endDateIso") or ""
                 if end_str:
                     try:
                         end_dt = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
