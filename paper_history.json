@@ -131,5 +131,24 @@
     "signal_price": 0.705,
     "spread_cents": 1.0,
     "hours_to_start": 6.81
+  },
+  {
+    "market_question": "Knicks vs. Spurs",
+    "action": "BUY_NO",
+    "entry_price": 0.65,
+    "exit_price": 0.7,
+    "size": 7,
+    "usdc_spent": 4.55,
+    "pnl": 0.35,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-13T00:14:48.727376",
+    "closed_at": "2026-06-14T00:59:48.660858",
+    "strategy": "SAFE_BET",
+    "sport": "nba",
+    "confidence": 0.786,
+    "signal_price": 0.645,
+    "spread_cents": 1.0,
+    "hours_to_start": 24.25
   }
 ]
