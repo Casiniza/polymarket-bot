@@ -265,6 +265,11 @@ NON_WINNER_KEYWORDS = [
     "score", "half", "quarter", "first", "last", "both teams",
     "clean sheet", "anytime", "assist", "card", "corner",
     "game 1", "game 2", "game 3", "map 1", "map 2",  # series individuales
+    # Props/novedades que NO son resultado de partido — colaban por keyword de
+    # deporte ("ufc" dentro de "UFC Freedom 250"): "Will Messi attend UFC 250?"
+    # generó una señal real BUY_NO (la salvó el filtro de spread, libro 63¢).
+    "attend", "show up", "appear", "be sacked", "be fired", "sign for",
+    "transfer", "mvp", "ballon", "award", "ceremony",
 ]
 
 POLITICS_KEYWORDS = [
