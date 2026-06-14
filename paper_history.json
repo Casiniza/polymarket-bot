@@ -150,5 +150,24 @@
     "signal_price": 0.645,
     "spread_cents": 1.0,
     "hours_to_start": 24.25
+  },
+  {
+    "market_question": "Will Netherlands win on 2026-06-14?",
+    "action": "BUY_NO",
+    "entry_price": 0.54,
+    "exit_price": 0.495,
+    "size": 9,
+    "usdc_spent": 4.86,
+    "pnl": -0.405,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-14T17:56:21.872812",
+    "closed_at": "2026-06-14T20:03:16.756398",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.818,
+    "signal_price": 0.535,
+    "spread_cents": 1.0,
+    "hours_to_start": 2.06
   }
 ]
