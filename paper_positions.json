@@ -13,20 +13,5 @@
     "signal_price": 0.625,
     "spread_cents": 1.0,
     "hours_to_start": 5.26
-  },
-  {
-    "token_id": "108663359036915259457481850734069152588393396741514563513420806169156614708823",
-    "action": "BUY_NO",
-    "entry_price": 0.73,
-    "size": 6,
-    "usdc_spent": 4.38,
-    "market_question": "Will Netherlands vs. Japan end in a draw?",
-    "opened_at": "2026-06-14T17:56:25.455015",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.909,
-    "signal_price": 0.725,
-    "spread_cents": 1.0,
-    "hours_to_start": 2.06
   }
 ]
