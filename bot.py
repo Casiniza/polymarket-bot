@@ -727,10 +727,14 @@ def market_has_time_left(market: dict) -> bool:
         return True
 
 
+MIN_STABILITY_OBS = 2   # 2 obs = ~5-10 min de datos. Bajado de 3 para capturar más
+                        # partidos del Mundial que aparecen y empiezan rápido. El filtro
+                        # de volatilidad sigue rechazando precios que se mueven demasiado.
+
 def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bool:
     """
     True si el precio ha sido estable en los últimos scans.
-    Requiere al menos 2 observaciones para poder apostar (mínimo 5 min de datos).
+    Requiere al menos MIN_STABILITY_OBS observaciones para poder apostar.
     Rechaza si la volatilidad supera MAX_PRICE_VOLATILITY.
     """
     now = time.time()
@@ -739,10 +743,9 @@ def is_price_stable(market_id: str, yes_price: float, price_history: dict) -> bo
     # Mantiene solo los últimos 30 minutos
     price_history[market_id] = [(t, p) for t, p in history if now - t < 1800]
     prices = [p for _, p in price_history[market_id]]
-    if len(prices) < 3:
-        # Menos de 3 observaciones = menos de 15 min de datos.
-        # Necesitamos 15 min de precio estable antes de apostar.
-        logger.debug(f"Esperando datos ({len(prices)}/3 obs, ~{(3-len(prices))*5}min más): {market_id[:25]}")
+    if len(prices) < MIN_STABILITY_OBS:
+        falta = (MIN_STABILITY_OBS - len(prices)) * 5
+        logger.debug(f"Esperando datos ({len(prices)}/{MIN_STABILITY_OBS} obs, ~{falta}min más): {market_id[:25]}")
         return False
     volatility = max(prices) - min(prices)
     if volatility > config.MAX_PRICE_VOLATILITY:

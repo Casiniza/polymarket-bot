@@ -126,6 +126,11 @@ def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | N
     paper = market.get("_paper", False)
     s_min, s_max = get_safe_range(market, paper)
 
+    # Suelo propio para el NO al empate (nuestra mayor ventaja): el sesgo del
+    # empate da MÁS EV a precios de NO más bajos, así que ampliamos el suelo a
+    # 0.62. min() para no estrechar el rango ya amplio de paper.
+    no_min = min(s_min, 0.62) if market.get("_is_draw_market") else s_min
+
     best = Signal("HOLD", 0.0, "Fuera del rango seguro", token_id_yes or "", yes_price or 0.0, "SAFE_BET")
 
     if yes_price and s_min <= yes_price <= s_max and token_id_yes:
@@ -136,10 +141,10 @@ def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | N
         if sig.confidence > best.confidence:
             best = sig
 
-    if no_price and s_min <= no_price <= s_max and token_id_no:
-        conf = 0.7 + 0.3 * (no_price - s_min) / (s_max - s_min)
+    if no_price and no_min <= no_price <= s_max and token_id_no:
+        conf = 0.7 + 0.3 * (no_price - no_min) / (s_max - no_min)
         sig = Signal("BUY_NO", conf,
-                     f"Safe bet NO {no_price:.3f} (rango {s_min}-{s_max})",
+                     f"Safe bet NO {no_price:.3f} (rango {no_min:.2f}-{s_max})",
                      token_id_no, no_price, "SAFE_BET")
         if sig.confidence > best.confidence:
             best = sig
