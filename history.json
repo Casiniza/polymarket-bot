@@ -74,5 +74,24 @@
     "signal_price": 0.705,
     "spread_cents": 1.0,
     "hours_to_start": 6.81
+  },
+  {
+    "market_question": "Will Netherlands vs. Japan end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.73,
+    "exit_price": 0.66,
+    "size": 2,
+    "usdc_spent": 1.46,
+    "pnl": -0.14,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-14T17:56:17.256356",
+    "closed_at": "2026-06-14T20:41:50.080889",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.871,
+    "signal_price": 0.725,
+    "spread_cents": 1.0,
+    "hours_to_start": 2.06
   }
 ]
