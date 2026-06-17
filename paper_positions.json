@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "78248766724983621763573737038389694447239642193620905090046937500047661583273",
-    "action": "BUY_NO",
-    "entry_price": 0.83,
-    "size": 12,
-    "usdc_spent": 9.96,
-    "market_question": "Will Portugal vs. DR Congo end in a draw?",
-    "opened_at": "2026-06-17T08:33:31.324038",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 1.0,
-    "signal_price": 0.825,
-    "spread_cents": 1.0,
-    "hours_to_start": 8.44
-  },
-  {
     "token_id": "26666380871262984720893543263812272096548992179236532052125725580254060870910",
     "action": "BUY_NO",
     "entry_price": 0.59,
