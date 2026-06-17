@@ -226,5 +226,24 @@
     "signal_price": 0.825,
     "spread_cents": 1.0,
     "hours_to_start": 8.44
+  },
+  {
+    "market_question": "Will England vs. Croatia end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.75,
+    "exit_price": 0.855,
+    "size": 6,
+    "usdc_spent": 4.5,
+    "pnl": 0.63,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-17T18:11:21.331764",
+    "closed_at": "2026-06-17T20:08:27.502166",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.927,
+    "signal_price": 0.745,
+    "spread_cents": 1.0,
+    "hours_to_start": 1.81
   }
 ]
