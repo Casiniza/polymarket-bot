@@ -1,17 +1,1 @@
-[
-  {
-    "token_id": "50545080256251056582241028938540948593923041913864499840342045303145217030803",
-    "action": "BUY_NO",
-    "entry_price": 0.75,
-    "size": 2,
-    "usdc_spent": 1.5,
-    "market_question": "Will England vs. Croatia end in a draw?",
-    "opened_at": "2026-06-17T18:11:16.197510",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.894,
-    "signal_price": 0.745,
-    "spread_cents": 1.0,
-    "hours_to_start": 1.81
-  }
-]
+[]
