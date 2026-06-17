@@ -93,5 +93,24 @@
     "signal_price": 0.725,
     "spread_cents": 1.0,
     "hours_to_start": 2.06
+  },
+  {
+    "market_question": "Will Portugal vs. DR Congo end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.83,
+    "exit_price": 0.92,
+    "size": 2,
+    "usdc_spent": 1.66,
+    "pnl": 0.18,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-17T08:33:26.671548",
+    "closed_at": "2026-06-17T17:06:54.282548",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.987,
+    "signal_price": 0.825,
+    "spread_cents": 1.0,
+    "hours_to_start": 8.44
   }
 ]
