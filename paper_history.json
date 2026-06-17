@@ -245,5 +245,24 @@
     "signal_price": 0.745,
     "spread_cents": 1.0,
     "hours_to_start": 1.81
+  },
+  {
+    "market_question": "Will Ghana win on 2026-06-17?",
+    "action": "BUY_NO",
+    "entry_price": 0.59,
+    "exit_price": 0.635,
+    "size": 8,
+    "usdc_spent": 4.72,
+    "pnl": 0.36,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-17T08:33:34.505179",
+    "closed_at": "2026-06-17T23:06:53.747399",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.776,
+    "signal_price": 0.585,
+    "spread_cents": 1.0,
+    "hours_to_start": 14.44
   }
 ]
