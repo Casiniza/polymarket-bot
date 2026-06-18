@@ -43,20 +43,5 @@
     "signal_price": 0.705,
     "spread_cents": 1.0,
     "hours_to_start": 8.96
-  },
-  {
-    "token_id": "32210064122775620935763348212807554372252815175271486060279685698923175170481",
-    "action": "BUY_NO",
-    "entry_price": 0.77,
-    "size": 6,
-    "usdc_spent": 4.62,
-    "market_question": "Will Switzerland vs. Bosnia and Herzegovina end in a draw?",
-    "opened_at": "2026-06-18T17:18:15.051801",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.945,
-    "signal_price": 0.765,
-    "spread_cents": 1.0,
-    "hours_to_start": 1.7
   }
 ]
