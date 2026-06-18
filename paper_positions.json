@@ -13,5 +13,20 @@
     "signal_price": 0.525,
     "spread_cents": 1.0,
     "hours_to_start": 20.01
+  },
+  {
+    "token_id": "85195198594036575100635715507533418076874949402350196015086288093860025726874",
+    "action": "BUY_NO",
+    "entry_price": 0.84,
+    "size": 11,
+    "usdc_spent": 9.24,
+    "market_question": "Will Canada vs. Qatar end in a draw?",
+    "opened_at": "2026-06-18T15:17:24.663062",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 1.0,
+    "signal_price": 0.835,
+    "spread_cents": 1.0,
+    "hours_to_start": 6.71
   }
 ]
