@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "6475664574853487589307000579070420920333411302268516614731603567311278340454",
+    "action": "BUY_NO",
+    "entry_price": 0.53,
+    "size": 9,
+    "usdc_spent": 4.77,
+    "market_question": "Will Mexico win on 2026-06-18?",
+    "opened_at": "2026-06-18T04:59:18.293240",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.826,
+    "signal_price": 0.525,
+    "spread_cents": 1.0,
+    "hours_to_start": 20.01
+  }
+]
