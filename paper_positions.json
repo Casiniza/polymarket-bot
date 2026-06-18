@@ -28,5 +28,20 @@
     "signal_price": 0.835,
     "spread_cents": 1.0,
     "hours_to_start": 6.71
+  },
+  {
+    "token_id": "113916161974517087375531703144301863196719799992347466230963155791909486342579",
+    "action": "BUY_NO",
+    "entry_price": 0.71,
+    "size": 7,
+    "usdc_spent": 4.97,
+    "market_question": "Will Mexico vs. Korea Republic end in a draw?",
+    "opened_at": "2026-06-18T16:02:41.718997",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.891,
+    "signal_price": 0.705,
+    "spread_cents": 1.0,
+    "hours_to_start": 8.96
   }
 ]
