@@ -131,5 +131,24 @@
     "signal_price": 0.745,
     "spread_cents": 1.0,
     "hours_to_start": 1.81
+  },
+  {
+    "market_question": "Will Canada vs. Qatar end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.84,
+    "exit_price": 0.93,
+    "size": 2,
+    "usdc_spent": 1.68,
+    "pnl": 0.18,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-18T15:17:20.520665",
+    "closed_at": "2026-06-18T22:16:47.208053",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.998,
+    "signal_price": 0.835,
+    "spread_cents": 1.0,
+    "hours_to_start": 6.71
   }
 ]
