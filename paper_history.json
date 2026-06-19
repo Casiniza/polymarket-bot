@@ -340,5 +340,24 @@
     "signal_price": 0.705,
     "spread_cents": 1.0,
     "hours_to_start": 8.96
+  },
+  {
+    "market_question": "Will United States vs. Australia end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.79,
+    "exit_price": 0.875,
+    "size": 6,
+    "usdc_spent": 4.74,
+    "pnl": 0.51,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-19T06:05:11.914353",
+    "closed_at": "2026-06-19T19:10:48.468672",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.964,
+    "signal_price": 0.785,
+    "spread_cents": 1.0,
+    "hours_to_start": 12.91
   }
 ]
