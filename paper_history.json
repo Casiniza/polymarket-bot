@@ -302,5 +302,24 @@
     "signal_price": 0.835,
     "spread_cents": 1.0,
     "hours_to_start": 6.71
+  },
+  {
+    "market_question": "Will Mexico win on 2026-06-18?",
+    "action": "BUY_NO",
+    "entry_price": 0.53,
+    "exit_price": 0.455,
+    "size": 9,
+    "usdc_spent": 4.77,
+    "pnl": -0.675,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-18T04:59:18.293240",
+    "closed_at": "2026-06-19T01:07:36.875739",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.826,
+    "signal_price": 0.525,
+    "spread_cents": 1.0,
+    "hours_to_start": 20.01
   }
 ]
