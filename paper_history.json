@@ -397,5 +397,24 @@
     "signal_price": 0.765,
     "spread_cents": 1.0,
     "hours_to_start": 11.51
+  },
+  {
+    "market_question": "Will Germany vs. C\u00f4te d'Ivoire end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.8,
+    "exit_price": 0.735,
+    "size": 6,
+    "usdc_spent": 4.8,
+    "pnl": -0.39,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-20T12:07:43.388270",
+    "closed_at": "2026-06-20T20:29:08.185335",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.973,
+    "signal_price": 0.795,
+    "spread_cents": 1.0,
+    "hours_to_start": 7.87
   }
 ]
