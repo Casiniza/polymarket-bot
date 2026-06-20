@@ -378,5 +378,24 @@
     "signal_price": 0.525,
     "spread_cents": 1.0,
     "hours_to_start": 26.54
+  },
+  {
+    "market_question": "Will Netherlands vs. Sweden end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.77,
+    "exit_price": 0.845,
+    "size": 6,
+    "usdc_spent": 4.62,
+    "pnl": 0.45,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-20T05:29:25.578839",
+    "closed_at": "2026-06-20T17:05:12.109916",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.945,
+    "signal_price": 0.765,
+    "spread_cents": 1.0,
+    "hours_to_start": 11.51
   }
 ]
