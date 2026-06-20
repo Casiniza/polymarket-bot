@@ -13,5 +13,20 @@
     "signal_price": 0.765,
     "spread_cents": 1.0,
     "hours_to_start": 11.51
+  },
+  {
+    "token_id": "65748453645455064032224150351837356150250199120217708893852908011527092228921",
+    "action": "BUY_NO",
+    "entry_price": 0.8,
+    "size": 6,
+    "usdc_spent": 4.8,
+    "market_question": "Will Germany vs. C\u00f4te d'Ivoire end in a draw?",
+    "opened_at": "2026-06-20T12:07:43.388270",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.973,
+    "signal_price": 0.795,
+    "spread_cents": 1.0,
+    "hours_to_start": 7.87
   }
 ]
