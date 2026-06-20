@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "5693157367968176695938919502623564101036527678755862600029916323784435468280",
+    "action": "BUY_NO",
+    "entry_price": 0.78,
+    "size": 6,
+    "usdc_spent": 4.68,
+    "market_question": "Will Tunisia vs. Japan end in a draw?",
+    "opened_at": "2026-06-20T22:25:32.837908",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.955,
+    "signal_price": 0.775,
+    "spread_cents": 1.0,
+    "hours_to_start": 5.57
+  }
+]
