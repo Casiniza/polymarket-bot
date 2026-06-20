@@ -359,5 +359,24 @@
     "signal_price": 0.785,
     "spread_cents": 1.0,
     "hours_to_start": 12.91
+  },
+  {
+    "market_question": "Will T\u00fcrkiye win on 2026-06-19?",
+    "action": "BUY_NO",
+    "entry_price": 0.53,
+    "exit_price": 0.735,
+    "size": 9,
+    "usdc_spent": 4.77,
+    "pnl": 1.845,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-19T00:27:49.433813",
+    "closed_at": "2026-06-20T03:01:10.985098",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.826,
+    "signal_price": 0.525,
+    "spread_cents": 1.0,
+    "hours_to_start": 26.54
   }
 ]
