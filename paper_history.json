@@ -416,5 +416,24 @@
     "signal_price": 0.795,
     "spread_cents": 1.0,
     "hours_to_start": 7.87
+  },
+  {
+    "market_question": "Will Tunisia vs. Japan end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.78,
+    "exit_price": 0.885,
+    "size": 6,
+    "usdc_spent": 4.68,
+    "pnl": 0.63,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-20T22:25:32.837908",
+    "closed_at": "2026-06-21T04:03:39.526774",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.955,
+    "signal_price": 0.775,
+    "spread_cents": 1.0,
+    "hours_to_start": 5.57
   }
 ]
