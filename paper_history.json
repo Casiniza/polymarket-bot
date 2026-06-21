@@ -435,5 +435,24 @@
     "signal_price": 0.775,
     "spread_cents": 1.0,
     "hours_to_start": 5.57
+  },
+  {
+    "market_question": "Will Uruguay vs. Cabo Verde end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.79,
+    "exit_price": 0.685,
+    "size": 6,
+    "usdc_spent": 4.74,
+    "pnl": -0.63,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-21T18:38:55.041248",
+    "closed_at": "2026-06-21T22:21:15.741467",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.964,
+    "signal_price": 0.785,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.35
   }
 ]
