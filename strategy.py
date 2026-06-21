@@ -27,6 +27,10 @@ class Signal:
     strategy: str = ""
 
 
+# Suelo de precio del NO para mercados de empate (¿X vs Y acaba en empate?).
+# Solo entra con favorito claro — ver justificación en safe_bet_strategy.
+DRAW_NO_MIN = 0.75
+
 # --- Detección Mundial ---
 WC_KEYWORDS = ["world cup", "fifa", "mundial", "coupe du monde"]
 
@@ -126,10 +130,11 @@ def safe_bet_strategy(market: dict, yes_price: float | None, no_price: float | N
     paper = market.get("_paper", False)
     s_min, s_max = get_safe_range(market, paper)
 
-    # Suelo propio para el NO al empate (nuestra mayor ventaja): el sesgo del
-    # empate da MÁS EV a precios de NO más bajos, así que ampliamos el suelo a
-    # 0.62. min() para no estrechar el rango ya amplio de paper.
-    no_min = min(s_min, 0.62) if market.get("_is_draw_market") else s_min
+    # Suelo ELEVADO (0.75) para el NO al empate. Datos 11-21 jun (~14 apuestas):
+    # el NO-empate gana fiable SOLO con favorito claro (NO ≥ 0.75 → ~12W/3L);
+    # por debajo de 0.73 son partidos parejos que acaban en tablas y saltan el
+    # stop (~2W/5L). max() para que el suelo suba también en paper (s_min 0.55).
+    no_min = max(s_min, DRAW_NO_MIN) if market.get("_is_draw_market") else s_min
 
     best = Signal("HOLD", 0.0, "Fuera del rango seguro", token_id_yes or "", yes_price or 0.0, "SAFE_BET")
 
