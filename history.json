@@ -283,5 +283,24 @@
     "signal_price": 0.765,
     "spread_cents": 1.0,
     "hours_to_start": 3.5
+  },
+  {
+    "market_question": "Bad Homburg Open: Naomi Osaka vs Magdalena Frech",
+    "action": "BUY_YES",
+    "entry_price": 0.71,
+    "exit_price": 0.71,
+    "size": 2,
+    "usdc_spent": 1.42,
+    "pnl": 0.0,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-21T21:29:51.389503",
+    "closed_at": "2026-06-22T10:58:45.056996",
+    "strategy": "SAFE_BET",
+    "sport": "tennis",
+    "confidence": 0.778,
+    "signal_price": 0.705,
+    "spread_cents": 1.0,
+    "hours_to_start": 13.0
   }
 ]
