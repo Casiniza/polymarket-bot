@@ -13,20 +13,5 @@
     "signal_price": 0.575,
     "spread_cents": 1.0,
     "hours_to_start": 23.62
-  },
-  {
-    "token_id": "47389312143922690390797971646019973260520894130857187853764999865585392035522",
-    "action": "BUY_NO",
-    "entry_price": 0.78,
-    "size": 6,
-    "usdc_spent": 4.68,
-    "market_question": "Will Argentina vs. Austria end in a draw?",
-    "opened_at": "2026-06-22T00:33:03.484241",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.808,
-    "signal_price": 0.775,
-    "spread_cents": 1.0,
-    "hours_to_start": 16.45
   }
 ]
