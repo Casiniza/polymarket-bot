@@ -492,5 +492,24 @@
     "signal_price": 0.775,
     "spread_cents": 1.0,
     "hours_to_start": 16.45
+  },
+  {
+    "market_question": "Will Norway win on 2026-06-22?",
+    "action": "BUY_NO",
+    "entry_price": 0.58,
+    "exit_price": 0.625,
+    "size": 8,
+    "usdc_spent": 4.64,
+    "pnl": 0.36,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-22T00:22:59.012359",
+    "closed_at": "2026-06-22T23:57:24.553771",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.784,
+    "signal_price": 0.575,
+    "spread_cents": 1.0,
+    "hours_to_start": 23.62
   }
 ]
