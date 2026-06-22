@@ -302,5 +302,24 @@
     "signal_price": 0.705,
     "spread_cents": 1.0,
     "hours_to_start": 13.0
+  },
+  {
+    "market_question": "Will Argentina vs. Austria end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.78,
+    "exit_price": 0.86,
+    "size": 2,
+    "usdc_spent": 1.56,
+    "pnl": 0.16,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-22T01:23:15.052279",
+    "closed_at": "2026-06-22T17:08:11.861318",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.808,
+    "signal_price": 0.775,
+    "spread_cents": 1.0,
+    "hours_to_start": 15.61
   }
 ]
