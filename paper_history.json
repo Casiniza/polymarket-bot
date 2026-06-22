@@ -454,5 +454,24 @@
     "signal_price": 0.785,
     "spread_cents": 1.0,
     "hours_to_start": 3.35
+  },
+  {
+    "market_question": "Will New Zealand vs. Egypt end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.77,
+    "exit_price": 0.695,
+    "size": 6,
+    "usdc_spent": 4.62,
+    "pnl": -0.45,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-21T21:29:59.690957",
+    "closed_at": "2026-06-22T01:15:07.526368",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.785,
+    "signal_price": 0.765,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.5
   }
 ]
