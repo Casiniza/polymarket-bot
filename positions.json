@@ -13,20 +13,5 @@
     "signal_price": 0.775,
     "spread_cents": 1.0,
     "hours_to_start": 7.59
-  },
-  {
-    "token_id": "6663495385973729664738394679240155134159300227336247891894407556884992871505",
-    "action": "BUY_NO",
-    "entry_price": 0.8,
-    "size": 2,
-    "usdc_spent": 1.6,
-    "market_question": "Will Panama vs. Croatia end in a draw?",
-    "opened_at": "2026-06-23T20:45:42.632160",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.854,
-    "signal_price": 0.795,
-    "spread_cents": 1.0,
-    "hours_to_start": 2.24
   }
 ]
