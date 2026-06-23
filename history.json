@@ -321,5 +321,24 @@
     "signal_price": 0.775,
     "spread_cents": 1.0,
     "hours_to_start": 15.61
+  },
+  {
+    "market_question": "Will England vs. Ghana end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.88,
+    "exit_price": 0.8,
+    "size": 3,
+    "usdc_spent": 2.64,
+    "pnl": -0.24,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-23T06:29:18.231777",
+    "closed_at": "2026-06-23T20:35:58.172327",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 1.0,
+    "signal_price": 0.875,
+    "spread_cents": 1.0,
+    "hours_to_start": 13.51
   }
 ]
