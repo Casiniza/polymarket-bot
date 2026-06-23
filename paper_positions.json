@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "100271816376241251014968205943425335239986161152505983067018696271142538695180",
-    "action": "BUY_NO",
-    "entry_price": 0.88,
-    "size": 4,
-    "usdc_spent": 3.52,
-    "market_question": "Will England vs. Ghana end in a draw?",
-    "opened_at": "2026-06-23T16:41:55.690309",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 1.0,
-    "signal_price": 0.875,
-    "spread_cents": 1.0,
-    "hours_to_start": 3.3
-  },
-  {
     "token_id": "12647218321579707557729149667487684701196034922491819670257272383913352328238",
     "action": "BUY_NO",
     "entry_price": 0.59,
