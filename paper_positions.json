@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "42601592149708068555653966884795921018062060809237574501620106435927110145094",
-    "action": "BUY_NO",
-    "entry_price": 0.69,
-    "size": 7,
-    "usdc_spent": 4.83,
-    "market_question": "Will Senegal win on 2026-06-22?",
-    "opened_at": "2026-06-22T20:47:50.661940",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.693,
-    "signal_price": 0.685,
-    "spread_cents": 1.0,
-    "hours_to_start": 3.2
-  },
-  {
     "token_id": "97991483700712782681079073199922922316274277060397927741575975439755123554167",
     "action": "BUY_NO",
     "entry_price": 0.78,
