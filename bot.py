@@ -31,6 +31,11 @@ TRAILING_STOP    = 0.025  # vende si cae 2.5% desde el pico (más agresivo que a
 MAX_HOLD_HOURS   = 20     # salida forzada base si la posición lleva >20h abierta
 GAME_OVER_BUFFER_H = 6     # margen tras el inicio del partido antes de cerrar por tiempo
                           # (cubre prórroga/penaltis y partidos de tenis a 5 sets)
+# Experimento PAPER — banda de salida ancha para el NO-empate (apuesta binaria
+# a resolución): aguanta los 0-0 sin que salte el stop por ruido y deja correr
+# al ganador. Solo afecta a paper; el dinero real conserva su ±7/8%.
+DRAW_PAPER_TP = 0.22
+DRAW_PAPER_SL = 0.22
 MAX_CONCURRENT   = 2      # máximo 2 posiciones reales simultáneas — calidad > cantidad
 MIN_HOURS_ENTRY  = 1.5    # no entrar si el mercado cierra en < 1.5h (permite 1er cuarto/entrada)
 # ── Parámetros de ciclo ───────────────────────────────────────────────────────
@@ -442,6 +447,39 @@ def get_match_key(market: dict) -> str:
     return q
 
 
+def _market_teams(question: str) -> set:
+    """
+    Extrae los equipos/jugadores de un título para detectar correlación.
+    'Will Netherlands vs. Japan end in a draw?' → {'netherlands','japan'}
+    'Will Ghana win on 2026-06-17?'             → {'ghana'}
+    'Bad Homburg Open: Naomi Osaka vs M. Frech' → {'naomi osaka','m. frech'}
+    """
+    q = (question or "").lower().replace("will ", "").replace("?", "")
+    for sep in (" end in a draw", " win on", " to win", " to advance", " advance"):
+        if sep in q:
+            q = q.split(sep)[0]
+    if ":" in q:                       # quita prefijo de torneo
+        q = q.split(":", 1)[1]
+    parts = re.split(r"\s+vs\.?\s+", q)
+    teams = set()
+    for p in parts:
+        p = re.sub(r"\b20\d\d[-\d/]*\b", "", p).strip(" .-")
+        if len(p) >= 3:
+            teams.add(p)
+    return teams
+
+
+def _shares_team_with_open(market: dict, open_positions: list) -> bool:
+    """True si el mercado comparte equipo/jugador con alguna posición abierta."""
+    teams = _market_teams(market.get("question", ""))
+    if not teams:
+        return False
+    for p in open_positions:
+        if _market_teams(p.market_question) & teams:
+            return True
+    return False
+
+
 def get_daily_loss() -> float:
     """Calcula la pérdida realizada de hoy. Excluye GHOSTs (nunca fueron apuestas reales)."""
     today = datetime.now(timezone.utc).date()
@@ -639,6 +677,13 @@ def check_positions(client, paper: bool = False):
                         logger.debug(f"TP adaptativo: {hours_left:.1f}h → TP={tp*100:.0f}% (SL fijo {sl*100:.0f}%)")
                 except Exception:
                     pass
+        # ── Experimento PAPER: salida ancha en el NO-empate ────────────────────
+        # El NO-empate es una apuesta binaria que se resuelve al final del partido.
+        # La banda fina ±7/8% nos sacaba en los 0-0 (ruido) y cortaba los ganadores
+        # antes de que el favorito marcara. Banda ancha ±22% = aguanta el 0-0 y deja
+        # correr al ganador hasta cerca de la resolución (0.78×1.22≈0.95).
+        elif is_draw_market({"question": pos.market_question}):
+            tp, sl = DRAW_PAPER_TP, DRAW_PAPER_SL
 
         # ── Salida forzada por tiempo (posición atascada) — real Y paper ───────
         # El cierre por tiempo NO debe disparar antes de que el partido juegue:
@@ -964,6 +1009,12 @@ def scan_markets(client, bet_market_ids: set, bet_match_keys: set,
         # Cooldown: no re-entrar al mismo mercado en las 4h tras un TP/SL
         if _is_in_cooldown(_cooldown_key(market.get("question", ""), paper)):
             logger.info(f"⏳ Cooldown activo (<{REENTRY_COOLDOWN_H:.0f}h desde cierre): {match_key[:55]}")
+            continue
+
+        # Filtro de correlación (paper): no apilar apuestas del mismo equipo/partido
+        # (ej. 'Netherlands empate' + 'Netherlands gana' = exposición duplicada).
+        if paper and _shares_team_with_open(market, open_positions):
+            logger.info(f"🔗 Correlación: ya hay posición de ese equipo/partido — omitido: {q[:45]}")
             continue
 
         if signal.token_id not in open_token_ids:

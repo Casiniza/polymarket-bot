@@ -46,17 +46,22 @@ def get_safe_range(market: dict, paper: bool = False) -> tuple[float, float]:
     return config.SAFE_BET_MIN, config.SAFE_BET_MAX
 
 
-def get_dynamic_paper_bet(price: float = 0.0) -> float:
+def get_dynamic_paper_bet(price: float = 0.0, market: dict = None) -> float:
     """
     Dynamic Position Sizing para paper trading.
     - Racha buena  (P&L 3h > +$2)  → $10
     - Neutro                        → $5
     - Racha mala   (P&L 3h < -$2)  → $3
+    Mejoras (experimento jun-2026):
+    - Tope de concentración: ninguna apuesta supera el 8% del capital simulado.
+    - Media posición en mercados de empate: su stop es ancho (±22%), así que
+      menos tamaño mantiene constante el riesgo en dólares por operación.
     """
     try:
         from positions import load_history
         history = load_history(paper=True)
         cutoff = datetime.now(timezone.utc) - timedelta(hours=3)
+        realized = sum(h.get("pnl", 0) for h in history if h.get("result") != "GHOST")
         recent_pnl = sum(
             h.get("pnl", 0) for h in history
             if h.get("result") != "GHOST" and  # GHOSTs no son reales
@@ -64,19 +69,28 @@ def get_dynamic_paper_bet(price: float = 0.0) -> float:
         )
     except Exception:
         recent_pnl = 0.0
+        realized = 0.0
 
     if price >= config.PAPER_HIGH_CONF_THRESHOLD:
-        logger.info(f"[PAPER] Alta confianza precio {price:.2f} → apuesta max ${config.PAPER_HIGH_CONF_BET}")
-        return config.PAPER_HIGH_CONF_BET
-
-    if recent_pnl > 2.0:
-        logger.info(f"[PAPER] Racha buena (P&L 3h: +${recent_pnl:.2f}) → apuesta ${config.PAPER_HIGH_CONF_BET}")
-        return config.PAPER_HIGH_CONF_BET
+        bet = config.PAPER_HIGH_CONF_BET
+    elif recent_pnl > 2.0:
+        bet = config.PAPER_HIGH_CONF_BET
     elif recent_pnl < -2.0:
-        size = max(config.PAPER_BET_USDC * 0.6, 3.0)
-        logger.info(f"[PAPER] Racha mala (P&L 3h: -${abs(recent_pnl):.2f}) → apuesta reducida ${size:.1f}")
-        return size
-    return config.PAPER_BET_USDC
+        bet = max(config.PAPER_BET_USDC * 0.6, 3.0)
+    else:
+        bet = config.PAPER_BET_USDC
+
+    # Tope de concentración: 8% del capital simulado actual
+    cap = (config.PAPER_STARTING_BALANCE + realized) * 0.08
+    bet = min(bet, cap)
+    # Media posición en empates (stop ancho ±22% → menos tamaño = mismo riesgo)
+    tag = ""
+    if market is not None and market.get("_is_draw_market"):
+        bet *= 0.5
+        tag = " [empate ½]"
+    bet = round(max(bet, 1.5), 2)
+    logger.info(f"[PAPER] Sizing → ${bet}{tag} (tope 8%=${cap:.2f})")
+    return bet
 
 
 def get_bet_size(market: dict, paper: bool = False, price: float = 0.0,
@@ -88,7 +102,7 @@ def get_bet_size(market: dict, paper: bool = False, price: float = 0.0,
     - Techo: MAX_BET_USDC | Suelo: MIN_BET_USDC
     """
     if paper:
-        return get_dynamic_paper_bet(price)
+        return get_dynamic_paper_bet(price, market)
     if is_world_cup(market):
         logger.info(f"[Mundial] apuesta aumentada a ${config.WC_BET_USDC}")
         return config.WC_BET_USDC
