@@ -511,5 +511,24 @@
     "signal_price": 0.575,
     "spread_cents": 1.0,
     "hours_to_start": 23.62
+  },
+  {
+    "market_question": "Will Senegal win on 2026-06-22?",
+    "action": "BUY_NO",
+    "entry_price": 0.69,
+    "exit_price": 0.999,
+    "size": 7,
+    "usdc_spent": 4.83,
+    "pnl": 2.163,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-22T20:47:50.661940",
+    "closed_at": "2026-06-23T06:25:24.734991",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.693,
+    "signal_price": 0.685,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.2
   }
 ]
