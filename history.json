@@ -378,5 +378,24 @@
     "signal_price": 0.765,
     "spread_cents": 1.0,
     "hours_to_start": 1.7
+  },
+  {
+    "market_question": "Will Jordan vs. Algeria end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.78,
+    "exit_price": 0.99,
+    "size": 2,
+    "usdc_spent": 1.56,
+    "pnl": 0.42,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-22T19:24:46.241205",
+    "closed_at": "2026-06-24T17:34:50.603270",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.808,
+    "signal_price": 0.775,
+    "spread_cents": 1.0,
+    "hours_to_start": 7.59
   }
 ]
