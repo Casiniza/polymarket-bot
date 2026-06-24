@@ -587,5 +587,24 @@
     "signal_price": 0.795,
     "spread_cents": 1.0,
     "hours_to_start": 3.59
+  },
+  {
+    "market_question": "Will Colombia vs. DR Congo end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.77,
+    "exit_price": 0.595,
+    "size": 3,
+    "usdc_spent": 2.31,
+    "pnl": -0.525,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-23T22:42:04.130235",
+    "closed_at": "2026-06-24T03:19:34.596499",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.785,
+    "signal_price": 0.765,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.3
   }
 ]
