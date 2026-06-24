@@ -37,6 +37,10 @@ GAME_OVER_BUFFER_H = 6     # margen tras el inicio del partido antes de cerrar p
 # al ganador. Solo afecta a paper; el dinero real conserva su ±7/8%.
 DRAW_PAPER_TP = 0.22
 DRAW_PAPER_SL = 0.22
+# SL híbrido para el NO-empate con DINERO REAL: −15%. Más margen que el ±8% para
+# que el trailing escalonado llegue a activarse (sobrevivir al 0-0), pero acota
+# mejor la pérdida en un empate real que el −22% del experimento paper.
+DRAW_REAL_SL  = 0.15
 # Trailing escalonado (ratchet) para el NO-empate en PAPER — idea: no cortar el
 # beneficio fijo, dejar correr y subir un suelo protegido por tramos. Cuando el
 # pico cruza +10/+20/+30%, ese tramo queda bloqueado; si el precio recae hasta
@@ -667,12 +671,25 @@ def check_positions(client, paper: bool = False):
         change    = (current_price - pos.entry_price) / pos.entry_price
         peak_gain = (peak - pos.entry_price) / pos.entry_price
 
-        # ── TP adaptativo según cercanía del partido (SOLO el TP) ──────────────
-        # Cerca del partido tomamos beneficios algo antes. El SL NUNCA se aprieta:
-        # un SL de 4% durante el juego convertía el ruido normal de un cuarto
-        # (±5-10%) en pérdidas realizadas — el ajuste anterior era contraproducente.
+        # ── Clasificación de la posición → qué lógica de salida usar ───────────
+        # El NO-empate es una apuesta binaria a resolución: usa trailing escalonado
+        # (deja correr + bloquea tramos de 10%). Paper con SL ancho (−22%, experimento);
+        # real con SL híbrido (−15%): más margen que el ±8% para que el ratchet se
+        # active, pero acotando mejor la pérdida en un empate real que el paper.
         tp, sl = TAKE_PROFIT, STOP_LOSS
-        if not paper:
+        is_draw = is_draw_market({"question": pos.market_question})
+        is_paper_draw   = paper and is_draw
+        is_real_draw    = (not paper) and is_draw
+        is_ratchet_draw = is_paper_draw or is_real_draw
+
+        if is_paper_draw:
+            sl = DRAW_PAPER_SL
+        elif is_real_draw:
+            sl = DRAW_REAL_SL
+        elif not paper:
+            # Real NO-empate (tenis y demás favoritos): TP adaptativo cerca del
+            # partido. El SL NUNCA se aprieta (un SL fino convierte el ruido del
+            # juego en pérdidas realizadas — el ajuste anterior era contraproducente).
             ref_str = _market_end_dates.get(pos.token_id, "")
             if ref_str:
                 try:
@@ -688,15 +705,6 @@ def check_positions(client, paper: bool = False):
                         logger.debug(f"TP adaptativo: {hours_left:.1f}h → TP={tp*100:.0f}% (SL fijo {sl*100:.0f}%)")
                 except Exception:
                     pass
-        # ── Experimento PAPER: salida ancha en el NO-empate ────────────────────
-        # El NO-empate es una apuesta binaria que se resuelve al final del partido.
-        # La banda fina ±7/8% nos sacaba en los 0-0 (ruido) y cortaba los ganadores
-        # antes de que el favorito marcara. Banda ancha ±22% = aguanta el 0-0 y deja
-        # correr al ganador hasta cerca de la resolución (0.78×1.22≈0.95).
-        is_paper_draw = False
-        if paper and is_draw_market({"question": pos.market_question}):
-            tp, sl = DRAW_PAPER_TP, DRAW_PAPER_SL
-            is_paper_draw = True
 
         # ── Salida forzada por tiempo (posición atascada) — real Y paper ───────
         # El cierre por tiempo NO debe disparar antes de que el partido juegue:
@@ -727,37 +735,39 @@ def check_positions(client, paper: bool = False):
         except Exception:
             pass
 
-        # ── NO-empate PAPER: trailing escalonado (ratchet) ─────────────────────
+        # ── NO-empate: trailing escalonado (ratchet) — real Y paper ────────────
         # Deja correr al ganador y bloquea el último tramo de 10% conquistado por
         # el pico. Si recae hasta ese suelo, vende ahí (no devuelve todo el avance
-        # como con la banda fija). Por debajo de +10% de pico gobierna el SL ancho.
-        if is_paper_draw:
+        # como con la banda fija). Por debajo de +10% de pico gobierna el SL (−22%
+        # paper / −15% real). peaks ya apunta al dict correcto según el modo.
+        if is_ratchet_draw:
+            def _ratchet_cleanup():
+                peaks.pop(pos.token_id, None)
+                if not paper:
+                    _market_end_dates.pop(pos.token_id, None)
             if current_price >= NEAR_RESOLUTION:
                 execute_sell(client, pos, current_price,
-                             f"RESUELTO ~{current_price:.2f} ({change*100:+.1f}%)", paper=True)
-                _mark_closed(_cooldown_key(pos.market_question, True))
-                _paper_peak.pop(pos.token_id, None)
+                             f"RESUELTO ~{current_price:.2f} ({change*100:+.1f}%)", paper=paper)
+                _mark_closed(_cooldown_key(pos.market_question, paper)); _ratchet_cleanup()
                 continue
             if peak_gain >= RATCHET_START:
                 floor = math.floor(peak_gain / RATCHET_TIER + 1e-9) * RATCHET_TIER
                 if change <= floor:
                     execute_sell(client, pos, current_price,
                                  f"TRAILING ESCALONADO (pico +{peak_gain*100:.0f}%, suelo +{floor*100:.0f}%, salida {change*100:+.1f}%)",
-                                 paper=True)
-                    _mark_closed(_cooldown_key(pos.market_question, True))
-                    _paper_peak.pop(pos.token_id, None)
+                                 paper=paper)
+                    _mark_closed(_cooldown_key(pos.market_question, paper)); _ratchet_cleanup()
                 else:
-                    logger.info(f"[PAPER] Manteniendo | {pos.market_question[:45]} | "
+                    logger.info(f"{label}Manteniendo | {pos.market_question[:45]} | "
                                 f"{pos.entry_price:.3f}→{current_price:.3f} ({change*100:+.1f}%) "
                                 f"[🔒 ESCALÓN pico+{peak_gain*100:.0f}% suelo+{floor*100:.0f}%]")
                 continue
             if change <= -sl:
                 execute_sell(client, pos, current_price,
-                             f"STOP LOSS {change*100:.1f}% (SL={sl*100:.0f}%)", paper=True)
-                _mark_closed(_cooldown_key(pos.market_question, True))
-                _paper_peak.pop(pos.token_id, None)
+                             f"STOP LOSS {change*100:.1f}% (SL={sl*100:.0f}%)", paper=paper)
+                _mark_closed(_cooldown_key(pos.market_question, paper)); _ratchet_cleanup()
             else:
-                logger.info(f"[PAPER] Manteniendo | {pos.market_question[:50]} | "
+                logger.info(f"{label}Manteniendo | {pos.market_question[:50]} | "
                             f"{pos.entry_price:.3f}→{current_price:.3f} ({change*100:+.1f}%)")
             continue
 
