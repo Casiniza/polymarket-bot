@@ -6,6 +6,7 @@ Polymarket Trading Bot — modo continuo
 - Nunca apuesta dos veces en el mismo mercado
 - Servidor HTTP local en puerto 7373 para logs en vivo en el dashboard
 """
+import math
 import re
 import sys
 import time
@@ -36,6 +37,13 @@ GAME_OVER_BUFFER_H = 6     # margen tras el inicio del partido antes de cerrar p
 # al ganador. Solo afecta a paper; el dinero real conserva su ±7/8%.
 DRAW_PAPER_TP = 0.22
 DRAW_PAPER_SL = 0.22
+# Trailing escalonado (ratchet) para el NO-empate en PAPER — idea: no cortar el
+# beneficio fijo, dejar correr y subir un suelo protegido por tramos. Cuando el
+# pico cruza +10/+20/+30%, ese tramo queda bloqueado; si el precio recae hasta
+# él, se vende ahí (en vez de devolverlo todo como pasó con Colombia-DR Congo).
+RATCHET_START = 0.10      # el trailing se activa tras un pico de +10%
+RATCHET_TIER  = 0.10      # tamaño de cada tramo bloqueado (10%, 20%, 30%…)
+NEAR_RESOLUTION = 0.97    # precio ≈ resuelto → cobrar y evitar posición zombie
 MAX_CONCURRENT   = 2      # máximo 2 posiciones reales simultáneas — calidad > cantidad
 MIN_HOURS_ENTRY  = 1.5    # no entrar si el mercado cierra en < 1.5h (permite 1er cuarto/entrada)
 # ── Parámetros de ciclo ───────────────────────────────────────────────────────
@@ -45,7 +53,9 @@ LOG_PORT         = 7373
 MAX_LOG_LINES    = 200
 
 # Seguimiento del precio pico por posición — para trailing stop
-_peak_prices: dict = {}   # {token_id: precio_pico}
+_peak_prices: dict = {}   # {token_id: precio_pico} — REAL
+_paper_peak:  dict = {}   # {token_id: precio_pico} — PAPER (dict aparte: el mismo
+                          # mercado puede estar abierto en real y paper a la vez)
 
 # Fecha de cierre de mercado por token_id — para TP/SL adaptativo
 _market_end_dates: dict = {}  # {token_id: "2026-06-08T20:00:00Z"}
@@ -647,11 +657,12 @@ def check_positions(client, paper: bool = False):
         if current_price is None:
             continue
 
-        # Actualizar precio pico (solo para trailing stop)
-        if not paper:
-            if current_price > _peak_prices.get(pos.token_id, 0):
-                _peak_prices[pos.token_id] = current_price
-        peak = _peak_prices.get(pos.token_id, pos.entry_price) if not paper else current_price
+        # Actualizar precio pico — real y paper en dicts separados (mismo mercado
+        # puede estar en ambos). El pico de paper alimenta el trailing escalonado.
+        peaks = _peak_prices if not paper else _paper_peak
+        if current_price > peaks.get(pos.token_id, 0):
+            peaks[pos.token_id] = current_price
+        peak = peaks.get(pos.token_id, pos.entry_price)
 
         change    = (current_price - pos.entry_price) / pos.entry_price
         peak_gain = (peak - pos.entry_price) / pos.entry_price
@@ -682,8 +693,10 @@ def check_positions(client, paper: bool = False):
         # La banda fina ±7/8% nos sacaba en los 0-0 (ruido) y cortaba los ganadores
         # antes de que el favorito marcara. Banda ancha ±22% = aguanta el 0-0 y deja
         # correr al ganador hasta cerca de la resolución (0.78×1.22≈0.95).
-        elif is_draw_market({"question": pos.market_question}):
+        is_paper_draw = False
+        if paper and is_draw_market({"question": pos.market_question}):
             tp, sl = DRAW_PAPER_TP, DRAW_PAPER_SL
+            is_paper_draw = True
 
         # ── Salida forzada por tiempo (posición atascada) — real Y paper ───────
         # El cierre por tiempo NO debe disparar antes de que el partido juegue:
@@ -709,9 +722,44 @@ def check_positions(client, paper: bool = False):
                 if not paper:
                     _peak_prices.pop(pos.token_id, None)
                     _market_end_dates.pop(pos.token_id, None)
+                _paper_peak.pop(pos.token_id, None)
                 continue
         except Exception:
             pass
+
+        # ── NO-empate PAPER: trailing escalonado (ratchet) ─────────────────────
+        # Deja correr al ganador y bloquea el último tramo de 10% conquistado por
+        # el pico. Si recae hasta ese suelo, vende ahí (no devuelve todo el avance
+        # como con la banda fija). Por debajo de +10% de pico gobierna el SL ancho.
+        if is_paper_draw:
+            if current_price >= NEAR_RESOLUTION:
+                execute_sell(client, pos, current_price,
+                             f"RESUELTO ~{current_price:.2f} ({change*100:+.1f}%)", paper=True)
+                _mark_closed(_cooldown_key(pos.market_question, True))
+                _paper_peak.pop(pos.token_id, None)
+                continue
+            if peak_gain >= RATCHET_START:
+                floor = math.floor(peak_gain / RATCHET_TIER + 1e-9) * RATCHET_TIER
+                if change <= floor:
+                    execute_sell(client, pos, current_price,
+                                 f"TRAILING ESCALONADO (pico +{peak_gain*100:.0f}%, suelo +{floor*100:.0f}%, salida {change*100:+.1f}%)",
+                                 paper=True)
+                    _mark_closed(_cooldown_key(pos.market_question, True))
+                    _paper_peak.pop(pos.token_id, None)
+                else:
+                    logger.info(f"[PAPER] Manteniendo | {pos.market_question[:45]} | "
+                                f"{pos.entry_price:.3f}→{current_price:.3f} ({change*100:+.1f}%) "
+                                f"[🔒 ESCALÓN pico+{peak_gain*100:.0f}% suelo+{floor*100:.0f}%]")
+                continue
+            if change <= -sl:
+                execute_sell(client, pos, current_price,
+                             f"STOP LOSS {change*100:.1f}% (SL={sl*100:.0f}%)", paper=True)
+                _mark_closed(_cooldown_key(pos.market_question, True))
+                _paper_peak.pop(pos.token_id, None)
+            else:
+                logger.info(f"[PAPER] Manteniendo | {pos.market_question[:50]} | "
+                            f"{pos.entry_price:.3f}→{current_price:.3f} ({change*100:+.1f}%)")
+            continue
 
         # ── Take profit ────────────────────────────────────────────────────────
         if change >= tp:
