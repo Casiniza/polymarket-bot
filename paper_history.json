@@ -644,5 +644,24 @@
     "signal_price": 0.825,
     "spread_cents": 1.0,
     "hours_to_start": 10.89
+  },
+  {
+    "market_question": "Will Scotland vs. Brazil end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.84,
+    "exit_price": 0.915,
+    "size": 5,
+    "usdc_spent": 4.2,
+    "pnl": 0.375,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-24T17:15:48.113124",
+    "closed_at": "2026-06-24T22:20:03.165148",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.946,
+    "signal_price": 0.835,
+    "spread_cents": 1.0,
+    "hours_to_start": 4.74
   }
 ]
