@@ -237,8 +237,31 @@ def execute_sell(client: ClobClient, position: Position, current_price: float,
         return True
 
     # ── Venta real: FOK cruzando el mejor bid ─────────────────────────────────
-    bid, _ask = get_best_bid_ask(position.token_id)
+    bid, ask = get_best_bid_ask(position.token_id)
     if bid is None:
+        # Libro vacío por AMBOS lados + precio en un extremo = mercado RESUELTO.
+        # Un mercado resuelto pierde el order book: no se puede vender por CLOB,
+        # solo redimir on-chain. Lo cerramos en NUESTRA contabilidad al precio de
+        # resolución (≈1.0 ganada / ≈0.0 perdida) para liberar el slot y dejar de
+        # reintentar eternamente. El USDC se reclama a mano en Polymarket (o se
+        # abona solo en los mercados con auto-redención).
+        resuelto = (ask is None and current_price is not None
+                    and (current_price >= 0.90 or current_price <= 0.10))
+        if resuelto:
+            ganada = current_price >= 0.90
+            res_price = 0.99 if ganada else 0.01
+            res_pnl = (res_price - position.entry_price) * position.size
+            remove_position(position.token_id, res_price, "TP" if ganada else "SL", paper=False)
+            if ganada:
+                logger.success(
+                    f"💰 Mercado RESUELTO GANADA: {position.market_question[:45]} — cerrada en libros "
+                    f"({res_pnl:+.2f}). Redime ~${position.size:.2f} en Polymarket si no se abonó solo."
+                )
+            else:
+                logger.info(
+                    f"Mercado RESUELTO sin premio: {position.market_question[:45]} — cerrada en libros ({res_pnl:+.2f})."
+                )
+            return True
         logger.warning(
             f"Sin bids para vender: {position.market_question[:45]} — reintento en el próximo ciclo. "
             f"(Si el mercado ya resolvió, redime la posición manualmente en Polymarket)"
