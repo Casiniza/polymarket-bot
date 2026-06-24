@@ -397,5 +397,24 @@
     "signal_price": 0.775,
     "spread_cents": 1.0,
     "hours_to_start": 7.59
+  },
+  {
+    "market_question": "Will Bosnia and Herzegovina vs. Qatar end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.83,
+    "exit_price": 0.97,
+    "size": 2,
+    "usdc_spent": 1.66,
+    "pnl": 0.28,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-24T08:06:22.269837",
+    "closed_at": "2026-06-24T19:37:26.385138",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.923,
+    "signal_price": 0.825,
+    "spread_cents": 1.0,
+    "hours_to_start": 10.89
   }
 ]
