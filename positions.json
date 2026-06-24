@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "45374438867602973960265835052700815154109289933727356682597831758772414442906",
-    "action": "BUY_NO",
-    "entry_price": 0.83,
-    "size": 2,
-    "usdc_spent": 1.66,
-    "market_question": "Will Bosnia and Herzegovina vs. Qatar end in a draw?",
-    "opened_at": "2026-06-24T08:06:22.269837",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.923,
-    "signal_price": 0.825,
-    "spread_cents": 1.0,
-    "hours_to_start": 10.89
-  },
-  {
     "token_id": "112114997779753706759169325910467776595154984900370863652131635855979608525646",
     "action": "BUY_NO",
     "entry_price": 0.84,
