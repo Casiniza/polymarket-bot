@@ -568,5 +568,24 @@
     "signal_price": 0.875,
     "spread_cents": 1.0,
     "hours_to_start": 3.3
+  },
+  {
+    "market_question": "Will Panama vs. Croatia end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.8,
+    "exit_price": 0.985,
+    "size": 3,
+    "usdc_spent": 2.4,
+    "pnl": 0.555,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-23T19:24:29.179598",
+    "closed_at": "2026-06-24T00:53:06.584956",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.854,
+    "signal_price": 0.795,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.59
   }
 ]
