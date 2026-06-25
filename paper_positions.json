@@ -28,5 +28,20 @@
     "signal_price": 0.645,
     "spread_cents": 1.0,
     "hours_to_start": 10.61
+  },
+  {
+    "token_id": "19056046558166616177125992986908450328347851423042233479789993394270100295648",
+    "action": "BUY_NO",
+    "entry_price": 0.53,
+    "size": 9,
+    "usdc_spent": 4.77,
+    "market_question": "Will Japan win on 2026-06-25?",
+    "opened_at": "2026-06-25T21:00:04.131051",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.827,
+    "signal_price": 0.5235,
+    "spread_cents": 0.1,
+    "hours_to_start": 2.0
   }
 ]
