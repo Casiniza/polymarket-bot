@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "65241393730634758935193149676394115981683248227949919973281090224372225677669",
+    "action": "BUY_NO",
+    "entry_price": 0.82,
+    "size": 5,
+    "usdc_spent": 4.1,
+    "market_question": "Will Ecuador vs. Germany end in a draw?",
+    "opened_at": "2026-06-25T03:24:16.817552",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.908,
+    "signal_price": 0.8185,
+    "spread_cents": 0.1,
+    "hours_to_start": 16.6
+  }
+]
