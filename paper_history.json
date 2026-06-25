@@ -682,5 +682,24 @@
     "signal_price": 0.8185,
     "spread_cents": 0.1,
     "hours_to_start": 16.6
+  },
+  {
+    "market_question": "Will Japan win on 2026-06-25?",
+    "action": "BUY_NO",
+    "entry_price": 0.53,
+    "exit_price": 0.5695,
+    "size": 9,
+    "usdc_spent": 4.77,
+    "pnl": 0.3555,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-25T21:00:04.131051",
+    "closed_at": "2026-06-25T22:27:49.969736",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.827,
+    "signal_price": 0.5235,
+    "spread_cents": 0.1,
+    "hours_to_start": 2.0
   }
 ]
