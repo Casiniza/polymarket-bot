@@ -720,5 +720,24 @@
     "signal_price": 0.645,
     "spread_cents": 1.0,
     "hours_to_start": 10.61
+  },
+  {
+    "market_question": "Will T\u00fcrkiye vs. United States end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.78,
+    "exit_price": 0.605,
+    "size": 3,
+    "usdc_spent": 2.34,
+    "pnl": -0.525,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-25T22:20:35.504838",
+    "closed_at": "2026-06-26T03:33:02.889057",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.808,
+    "signal_price": 0.775,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.66
   }
 ]
