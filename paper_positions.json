@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "71701414241352102562164693841750030754856523813557047064937648663255287733448",
-    "action": "BUY_NO",
-    "entry_price": 0.65,
-    "size": 7,
-    "usdc_spent": 4.55,
-    "market_question": "Will Paraguay win on 2026-06-25?",
-    "opened_at": "2026-06-25T15:23:42.257799",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.726,
-    "signal_price": 0.645,
-    "spread_cents": 1.0,
-    "hours_to_start": 10.61
-  },
-  {
     "token_id": "47414434065663630291183149312617100918796796327948370289962463485266773119178",
     "action": "BUY_NO",
     "entry_price": 0.78,
