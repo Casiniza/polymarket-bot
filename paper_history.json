@@ -758,5 +758,24 @@
     "signal_price": 0.805,
     "spread_cents": 1.0,
     "hours_to_start": 14.52
+  },
+  {
+    "market_question": "Will Saudi Arabia win on 2026-06-26?",
+    "action": "BUY_NO",
+    "entry_price": 0.65,
+    "exit_price": 0.595,
+    "size": 7,
+    "usdc_spent": 4.55,
+    "pnl": -0.385,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-26T04:28:29.285406",
+    "closed_at": "2026-06-26T22:38:23.913937",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.726,
+    "signal_price": 0.645,
+    "spread_cents": 1.0,
+    "hours_to_start": 19.53
   }
 ]
