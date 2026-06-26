@@ -473,5 +473,24 @@
     "signal_price": 0.775,
     "spread_cents": 1.0,
     "hours_to_start": 3.66
+  },
+  {
+    "market_question": "Will Norway vs. France end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.81,
+    "exit_price": 0.98,
+    "size": 2,
+    "usdc_spent": 1.62,
+    "pnl": 0.34,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-26T04:28:25.807585",
+    "closed_at": "2026-06-26T19:20:55.451357",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.877,
+    "signal_price": 0.805,
+    "spread_cents": 1.0,
+    "hours_to_start": 14.53
   }
 ]
