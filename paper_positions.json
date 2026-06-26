@@ -30,21 +30,6 @@
     "hours_to_start": 19.53
   },
   {
-    "token_id": "60079207812841756026197748640906076867485158811201408494886660329699481296945",
-    "action": "BUY_NO",
-    "entry_price": 0.81,
-    "size": 3,
-    "usdc_spent": 2.43,
-    "market_question": "Will Norway vs. France end in a draw?",
-    "opened_at": "2026-06-26T04:28:31.905794",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.877,
-    "signal_price": 0.805,
-    "spread_cents": 1.0,
-    "hours_to_start": 14.52
-  },
-  {
     "token_id": "56768837194981285965222813073611625645493849723072187189036860746451609713977",
     "action": "BUY_NO",
     "entry_price": 0.61,
