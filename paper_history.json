@@ -701,5 +701,24 @@
     "signal_price": 0.5235,
     "spread_cents": 0.1,
     "hours_to_start": 2.0
+  },
+  {
+    "market_question": "Will Paraguay win on 2026-06-25?",
+    "action": "BUY_NO",
+    "entry_price": 0.65,
+    "exit_price": 0.705,
+    "size": 7,
+    "usdc_spent": 4.55,
+    "pnl": 0.385,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-25T15:23:42.257799",
+    "closed_at": "2026-06-26T02:27:12.698337",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.726,
+    "signal_price": 0.645,
+    "spread_cents": 1.0,
+    "hours_to_start": 10.61
   }
 ]
