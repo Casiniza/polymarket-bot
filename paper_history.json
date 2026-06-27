@@ -815,5 +815,24 @@
     "signal_price": 0.605,
     "spread_cents": 1.0,
     "hours_to_start": 21.77
+  },
+  {
+    "market_question": "Will Austria win on 2026-06-27?",
+    "action": "BUY_NO",
+    "entry_price": 0.68,
+    "exit_price": 0.735,
+    "size": 7,
+    "usdc_spent": 4.76,
+    "pnl": 0.385,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-27T07:09:13.593509",
+    "closed_at": "2026-06-27T17:39:19.586854",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.701,
+    "signal_price": 0.675,
+    "spread_cents": 1.0,
+    "hours_to_start": 18.85
   }
 ]
