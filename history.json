@@ -492,5 +492,24 @@
     "signal_price": 0.805,
     "spread_cents": 1.0,
     "hours_to_start": 14.53
+  },
+  {
+    "market_question": "Will Colombia vs. Portugal end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.76,
+    "exit_price": 0.64,
+    "size": 2,
+    "usdc_spent": 1.52,
+    "pnl": -0.24,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-27T05:23:46.194002",
+    "closed_at": "2026-06-28T00:48:04.467852",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.762,
+    "signal_price": 0.755,
+    "spread_cents": 1.0,
+    "hours_to_start": 18.1
   }
 ]
