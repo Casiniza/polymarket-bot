@@ -1,17 +1,1 @@
-[
-  {
-    "token_id": "83119984683216359120344184710305511577201254872158004101959190182937261979933",
-    "action": "BUY_NO",
-    "entry_price": 0.76,
-    "size": 3,
-    "usdc_spent": 2.28,
-    "market_question": "Will Colombia vs. Portugal end in a draw?",
-    "opened_at": "2026-06-27T05:23:49.721894",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.762,
-    "signal_price": 0.755,
-    "spread_cents": 1.0,
-    "hours_to_start": 18.1
-  }
-]
+[]
