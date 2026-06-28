@@ -530,5 +530,24 @@
     "signal_price": 0.705,
     "spread_cents": 1.0,
     "hours_to_start": 14.82
+  },
+  {
+    "market_question": "South Africa vs. Canada: Team to Advance",
+    "action": "BUY_NO",
+    "entry_price": 0.75,
+    "exit_price": 0.68,
+    "size": 2,
+    "usdc_spent": 1.5,
+    "pnl": -0.14,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-28T13:04:34.250047",
+    "closed_at": "2026-06-28T19:03:55.257812",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.775,
+    "signal_price": 0.745,
+    "spread_cents": 1.0,
+    "hours_to_start": 5.92
   }
 ]
