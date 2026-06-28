@@ -511,5 +511,24 @@
     "signal_price": 0.755,
     "spread_cents": 1.0,
     "hours_to_start": 18.1
+  },
+  {
+    "market_question": "Lexus Eastbourne Open: Zizou Bergs vs Ugo Humbert",
+    "action": "BUY_NO",
+    "entry_price": 0.7,
+    "exit_price": 0.7,
+    "size": 2,
+    "usdc_spent": 1.4,
+    "pnl": 0.0,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-27T19:11:05.955784",
+    "closed_at": "2026-06-28T08:04:24.321515",
+    "strategy": "SAFE_BET",
+    "sport": "tennis",
+    "confidence": 0.778,
+    "signal_price": 0.705,
+    "spread_cents": 1.0,
+    "hours_to_start": 14.82
   }
 ]
