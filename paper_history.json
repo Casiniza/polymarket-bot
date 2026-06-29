@@ -929,5 +929,24 @@
     "signal_price": 0.855,
     "spread_cents": 1.0,
     "hours_to_start": 3.01
+  },
+  {
+    "market_question": "Will Germany vs. Paraguay end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.82,
+    "exit_price": 0.635,
+    "size": 5,
+    "usdc_spent": 4.1,
+    "pnl": -0.925,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-29T01:18:12.233439",
+    "closed_at": "2026-06-29T21:35:11.482611",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.9,
+    "signal_price": 0.815,
+    "spread_cents": 1.0,
+    "hours_to_start": 19.2
   }
 ]
