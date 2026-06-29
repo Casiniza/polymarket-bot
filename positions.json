@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "105192800804198710306030209027069357386368877618745447771286084304287043339083",
-    "action": "BUY_NO",
-    "entry_price": 0.82,
-    "size": 2,
-    "usdc_spent": 1.64,
-    "market_question": "Will Germany vs. Paraguay end in a draw?",
-    "opened_at": "2026-06-29T01:18:08.773865",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.9,
-    "signal_price": 0.815,
-    "spread_cents": 1.0,
-    "hours_to_start": 19.2
-  },
-  {
     "token_id": "109867102163797756476689039023702000449292282028357626528696685469161678217484",
     "action": "BUY_YES",
     "entry_price": 0.86,
