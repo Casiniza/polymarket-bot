@@ -15,21 +15,6 @@
     "hours_to_start": 18.13
   },
   {
-    "token_id": "92321392454456640036293892782376181535406703619683376742285810960562010538670",
-    "action": "BUY_NO",
-    "entry_price": 0.63,
-    "size": 7,
-    "usdc_spent": 4.41,
-    "market_question": "Game Handicap: T1 (-2.5) vs Karmine Corp (+2.5)",
-    "opened_at": "2026-06-28T23:57:37.997499",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.768,
-    "signal_price": 0.625,
-    "spread_cents": 1.0,
-    "hours_to_start": 3.04
-  },
-  {
     "token_id": "99525805040938466968012647710124138858577938764917821999837499034824322004088",
     "action": "BUY_NO",
     "entry_price": 0.57,
