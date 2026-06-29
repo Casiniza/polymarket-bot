@@ -1,17 +1,1 @@
-[
-  {
-    "token_id": "109867102163797756476689039023702000449292282028357626528696685469161678217484",
-    "action": "BUY_YES",
-    "entry_price": 0.86,
-    "size": 2,
-    "usdc_spent": 1.72,
-    "market_question": "Germany vs. Paraguay: Team to Advance",
-    "opened_at": "2026-06-29T17:34:29.664448",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.958,
-    "signal_price": 0.855,
-    "spread_cents": 1.0,
-    "hours_to_start": 2.93
-  }
-]
+[]
