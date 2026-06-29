@@ -290,6 +290,11 @@ NON_WINNER_KEYWORDS = [
     # generó una señal real BUY_NO (la salvó el filtro de spread, libro 63¢).
     "attend", "show up", "appear", "be sacked", "be fired", "sign for",
     "transfer", "mvp", "ballon", "award", "ceremony",
+    # "Team to Advance" (clasificación en eliminatorias): tienen "vs" y se colaban
+    # como partido, pero NO son resultado de un partido — la probabilidad de avanzar
+    # da SALTOS de 30%+ con un gol o el pitido final, así que el SL no protege.
+    # Brazil-Japan advance YES 0.75→0.46 (−39%) saltándose el stop = −$0.58 real.
+    "to advance", "team to advance", "advances",
 ]
 
 POLITICS_KEYWORDS = [
