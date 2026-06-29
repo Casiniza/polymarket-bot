@@ -872,5 +872,24 @@
     "signal_price": 0.745,
     "spread_cents": 1.0,
     "hours_to_start": 5.92
+  },
+  {
+    "market_question": "Game Handicap: T1 (-2.5) vs Karmine Corp (+2.5)",
+    "action": "BUY_NO",
+    "entry_price": 0.63,
+    "exit_price": 0.5,
+    "size": 7,
+    "usdc_spent": 4.41,
+    "pnl": -0.91,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-28T23:57:37.997499",
+    "closed_at": "2026-06-29T03:00:04.485088",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.768,
+    "signal_price": 0.625,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.04
   }
 ]
