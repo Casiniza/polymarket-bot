@@ -891,5 +891,24 @@
     "signal_price": 0.625,
     "spread_cents": 1.0,
     "hours_to_start": 3.04
+  },
+  {
+    "market_question": "Brazil vs. Japan: Team to Advance",
+    "action": "BUY_YES",
+    "entry_price": 0.75,
+    "exit_price": 0.47,
+    "size": 6,
+    "usdc_spent": 4.5,
+    "pnl": -1.68,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-28T22:52:28.093408",
+    "closed_at": "2026-06-29T17:29:09.616937",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.873,
+    "signal_price": 0.74,
+    "spread_cents": 2.0,
+    "hours_to_start": 18.13
   }
 ]
