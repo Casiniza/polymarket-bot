@@ -910,5 +910,24 @@
     "signal_price": 0.74,
     "spread_cents": 2.0,
     "hours_to_start": 18.13
+  },
+  {
+    "market_question": "Germany vs. Paraguay: Team to Advance",
+    "action": "BUY_YES",
+    "entry_price": 0.86,
+    "exit_price": 0.665,
+    "size": 9,
+    "usdc_spent": 7.74,
+    "pnl": -1.755,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-29T17:29:30.530067",
+    "closed_at": "2026-06-29T21:11:45.925759",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.977,
+    "signal_price": 0.855,
+    "spread_cents": 1.0,
+    "hours_to_start": 3.01
   }
 ]
