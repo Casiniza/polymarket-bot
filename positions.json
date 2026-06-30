@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "57287073018160803437058197375172207457382043764533045816128708111733563434312",
+    "action": "BUY_NO",
+    "entry_price": 0.85,
+    "size": 2,
+    "usdc_spent": 1.7,
+    "market_question": "Will France vs. Sweden end in a draw?",
+    "opened_at": "2026-06-30T19:21:51.216007",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.969,
+    "signal_price": 0.845,
+    "spread_cents": 1.0,
+    "hours_to_start": 1.64
+  }
+]
