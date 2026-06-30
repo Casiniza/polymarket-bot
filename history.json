@@ -606,5 +606,24 @@
     "signal_price": 0.855,
     "spread_cents": 1.0,
     "hours_to_start": 2.93
+  },
+  {
+    "market_question": "Wimbledon ATP: Jesper de Jong vs Rinky Hijikata",
+    "action": "BUY_NO",
+    "entry_price": 0.84,
+    "exit_price": 0.75,
+    "size": 2,
+    "usdc_spent": 1.68,
+    "pnl": -0.18,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-29T21:17:08.866445",
+    "closed_at": "2026-06-30T11:47:14.223849",
+    "strategy": "SAFE_BET",
+    "sport": "tennis",
+    "confidence": 0.995,
+    "signal_price": 0.835,
+    "spread_cents": 1.0,
+    "hours_to_start": 15.21
   }
 ]
