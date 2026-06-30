@@ -1024,5 +1024,24 @@
     "signal_price": 0.845,
     "spread_cents": 1.0,
     "hours_to_start": 1.63
+  },
+  {
+    "market_question": "Las Vegas Aces vs. New York Liberty",
+    "action": "BUY_NO",
+    "entry_price": 0.69,
+    "exit_price": 0.75,
+    "size": 7,
+    "usdc_spent": 4.83,
+    "pnl": 0.42,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-06-30T20:52:32.670927",
+    "closed_at": "2026-06-30T23:21:17.274907",
+    "strategy": "SAFE_BET",
+    "sport": "wnba",
+    "confidence": 0.823,
+    "signal_price": 0.685,
+    "spread_cents": 1.0,
+    "hours_to_start": 2.12
   }
 ]
