@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "78587071805310470481722883463612970485308166361389015139282764583587707117846",
-    "action": "BUY_NO",
-    "entry_price": 0.53,
-    "size": 9,
-    "usdc_spent": 4.77,
-    "market_question": "Will Norway win on 2026-06-30?",
-    "opened_at": "2026-06-29T05:09:34.110221",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.826,
-    "signal_price": 0.525,
-    "spread_cents": 1.0,
-    "hours_to_start": 35.84
-  },
-  {
     "token_id": "67614118299712719244400167745909935240133263886550154700443310074824676975678",
     "action": "BUY_NO",
     "entry_price": 0.56,
