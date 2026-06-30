@@ -43,20 +43,5 @@
     "signal_price": 0.825,
     "spread_cents": 1.0,
     "hours_to_start": 19.38
-  },
-  {
-    "token_id": "90734605310508949106042415036231129024278340646499932424598996022392459177369",
-    "action": "BUY_NO",
-    "entry_price": 0.69,
-    "size": 7,
-    "usdc_spent": 4.83,
-    "market_question": "Las Vegas Aces vs. New York Liberty",
-    "opened_at": "2026-06-30T20:52:32.670927",
-    "strategy": "SAFE_BET",
-    "sport": "wnba",
-    "confidence": 0.823,
-    "signal_price": 0.685,
-    "spread_cents": 1.0,
-    "hours_to_start": 2.12
   }
 ]
