@@ -625,5 +625,24 @@
     "signal_price": 0.835,
     "spread_cents": 1.0,
     "hours_to_start": 15.21
+  },
+  {
+    "market_question": "Will France vs. Sweden end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.85,
+    "exit_price": 0.97,
+    "size": 2,
+    "usdc_spent": 1.7,
+    "pnl": 0.24,
+    "result": "TP",
+    "paper": false,
+    "opened_at": "2026-06-30T19:21:51.216007",
+    "closed_at": "2026-06-30T22:11:30.853388",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.969,
+    "signal_price": 0.845,
+    "spread_cents": 1.0,
+    "hours_to_start": 1.64
   }
 ]
