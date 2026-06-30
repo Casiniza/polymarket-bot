@@ -43,5 +43,20 @@
     "signal_price": 0.595,
     "spread_cents": 1.0,
     "hours_to_start": 7.51
+  },
+  {
+    "token_id": "67614118299712719244400167745909935240133263886550154700443310074824676975678",
+    "action": "BUY_NO",
+    "entry_price": 0.56,
+    "size": 5,
+    "usdc_spent": 2.8,
+    "market_question": "Will Mexico win on 2026-06-30?",
+    "opened_at": "2026-06-30T00:08:21.988578",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.801,
+    "signal_price": 0.555,
+    "spread_cents": 1.0,
+    "hours_to_start": 24.86
   }
 ]
