@@ -1,17 +1,1 @@
-[
-  {
-    "token_id": "56946804926569223271830312327615447065746277562696909677290865862907339738135",
-    "action": "BUY_NO",
-    "entry_price": 0.84,
-    "size": 2,
-    "usdc_spent": 1.68,
-    "market_question": "Wimbledon ATP: Jesper de Jong vs Rinky Hijikata",
-    "opened_at": "2026-06-29T21:17:08.866445",
-    "strategy": "SAFE_BET",
-    "sport": "tennis",
-    "confidence": 0.995,
-    "signal_price": 0.835,
-    "spread_cents": 1.0,
-    "hours_to_start": 15.21
-  }
-]
+[]
