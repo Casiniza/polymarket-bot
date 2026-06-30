@@ -967,5 +967,24 @@
     "signal_price": 0.565,
     "spread_cents": 1.0,
     "hours_to_start": 24.87
+  },
+  {
+    "market_question": "Netherlands vs. Morocco: Team to Advance",
+    "action": "BUY_YES",
+    "entry_price": 0.6,
+    "exit_price": 0.455,
+    "size": 8,
+    "usdc_spent": 4.8,
+    "pnl": -1.16,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-29T17:29:33.186621",
+    "closed_at": "2026-06-30T01:19:14.320259",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.741,
+    "signal_price": 0.595,
+    "spread_cents": 1.0,
+    "hours_to_start": 7.51
   }
 ]
