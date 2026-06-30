@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "99525805040938466968012647710124138858577938764917821999837499034824322004088",
-    "action": "BUY_NO",
-    "entry_price": 0.57,
-    "size": 8,
-    "usdc_spent": 4.56,
-    "market_question": "Will Netherlands win on 2026-06-29?",
-    "opened_at": "2026-06-29T00:07:43.324335",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.793,
-    "signal_price": 0.565,
-    "spread_cents": 1.0,
-    "hours_to_start": 24.87
-  },
-  {
     "token_id": "78587071805310470481722883463612970485308166361389015139282764583587707117846",
     "action": "BUY_NO",
     "entry_price": 0.53,
