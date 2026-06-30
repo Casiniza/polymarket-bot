@@ -15,21 +15,6 @@
     "hours_to_start": 35.84
   },
   {
-    "token_id": "19749751708081460508554694952096222040055914588494694335246357620432629309747",
-    "action": "BUY_YES",
-    "entry_price": 0.6,
-    "size": 8,
-    "usdc_spent": 4.8,
-    "market_question": "Netherlands vs. Morocco: Team to Advance",
-    "opened_at": "2026-06-29T17:29:33.186621",
-    "strategy": "SAFE_BET",
-    "sport": "",
-    "confidence": 0.741,
-    "signal_price": 0.595,
-    "spread_cents": 1.0,
-    "hours_to_start": 7.51
-  },
-  {
     "token_id": "67614118299712719244400167745909935240133263886550154700443310074824676975678",
     "action": "BUY_NO",
     "entry_price": 0.56,
