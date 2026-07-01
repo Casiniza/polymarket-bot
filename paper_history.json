@@ -1081,5 +1081,24 @@
     "signal_price": 0.825,
     "spread_cents": 1.0,
     "hours_to_start": 19.38
+  },
+  {
+    "market_question": "Will Belgium win on 2026-07-01?",
+    "action": "BUY_NO",
+    "entry_price": 0.56,
+    "exit_price": 0.515,
+    "size": 8,
+    "usdc_spent": 4.48,
+    "pnl": -0.36,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-06-30T08:08:23.289925",
+    "closed_at": "2026-07-01T19:12:15.417587",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.801,
+    "signal_price": 0.555,
+    "spread_cents": 1.0,
+    "hours_to_start": 35.86
   }
 ]
