@@ -644,5 +644,24 @@
     "signal_price": 0.845,
     "spread_cents": 1.0,
     "hours_to_start": 1.64
+  },
+  {
+    "market_question": "Will England vs. DR Congo end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.83,
+    "exit_price": 0.7,
+    "size": 2,
+    "usdc_spent": 1.66,
+    "pnl": -0.26,
+    "result": "SL",
+    "paper": false,
+    "opened_at": "2026-06-30T20:37:17.016407",
+    "closed_at": "2026-07-01T16:20:39.569186",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.923,
+    "signal_price": 0.825,
+    "spread_cents": 1.0,
+    "hours_to_start": 19.38
   }
 ]
