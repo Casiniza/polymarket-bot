@@ -14,6 +14,10 @@ MIN_BET_USDC         = float(os.getenv("MIN_BET_USDC", "1.5"))     # mínimo par
 BET_PCT_BALANCE      = float(os.getenv("BET_PCT_BALANCE", "0.25")) # apostar hasta el 25% del balance
 MIN_CONFIDENCE       = float(os.getenv("MIN_CONFIDENCE", "0.68"))   # umbral relajado para más oportunidades
 DRY_RUN              = os.getenv("DRY_RUN", "true").lower() == "true"
+# Interruptor de dinero real: apagado tras 3 semanas sin edge demostrado
+# (NO-empate ~48% win rate, bajo el break-even). El bot sigue operando en PAPER
+# a riesgo cero; el real vuelve solo cuando el paper pruebe una estrategia rentable.
+REAL_TRADING_ENABLED = os.getenv("REAL_TRADING_ENABLED", "true").lower() == "true"
 MAX_DAILY_LOSS_USDC  = float(os.getenv("MAX_DAILY_LOSS_USDC", "10.0"))   # límite diario
 MAX_WEEKLY_LOSS_USDC = float(os.getenv("MAX_WEEKLY_LOSS_USDC", "30.0"))  # límite semanal (lun→dom)
 # Volumen mínimo: $3k — AMM siempre da liquidez, este filtro es de calidad de señal

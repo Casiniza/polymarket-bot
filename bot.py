@@ -1222,6 +1222,9 @@ def main():
 
     logger.info(f"Bot iniciado | TP: +{TAKE_PROFIT*100:.0f}% | SL: -{STOP_LOSS*100:.0f}% | "
                 f"TP/SL continuo cada {SCAN_POSITIONS_S}s | Scan mercados cada {SCAN_MARKETS_S}s")
+    if not config.REAL_TRADING_ENABLED:
+        logger.warning("⚠️ DINERO REAL EN PAUSA — el bot solo abre apuestas en PAPER. "
+                       "Reactivar con REAL_TRADING_ENABLED=true cuando el paper demuestre edge.")
 
     existing = load_positions()
     # bet_market_ids usa conditionId (no token_id) para deduplicar correctamente
@@ -1255,9 +1258,14 @@ def main():
 
             if now - last_market_scan >= SCAN_MARKETS_S:
                 logger.info("=== SCAN MERCADOS ===")
-                bet_market_ids, bet_match_keys = scan_markets(
-                    client, bet_market_ids, bet_match_keys, price_history, paper=False
-                )
+                # Real pausado tras 3 semanas sin edge demostrado — solo paper.
+                # Se sigue gestionando cualquier posición real abierta (check_positions).
+                if config.REAL_TRADING_ENABLED:
+                    bet_market_ids, bet_match_keys = scan_markets(
+                        client, bet_market_ids, bet_match_keys, price_history, paper=False
+                    )
+                else:
+                    logger.info("💤 Dinero real EN PAUSA — solo se opera en paper (protección de capital).")
                 if config.PAPER_TRADING:
                     paper_bet_ids, paper_match_keys = scan_markets(
                         None, paper_bet_ids, paper_match_keys, price_history, paper=True
