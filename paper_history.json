@@ -1138,5 +1138,24 @@
     "signal_price": 0.535,
     "spread_cents": 1.0,
     "hours_to_start": 26.84
+  },
+  {
+    "market_question": "Will Spain vs. Austria end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.84,
+    "exit_price": 0.97125,
+    "size": 4,
+    "usdc_spent": 3.36,
+    "pnl": 0.525,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-07-02T13:49:48.606709",
+    "closed_at": "2026-07-02T20:27:35.557527",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.938,
+    "signal_price": 0.83125,
+    "spread_cents": 0.3,
+    "hours_to_start": 5.17
   }
 ]
