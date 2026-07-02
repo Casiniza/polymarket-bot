@@ -1,20 +1,5 @@
 [
   {
-    "token_id": "114529944513432083087603639080413592388250087473645270708766850085200437196608",
-    "action": "BUY_NO",
-    "entry_price": 0.54,
-    "size": 9,
-    "usdc_spent": 4.86,
-    "market_question": "Will Switzerland win on 2026-07-02?",
-    "opened_at": "2026-07-02T00:09:28.258139",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.818,
-    "signal_price": 0.535,
-    "spread_cents": 1.0,
-    "hours_to_start": 26.84
-  },
-  {
     "token_id": "60095758108465694459308572168907074257524985610871095592575520263269573454820",
     "action": "BUY_NO",
     "entry_price": 0.84,
