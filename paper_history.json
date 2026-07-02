@@ -1119,5 +1119,24 @@
     "signal_price": 0.815,
     "spread_cents": 1.0,
     "hours_to_start": 3.12
+  },
+  {
+    "market_question": "Will Switzerland win on 2026-07-02?",
+    "action": "BUY_NO",
+    "entry_price": 0.54,
+    "exit_price": 0.49625,
+    "size": 9,
+    "usdc_spent": 4.86,
+    "pnl": -0.3938,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-07-02T00:09:28.258139",
+    "closed_at": "2026-07-02T15:33:32.328655",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.818,
+    "signal_price": 0.535,
+    "spread_cents": 1.0,
+    "hours_to_start": 26.84
   }
 ]
