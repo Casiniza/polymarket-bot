@@ -1,17 +1,1 @@
-[
-  {
-    "token_id": "58876399413754290886505678293424340402660358045313477456726319086629610453597",
-    "action": "BUY_NO",
-    "entry_price": 0.62,
-    "size": 8,
-    "usdc_spent": 4.96,
-    "market_question": "Will Egypt win on 2026-07-03?",
-    "opened_at": "2026-07-03T04:05:59.406670",
-    "strategy": "ALWAYS_NO",
-    "sport": "",
-    "confidence": 0.751,
-    "signal_price": 0.615,
-    "spread_cents": 1.0,
-    "hours_to_start": 13.9
-  }
-]
+[]
