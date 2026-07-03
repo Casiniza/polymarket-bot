@@ -1176,5 +1176,24 @@
     "signal_price": 0.75125,
     "spread_cents": 0.2,
     "hours_to_start": 5.32
+  },
+  {
+    "market_question": "Will Egypt win on 2026-07-03?",
+    "action": "BUY_NO",
+    "entry_price": 0.62,
+    "exit_price": 0.665,
+    "size": 8,
+    "usdc_spent": 4.96,
+    "pnl": 0.36,
+    "result": "TP",
+    "paper": true,
+    "opened_at": "2026-07-03T04:05:59.406670",
+    "closed_at": "2026-07-03T18:06:49.164304",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.751,
+    "signal_price": 0.615,
+    "spread_cents": 1.0,
+    "hours_to_start": 13.9
   }
 ]
