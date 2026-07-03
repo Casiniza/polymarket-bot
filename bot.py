@@ -332,10 +332,13 @@ ESPORTS_KEYWORDS = [
     "game winner", "game 2 winner", "game 3 winner",
     # Mercados de handicap de mapas (CS2, Dota, etc.) — precio cae en vertical al resolverse
     "map handicap", "map 1 winner", "map 2 winner", "map 3 winner",
+    "game handicap",   # LoL/Dota: "Game Handicap: T1 (-2.5) vs Karmine Corp" −$0.91 paper
     # Equipos esports comunes no cubiertos antes
     "tyloo", "natus vincere", "astralis", "team vitality", "heroic",
     "eternal fire", "spirit", "big clan", "mouz", "complexity",
     "round winner", "pistol round", "knife round",
+    "t1 ", "karmine", "gen.g", "hanwha", "kt rolster", "dplus", "bilibili",
+    "weibo", "jd gaming", "top esports", "gam esports",
 ]
 
 LIVE_KEYWORDS = ["live", "in-play", "in play", "currently", "right now"]
