@@ -1157,5 +1157,24 @@
     "signal_price": 0.83125,
     "spread_cents": 0.3,
     "hours_to_start": 5.17
+  },
+  {
+    "market_question": "Will Portugal vs. Croatia end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.76,
+    "exit_price": 0.57,
+    "size": 3,
+    "usdc_spent": 2.28,
+    "pnl": -0.57,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-07-02T17:41:06.329099",
+    "closed_at": "2026-07-03T00:24:58.196129",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 0.753,
+    "signal_price": 0.75125,
+    "spread_cents": 0.2,
+    "hours_to_start": 5.32
   }
 ]
