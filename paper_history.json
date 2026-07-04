@@ -1195,5 +1195,24 @@
     "signal_price": 0.615,
     "spread_cents": 1.0,
     "hours_to_start": 13.9
+  },
+  {
+    "market_question": "Will Paraguay vs. France end in a draw?",
+    "action": "BUY_NO",
+    "entry_price": 0.88,
+    "exit_price": 0.685,
+    "size": 4,
+    "usdc_spent": 3.52,
+    "pnl": -0.78,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-07-04T03:59:10.761655",
+    "closed_at": "2026-07-04T22:23:48.602444",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 1.0,
+    "signal_price": 0.875,
+    "spread_cents": 1.0,
+    "hours_to_start": 17.01
   }
 ]
