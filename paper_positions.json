@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "86699119935027730582114558028589741679589547608855132707121388339987313483723",
+    "action": "BUY_NO",
+    "entry_price": 0.88,
+    "size": 4,
+    "usdc_spent": 3.52,
+    "market_question": "Will Paraguay vs. France end in a draw?",
+    "opened_at": "2026-07-04T03:59:10.761655",
+    "strategy": "SAFE_BET",
+    "sport": "",
+    "confidence": 1.0,
+    "signal_price": 0.875,
+    "spread_cents": 1.0,
+    "hours_to_start": 17.01
+  }
+]
