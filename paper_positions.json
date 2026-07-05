@@ -13,5 +13,20 @@
     "signal_price": 0.605,
     "spread_cents": 1.0,
     "hours_to_start": 23.88
+  },
+  {
+    "token_id": "79778081949110454416364986546390783375315700746160389769653348735938264983258",
+    "action": "BUY_NO",
+    "entry_price": 0.7,
+    "size": 7,
+    "usdc_spent": 4.9,
+    "market_question": "Will Mexico win on 2026-07-05?",
+    "opened_at": "2026-07-05T00:07:25.866435",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.684,
+    "signal_price": 0.695,
+    "spread_cents": 1.0,
+    "hours_to_start": 23.88
   }
 ]
