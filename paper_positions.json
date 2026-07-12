@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "73646753318335919063316802695308563110118709299559968794937974633863970916300",
+    "action": "BUY_NO",
+    "entry_price": 0.67,
+    "size": 7,
+    "usdc_spent": 4.69,
+    "market_question": "Indiana Fever vs. Las Vegas Aces",
+    "opened_at": "2026-07-12T23:22:41.726149",
+    "strategy": "SAFE_BET",
+    "sport": "wnba",
+    "confidence": 0.814,
+    "signal_price": 0.675,
+    "spread_cents": 1.0,
+    "hours_to_start": 1.62
+  }
+]
