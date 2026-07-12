@@ -1214,5 +1214,24 @@
     "signal_price": 0.875,
     "spread_cents": 1.0,
     "hours_to_start": 17.01
+  },
+  {
+    "market_question": "Will England win on 2026-07-05?",
+    "action": "BUY_NO",
+    "entry_price": 0.61,
+    "exit_price": 0.001,
+    "size": 8,
+    "usdc_spent": 4.88,
+    "pnl": -4.872,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-07-05T00:07:23.228860",
+    "closed_at": "2026-07-12T16:55:28.427166",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.759,
+    "signal_price": 0.605,
+    "spread_cents": 1.0,
+    "hours_to_start": 23.88
   }
 ]
