@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "token_id": "114008288197553961583518307739897802587067075299935011621746237390478872496575",
+    "action": "BUY_NO",
+    "entry_price": 0.59,
+    "size": 8,
+    "usdc_spent": 4.72,
+    "market_question": "Will France win on 2026-07-14?",
+    "opened_at": "2026-07-13T07:09:56.721575",
+    "strategy": "ALWAYS_NO",
+    "sport": "",
+    "confidence": 0.773,
+    "signal_price": 0.58875,
+    "spread_cents": 0.2,
+    "hours_to_start": 35.83
+  }
+]
