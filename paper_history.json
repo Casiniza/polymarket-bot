@@ -1252,5 +1252,24 @@
     "signal_price": 0.695,
     "spread_cents": 1.0,
     "hours_to_start": 23.88
+  },
+  {
+    "market_question": "Indiana Fever vs. Las Vegas Aces",
+    "action": "BUY_NO",
+    "entry_price": 0.67,
+    "exit_price": 0.615,
+    "size": 7,
+    "usdc_spent": 4.69,
+    "pnl": -0.385,
+    "result": "SL",
+    "paper": true,
+    "opened_at": "2026-07-12T23:22:41.726149",
+    "closed_at": "2026-07-13T01:00:02.454534",
+    "strategy": "SAFE_BET",
+    "sport": "wnba",
+    "confidence": 0.814,
+    "signal_price": 0.675,
+    "spread_cents": 1.0,
+    "hours_to_start": 1.62
   }
 ]
